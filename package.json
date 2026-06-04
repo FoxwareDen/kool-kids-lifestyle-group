@@ -35,6 +35,8 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.1.18",
     "tw-animate-css": "^1.3.6",
+    "youch": "^4.1.1",
+    "youch-core": "^0.3.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
