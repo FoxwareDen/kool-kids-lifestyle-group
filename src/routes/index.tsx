@@ -1,14 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+// src/routes/index.tsx
 
-export const Route = createFileRoute('/')({ component: Home })
+import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { HeroSection } from '../components/HeroSection'
+
+export const getPageData = createServerFn().handler(async () => {
+  // TODO: Do api request to get page data from CMS
+  return {}
+})
+
+export const Route = createFileRoute('/')({
+  component: Home,
+})
 
 function Home() {
-  return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-      <p className="mt-4 text-lg">
-        Edit <code>src/routes/index.tsx</code> to get started.
-      </p>
-    </div>
-  )
+  return <HeroSection />
 }
