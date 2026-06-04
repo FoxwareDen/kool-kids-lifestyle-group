@@ -1,7 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { Bell, Menu, MapPin, Compass, Calendar } from 'lucide-react'
 
-export const Route = createFileRoute('/')({ component: Home })
+
+export const getPageData = createServerFn().handler(async () =>{
+  // TODO:Do api request to get page data from cms
+
+  return {}
+});
+
+
+export const Route = createFileRoute('/')({
+  component: Home 
+})
 
 function Home() {
   return (
