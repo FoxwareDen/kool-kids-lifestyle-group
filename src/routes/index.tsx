@@ -3,6 +3,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { HeroSection } from '../components/HeroSection'
+import { StatsSection } from '../components/StatsSection'
 
 export const getPageData = createServerFn().handler(async () => {
   // TODO: Do api request to get page data from CMS
@@ -14,5 +15,10 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
-  return <HeroSection />
+  return (
+    <>
+      <HeroSection />
+      <StatsSection />
+    </>
+  )
 }
