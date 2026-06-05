@@ -1,85 +1,81 @@
-// src/components/HeroSection.tsx
-
-import { Bell, Menu, MapPin, Compass, Calendar } from 'lucide-react'
-
 export function HeroSection() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
+    <section className="relative flex min-h-screen items-center">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-no-repeat bg-right md:bg-center"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: 'url(/images/hero-bg.jpg)' }}
-      />
+      >
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+      </div>
 
-      {/* Dark Overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/40" />
-
-      {/* Content Container */}
-      <div className="relative z-10 flex min-h-screen flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-5 lg:px-12 lg:py-6">
-          <div className="flex items-center gap-3">
-            <Bell className="h-6 w-6 text-white/90 lg:h-7 lg:w-7" strokeWidth={2}  fill='white'/>
-            <span className="text-lg font-semibold tracking-tight text-white lg:text-xl">
-              Prieska Karoo Horizons
-            </span>
-          </div>
-          <button className="flex flex-col gap-1.5 p-2 cursor-pointer" aria-label="Open menu">
-            <Menu className="h-10 w-8 text-white/90 lg:h-12 lg:w-10" strokeWidth={2.5}/>
-          </button>
-        </header>
-
-        {/* Hero Content */}
-        <main className="flex flex-1 flex-col justify-center px-6 pb-32 lg:px-12 lg:pb-40">
-          {/* Location Badge */}
-          <div className="mb-4 flex items-center gap-2 lg:mb-6">
-            <MapPin
-              className="h-4 w-4 text-[var(--lagoon)] lg:h-5 lg:w-5"
-              fill="currentColor"
-              strokeWidth={2}
-            />
-            <span className="text-sm font-medium tracking-wide text-white/90 lg:text-base">
-              Northern Cape , SOUTH AFRICA
-            </span>
-          </div>
-
-          {/* Main Title */}
-          <h1 className="mb-4 text-balance lg:mb-6">
-            <span className="display-title block text-4xl font-bold leading-tight text-white lg:text-6xl xl:text-7xl">
-              Where the Karoo
-            </span>
-            <span className="display-title block text-4xl font-medium italic text-[var(--lagoon)] lg:text-6xl xl:text-7xl">
-              Breathes
-            </span>
-          </h1>
-
-          {/* Description */}
-          <p className="mb-8 max-w-xl text-base leading-relaxed text-white/85 lg:mb-10 lg:max-w-2xl lg:text-lg">
-            Ancient land of vast skies, amber Kalahari sunsets, and untouched
-            wilderness. Every horizon tells a story millions of years in the making
+      {/* Content */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-20 pt-32 lg:px-8 lg:pt-40">
+        <div className="max-w-2xl">
+          {/* Welcome badge */}
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#ED9029]">
+            WELCOME TO 360 EXPERIENCES
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-4">
-            <button className="flex items-center gap-2 rounded-full bg-[var(--lagoon)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[var(--lagoon-deep)] hover:shadow-xl lg:px-8 lg:py-3.5 lg:text-base cursor-pointer">
-              <Compass className="h-4 w-4 lg:h-5 lg:w-5" />
-              Explore
-            </button>
-            <button className="flex items-center gap-2 rounded-full border-2 border-white/60 bg-white/20 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 lg:px-8 lg:py-3.5 lg:text-base cursor-pointer">
-              <Calendar className="h-4 w-4 lg:h-5 lg:w-5" />
-              Book Now
-            </button>
-          </div>
-        </main>
+          {/* Main heading */}
+          <h1 className="display-title mb-2 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+            Experience the
+            <br />
+            Heart of the
+            <br />
+            Northern Cape
+          </h1>
 
-        {/* Bottom CTA */}
-        <div className="fixed bottom-0 left-0 right-0 z-20 p-4 lg:p-6">
-          <button className="mx-auto flex w-full max-w-lg items-center justify-center gap-3 rounded-full bg-[var(--lagoon)] px-6 py-4 text-base font-semibold text-white shadow-2xl transition-all hover:bg-[var(--lagoon-deep)] lg:max-w-xl lg:py-5 lg:text-lg cursor-pointer">
-            <Calendar className="h-5 w-5 lg:h-6 lg:w-6" />
-            Book your stay now
-          </button>
+          {/* Italic tagline */}
+          <p className="display-title mb-6 text-2xl italic text-[#ED9029] md:text-3xl lg:text-4xl">
+            Where the Karoo Breathes.
+          </p>
+
+          {/* Description */}
+          <p className="mb-8 max-w-lg text-sm leading-relaxed text-white/80 md:text-base">
+            {"Discover Prieska's heritage, landscapes, culture and unforgettable experiences through tourism, adventure and recreation."}
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4">
+            <a
+              href="/experiences"
+              className="flex items-center gap-2 rounded-md bg-[#ED9029] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#d17a1f]"
+            >
+              EXPLORE EXPERIENCES
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+            <a
+              href="/plan"
+              className="flex items-center gap-2 rounded-md border-2 border-white bg-transparent px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-white/10"
+            >
+              PLAN YOUR VISIT
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Carousel dots indicator */}
+      <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        <button className="h-2 w-8 rounded-full bg-[#ED9029]" aria-label="Slide 1" />
+        <button className="h-2 w-2 rounded-full bg-white/50" aria-label="Slide 2" />
+        <button className="h-2 w-2 rounded-full bg-white/50" aria-label="Slide 3" />
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 right-8 z-10 hidden lg:block">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/50 text-white/50">
+          <svg className="h-5 w-5 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </div>
+      </div>
+    </section>
   )
 }
