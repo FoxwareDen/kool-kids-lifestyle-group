@@ -27,7 +27,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Kool kids lifestyle group',
       },
     ],
     links: [
@@ -37,10 +37,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  shellComponent: RootDocument,
+  shellComponent: RootDocument
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const browserLang =
+    typeof window !== 'undefined'
+      ? navigator.language || navigator.languages?.[0]
+      : 'en'
+
+  const lang = browserLang?.startsWith('af') ? 'af' : 'en'
+
+  // TODO: set the lang into the url param forcing a page load on inital one and chec for broser settings tooo
+
   return (
     <html lang="en">
       <head>
