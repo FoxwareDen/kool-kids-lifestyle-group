@@ -42,7 +42,7 @@ export function SiteHeader() {
           <img
             src="/logo.jpg"
             alt="360 Experiences logo"
-            className="h-12 w-auto rounded-md object-contain"
+            className="h-12 w-auto object-contain"
           />
         </a>
 
