@@ -50,7 +50,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="h-full m-0 p-0">
+      {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
+      <body suppressHydrationWarning>
         {children}
         <TanStackDevtools
           config={{

@@ -1,18 +1,44 @@
 // src/routes/index.tsx
 
 import { createFileRoute } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { HeroSection } from '../components/HeroSection'
+import { HeroSection } from '#/components/hero/HeroSection'
 
-export const getPageData = createServerFn().handler(async () => {
-  // TODO: Do api request to get page data from CMS
-  return {}
-})
+// 1. It is inputValidator, and it must return the value
+// export const getPageData = createServerFn()
+//   .inputValidator((slug: string) => {
+//     return slug
+//   })
+//   .handler(async ({ data: slug }) => {
 
+//     console.log("slug: " + slug)
+//     // Put your actual DB/CMS call here
+//     const result = await fetchPageData(slug, "en");
+    
+//     return {
+//       title: slug === "" ? "Welcome Home" : `Page: ${slug}`,
+//       content: `Loaded server data for slug: "${slug}"`,
+//       test: result
+//     }
+//   })
+
+// 2. Setup the route context
 export const Route = createFileRoute('/')({
+  // loader: async ({ location }) => {
+  //   // Clean up slash formatting so "/" becomes "" and "/about" becomes "about"
+  //   const slug = location.pathname.replace(/^\/|\/$/g, '')
+    
+  //   // Pass the payload as { data: value }
+  //   const pageData = await getPageData({ data: slug })
+    
+  //   return { pageData }
+  // },
   component: Home,
 })
 
 function Home() {
-  return <HeroSection />
+  return (
+    <main>
+      <HeroSection />
+    </main>
+  )
 }
