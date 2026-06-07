@@ -70,11 +70,11 @@ export function HeroSection() {
               WELCOME TO 360 EXPERIENCES
             </p>
 
-            <h1 className="display-title text-balance text-5xl font-bold leading-[1.05] text-white sm:text-6xl lg:text-7xl">
+            <h1 className="display-title text-balance text-5xl font-medium leading-[1.08] text-white sm:text-6xl lg:text-[4.25rem]">
               Experience the Heart of the Northern Cape
             </h1>
 
-            <p className="display-title mt-4 text-2xl italic text-[var(--brand-orange)] sm:text-3xl">
+            <p className="script-title mt-3 text-3xl font-semibold text-[var(--brand-orange)] sm:text-4xl lg:text-5xl">
               Where the Karoo Breathes.
             </p>
 

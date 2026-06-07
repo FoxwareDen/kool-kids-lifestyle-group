@@ -38,18 +38,12 @@ export function SiteHeader() {
     <header className="absolute inset-x-0 top-0 z-30">
       <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Brand */}
-        <a href="/" className="flex items-center gap-2" aria-label="360 Experiences home">
+        <a href="/" className="flex items-center no-underline" aria-label="360 Experiences home">
           <img
             src="/logo.jpg"
             alt="360 Experiences logo"
-            className="h-12 w-12 rounded-full object-cover ring-1 ring-white/20"
+            className="h-12 w-auto rounded-md object-contain"
           />
-          <span className="hidden flex-col leading-none sm:flex">
-            <span className="text-xl font-extrabold tracking-tight text-white">360</span>
-            <span className="text-[0.6rem] font-semibold tracking-[0.25em] text-white/70">
-              EXPERIENCES
-            </span>
-          </span>
         </a>
 
         {/* Desktop nav */}
@@ -58,7 +52,7 @@ export function SiteHeader() {
             <a
               key={item.label}
               href="#"
-              className="flex items-center gap-1 text-xs font-semibold tracking-wide text-white/85 transition-colors hover:text-[var(--brand-orange)]"
+              className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
               {item.label}
               {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
@@ -71,14 +65,14 @@ export function SiteHeader() {
           <a
             href="#"
             aria-label="Contact us on WhatsApp"
-            className="hidden h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10 sm:flex"
+            className="hidden h-9 w-9 items-center justify-center rounded-full border border-white/25 !text-white no-underline transition-colors hover:bg-white/10 sm:flex"
           >
             <Phone className="h-4 w-4" />
           </a>
 
           <a
             href="#"
-            className="inline-flex items-center gap-2 rounded-md bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide text-white shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
+            className="inline-flex items-center gap-2 rounded-md bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             <Calendar className="h-4 w-4" />
             BOOK NOW

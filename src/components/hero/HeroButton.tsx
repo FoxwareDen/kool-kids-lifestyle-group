@@ -31,15 +31,15 @@ export function HeroButton({
   href?: string
 }) {
   const base =
-    'group inline-flex items-center justify-between gap-6 rounded-md px-6 py-3.5 text-xs font-bold tracking-widest uppercase transition-colors'
+    'group inline-flex items-center justify-between gap-6 rounded-md px-6 py-3.5 text-xs font-bold tracking-widest uppercase no-underline transition-colors'
 
   const styles =
     variant === 'primary'
-      ? 'bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange-deep)] shadow-lg shadow-black/20'
-      : 'border border-white/40 text-white hover:bg-white/10'
+      ? 'bg-[var(--brand-orange)] text-white hover:!text-white hover:bg-[var(--brand-orange-deep)] shadow-lg shadow-black/20'
+      : 'border border-white/40 text-white hover:!text-white hover:bg-white/10'
 
   return (
-    <a href={href} className={`${base} ${styles}`}>
+    <a href={href} className={`${base} ${styles} !text-white`}>
       {children}
       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
     </a>
