@@ -59,6 +59,8 @@ export function HeroSection() {
       {/* Readability overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)]/90 via-[var(--brand-navy)]/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)]/70 via-transparent to-[var(--brand-navy)]/30" />
+      {/* Top fade so the solid navy navbar blends into the hero image */}
+      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
 
       <SiteHeader />
 
