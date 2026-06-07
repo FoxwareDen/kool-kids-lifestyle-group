@@ -7,6 +7,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --brand-navy: #0c1a33;
+  --brand-orange: #e8821e;
+  --brand-orange-deep: #cf6f12;
+
   --sea-ink: #173a40;
   --sea-ink-soft: #416166;
   --lagoon: #4fb8b2;

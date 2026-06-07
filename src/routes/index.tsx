@@ -1,7 +1,5 @@
-import { fetchPageData } from '#/lib/pocketbase';
 import { createFileRoute } from '@tanstack/react-router'
-// import { createServerFn } from '@tanstack/react-start'
-import { useEffect } from 'react';
+import { HeroSection } from '#/components/hero/HeroSection'
 
 // 1. It is inputValidator, and it must return the value
 // export const getPageData = createServerFn()
@@ -36,20 +34,9 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
-  // const { pageData } = Route.useLoaderData()
-
-  useEffect(()=>{
-    (async () => {
-      console.log("running fetch request...");      
-      const test = await fetchPageData("", "en");
-
-      console.log(test);      
-    })()
-  },[])
-
   return (
-    <div className="p-8">
-      {/* <h1 className="text-4xl font-bold">{pageData.title}</h1> */}
-    </div>
+    <main>
+      <HeroSection />
+    </main>
   )
 }
