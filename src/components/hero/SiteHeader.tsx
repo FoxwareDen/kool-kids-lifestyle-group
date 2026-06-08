@@ -61,7 +61,8 @@ export function SiteHeader() {
           <img
             src="/logo-2.png"
             alt="360 Experiences logo"
-            className="h-25 w-auto object-contain mb-[-3rem]"
+            className={`h-25 w-auto object-contain mb-[-3rem] ${mobileOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+
           />
         </a>
         <div className="mx-auto flex max-w-[1280px] py-2 items-center justify-end px-4 sm:px-6 lg:px-8 ">
