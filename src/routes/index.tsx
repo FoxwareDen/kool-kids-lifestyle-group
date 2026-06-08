@@ -1,44 +1,66 @@
-// src/routes/index.tsx
+import { HeroSection } from '#/components/hero/HeroSection';
+import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 
-import { createFileRoute } from '@tanstack/react-router'
-import { HeroSection } from '#/components/hero/HeroSection'
-
-// 1. It is inputValidator, and it must return the value
-// export const getPageData = createServerFn()
-//   .inputValidator((slug: string) => {
-//     return slug
-//   })
-//   .handler(async ({ data: slug }) => {
-
-//     console.log("slug: " + slug)
-//     // Put your actual DB/CMS call here
-//     const result = await fetchPageData(slug, "en");
+export const getPageData = createServerFn()
+  .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
+  .handler(async ({ data: { slug, language } }) => {
     
-//     return {
-//       title: slug === "" ? "Welcome Home" : `Page: ${slug}`,
-//       content: `Loaded server data for slug: "${slug}"`,
-//       test: result
-//     }
-//   })
+    // If language was explicitly passed, use it — otherwise detect from headers
+    const resolvedLanguage: 'en' | 'af' = language ?? await (async () => {
+      const { getRequestHeaders } = await import('@tanstack/react-start/server')
+      
+      const headers = getRequestHeaders()
+      const acceptLanguage = headers.get('accept-language') ?? 'en'
 
-// 2. Setup the route context
+      const languages = acceptLanguage
+        .split(',')
+        .map(part => {
+          const [lang, q] = part.trim().split(';q=')
+          return { lang: lang.trim(), q: q ? parseFloat(q) : 1.0 }
+        })
+        .sort((a, b) => b.q - a.q)
+
+      const primaryLang = languages[0].lang.split('-')[0].toLowerCase()
+      return primaryLang === 'af' ? 'af' : 'en'
+    })()
+
+    return fetchPageDataSSR(slug, resolvedLanguage)
+  })
+
 export const Route = createFileRoute('/')({
-  // loader: async ({ location }) => {
-  //   // Clean up slash formatting so "/" becomes "" and "/about" becomes "about"
-  //   const slug = location.pathname.replace(/^\/|\/$/g, '')
-    
-  //   // Pass the payload as { data: value }
-  //   const pageData = await getPageData({ data: slug })
-    
-  //   return { pageData }
-  // },
-  component: Home,
-})
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
 
-function Home() {
-  return (
-    <main>
-      <HeroSection />
-    </main>
-  )
-}
+  loader: async ({ location }) => {
+    const slug = location.pathname.replace(/^\/|\/$/g, '')
+    
+    // Parse ?lang= from the URL
+    const params = new URLSearchParams(location.search)
+    const lang = params.get('lang') as 'en' | 'af' | null
+
+    const pageData: PageData | null = await getPageData({
+      data: { slug, language: lang ?? undefined },
+    })
+
+    if (!pageData) throw notFound()
+
+    return { pageData }
+  },
+
+  notFoundComponent: () => <div>Page not found</div>,
+
+  errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
+
+  component: function () {
+    const { pageData } = Route.useLoaderData()
+
+    return (
+      <main>
+        <HeroSection data={pageData.components['hero']} />
+      </main>
+    )
+  },
+})

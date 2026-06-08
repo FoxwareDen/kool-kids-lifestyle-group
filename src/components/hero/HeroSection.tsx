@@ -24,6 +24,20 @@ const SLIDES = [
 /** Milliseconds between automatic slide transitions. */
 const AUTOPLAY_MS = 6000
 
+
+interface HeroSectionProps{
+  collectionId: string
+  eyebrow: string | null,
+  headline: string| null,
+  tagline: string | null,
+  description: string | null,
+  buttons: {
+    label: string,
+    src: string,
+    icon: string
+  }[]
+}
+
 /**
  * The full-viewport hero section for the 360 Experiences site. Combines an
  * auto-advancing background image carousel, an overlaid {@link SiteHeader},
@@ -32,7 +46,10 @@ const AUTOPLAY_MS = 6000
  *
  * @returns {JSX.Element} The rendered hero section.
  */
-export function HeroSection() {
+export function HeroSection({data}:{data: any|null}) {
+  const {content}:{content: HeroSectionProps, components: string}= data;
+  
+  
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -69,25 +86,27 @@ export function HeroSection() {
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <p className="mt-12 text-xs font-bold tracking-[0.25em] text-[var(--brand-orange)]">
-              WELCOME TO 360 EXPERIENCES
+              {content? content.eyebrow :"WELCOME TO 360 EXPERIENCES"}
             </p>
 
             <h1 className="display-title text-balance text-5xl font-medium leading-[1.08] text-white sm:text-6xl lg:text-[4.25rem]">
-              Experience the Heart of the Northern Cape
+              {content? content.headline:"Experience the Heart of the Northern Cape"}
             </h1>
 
             <p className="script-title mt-3 text-3xl font-semibold text-[var(--brand-orange)] sm:text-4xl lg:text-5xl">
-              Where the Karoo Breathes.
+              {content? content.tagline:"Where the Karoo Breathes."}
             </p>
 
             <p className="mt-6 max-w-md text-pretty leading-relaxed text-white/80">
-              Discover Prieska&apos;s heritage, landscapes, culture and unforgettable
-              experiences through tourism, adventure and recreation.
+              {content? content.description: "Discover Prieska&apos;s heritage, landscapes, culture and unforgettable experiences through tourism, adventure and recreation."}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <HeroButton variant="primary">Explore Experiences</HeroButton>
-              <HeroButton variant="outline">Plan Your Visit</HeroButton>
+              {
+                content.buttons.map((button, index)=>
+                  <HeroButton key={`${content.collectionId}${index}`} href={button.src} variant={index %2 == 0? "primary": "outline"}>{button.label}</HeroButton>
+                )
+              }
             </div>
           </div>
         </div>
