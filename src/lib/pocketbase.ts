@@ -1,7 +1,39 @@
 import PocketBase from 'pocketbase';
 
+// ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
+export async function fetchPageData(slug: string, language: "en" | "af" = "en"): Promise<PageData | null> {
+  try {
+    const record = await pb.collection('pages').getFirstListItem(
+      `slug = "${slug}" && language = "${language}"`,
+      { expand: 'components_via_pages' }
+    );
+
+    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current:Component)=> {
+      prev[current.components] = current
+      return prev
+    }, {})
+
+    return {
+      id: record.id,
+      collectionId: record.collectionId,
+      collectionName: record.collectionName,
+      title: record.title,
+      slug: record.slug,
+      language: record.language,
+      project: record.project,
+      created: record.created,
+      updated: record.updated,
+      components
+    } as PageData;
+  } catch (error: any) {
+    if (error?.status === 404) return null;
+    throw error;
+  }
+}
+
+// ============= Types =============
 export interface Component {
   id: string;
   collectionId: string;
@@ -40,33 +72,48 @@ export interface PageData {
   project: string;
   created: string;
   updated: string;
-  components: Component[]
+  components: Record<string, Component>
 }
 
-export async function fetchPageData(slug: string, language: "en"| "af"="en") {
-    try {
-    // Query the components collection directly
-    // page.expand.components_via_pages = [ navbar, hero, cardblock, ... ]
-      const record: Page = await pb.collection('pages').getFirstListItem(
-        `slug = "${slug}" && language = "${language}"`,
-        { expand: 'components_via_pages' }
-      );
+// ============= SSR =============
+// On the server, never share a PocketBase instance across requests
+// — each request gets its own to avoid leaking auth state between users.
+export function createPB(): PocketBase {
+  return new PocketBase(process.env.CMS_URI);
+}
 
-      return {
-        id: record.id,
-        collectionId: record.collectionId,
-        collectionName: record.collectionName,
-        title: record.title,
-        slug: record.slug,
-        language: record.language,
-        project: record.project,
-        created: record.created,
-        updated: record.updated,
-        components: record.expand?.components_via_pages || []
-      } as PageData;
-  } catch (error) {
-    console.error("Error fetching components:", error);
+export async function fetchPageDataSSR(
+  slug: string,
+  language: "en" | "af" = "en"
+): Promise<PageData | null> {
+  const client = createPB(); // fresh instance per requesXt
+
+  try {
+    const record = await client.collection('pages').getFirstListItem(
+      `slug = "${slug}" && language = "${language}"`,
+      { expand: 'components_via_pages' }
+    );
+
+    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current:Component)=> {
+      prev[current.components] = current
+      return prev
+    }, {})
+
+    return {
+      id: record.id,
+      collectionId: record.collectionId,
+      collectionName: record.collectionName,
+      title: record.title,
+      slug: record.slug,
+      language: record.language,
+      project: record.project,
+      created: record.created,
+      updated: record.updated,
+      components
+    } as PageData;
+
+  } catch (error: any) {
+    if (error?.status === 404) return null;
+    throw error;
   }
 }
-
-// TODO: add way to upload media components
