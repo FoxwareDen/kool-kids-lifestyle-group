@@ -3,6 +3,10 @@ import PocketBase from 'pocketbase';
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
+export function buildImageUrl(assetCollId: string, assetId:string, filename: string) {
+  return `${import.meta.env.VITE_CMS_URI}/api/files/${assetCollId}/${assetId}/${filename}`  
+}
+
 export async function fetchPageData(slug: string, language: "en" | "af" = "en"): Promise<PageData | null> {
   try {
     const record = await pb.collection('pages').getFirstListItem(
@@ -34,6 +38,16 @@ export async function fetchPageData(slug: string, language: "en" | "af" = "en"):
 }
 
 // ============= Types =============
+export interface Asset {
+    alt: string,
+    collectionId: string,
+    collectionName: string,
+    file: string,
+    id: string
+    name:string,
+    type: string,
+}
+
 export interface Component {
   id: string;
   collectionId: string;
@@ -41,10 +55,13 @@ export interface Component {
   components: string;
   type: 'navbar' | 'hero' | 'cardblock';
   content: Record<string, any>;
-  media: string[];
+  media: Record<string,Asset>;
   pages: string;
   created: string;
   updated: string;
+  expand?: {
+    media: Asset[]
+  }
 }
 
 export interface Page {
@@ -91,13 +108,28 @@ export async function fetchPageDataSSR(
   try {
     const record = await client.collection('pages').getFirstListItem(
       `slug = "${slug}" && language = "${language}"`,
-      { expand: 'components_via_pages' }
+      { expand: 'components_via_pages.media, components_via_pages' }
     );
 
     const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current:Component)=> {
-      prev[current.components] = current
+      // const media = current?.expand.media.length > 0 ? 
+      const media: Record<string, Asset> = current?.expand?.media && current.expand.media.length > 0 ? 
+        current.expand.media.reduce((prev, c) => {
+          prev[c.name] = c;
+          return prev;
+        }, {} as Record<string, Asset>)  // ← Type assertion here
+        : {};
+
+        
+      
+      prev[current.components] = {
+        ...current,
+        media,
+        expand: undefined
+      }
       return prev
     }, {})
+
 
     return {
       id: record.id,

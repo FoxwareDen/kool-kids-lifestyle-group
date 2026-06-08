@@ -3,6 +3,7 @@ import { Mouse } from 'lucide-react'
 import { SiteHeader } from './SiteHeader'
 import { HeroButton } from './HeroButton'
 import { HeroSlides } from './HeroSlides'
+import { buildImageUrl, type Asset } from '#/lib/pocketbase'
 
 /**
  * A background image used by the hero carousel.
@@ -16,14 +17,13 @@ import { HeroSlides } from './HeroSlides'
  * @type {Array<{ src: string, alt: string }>}
  */
 const SLIDES = [
-  { src: '/hero-karoo-river.png', alt: 'Orange River winding through the Karoo at sunset' },
-  { src: '/hero-karoo-landscape.png', alt: 'Open Karoo plains at golden hour' },
-  { src: '/hero-karoo-heritage.png', alt: 'Historic church tower in Prieska at sunset' },
+  { name: 'hero-karoo-river', },
+  { name: 'hero-karoo-landscape', },
+  { name: 'hero-karoo-heritage',},
 ]
 
 /** Milliseconds between automatic slide transitions. */
 const AUTOPLAY_MS = 6000
-
 
 interface HeroSectionProps{
   collectionId: string
@@ -35,7 +35,8 @@ interface HeroSectionProps{
     label: string,
     src: string,
     icon: string
-  }[]
+  }[],
+  media?: Record<string,Asset>
 }
 
 /**
@@ -47,8 +48,7 @@ interface HeroSectionProps{
  * @returns {JSX.Element} The rendered hero section.
  */
 export function HeroSection({data}:{data: any|null}) {
-  const {content}:{content: HeroSectionProps, components: string}= data;
-  
+  const {content, media}:{content: HeroSectionProps, components: string,media:Record<string,Asset>}= data;
   
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -64,9 +64,9 @@ export function HeroSection({data}:{data: any|null}) {
       {/* Background carousel */}
       {SLIDES.map((slide, i) => (
         <img
-          key={slide.src}
-          src={slide.src || '/placeholder.svg'}
-          alt={slide.alt}
+          // key={media[slide.name].name}
+          src={media[slide.name] ? (buildImageUrl(media[slide.name].collectionId, media[slide.name].id, media[slide.name].file)): ('/placeholder.svg')}
+          alt={media[slide.name]? media[slide.name].alt : ""}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
             i === activeIndex ? 'opacity-100' : 'opacity-0'
           }`}
