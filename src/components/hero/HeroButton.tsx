@@ -31,7 +31,7 @@ export function HeroButton({
   href?: string
 }) {
   const base =
-    'group inline-flex items-center justify-between gap-6 rounded-md px-6 py-3.5 text-xs font-bold tracking-widest uppercase no-underline transition-colors'
+    'group inline-flex items-center justify-between gap-6 px-6 py-3.5 text-xs font-bold tracking-widest uppercase no-underline transition-colors'
 
   const styles =
     variant === 'primary'

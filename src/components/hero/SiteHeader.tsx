@@ -55,19 +55,19 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="absolute inset-x-0 top-0 z-30 bg-[var(--brand-navy)]">
-      <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
-        <a href="/" className="flex items-center no-underline" aria-label="360 Experiences home">
+    <header className="absolute inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
+      {/* Brand */}
+        <a href="/" className="absolute left-0 top-0 z-10 flex items-center no-underline" aria-label="360 Experiences home">
           <img
-            src="/logo.jpg"
+            src="/logo-2.png"
             alt="360 Experiences logo"
-            className="h-20 w-auto object-contain"
+            className="h-25 w-auto object-contain mb-[-3rem]"
           />
         </a>
+        <div className="mx-auto flex max-w-[1280px] py-2 items-center justify-end px-4 sm:px-6 lg:px-8 ">
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
@@ -81,7 +81,7 @@ export function SiteHeader() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-30">
           <a
             href="#"
             aria-label="Contact us on WhatsApp"
@@ -92,7 +92,7 @@ export function SiteHeader() {
 
           <a
             href="#"
-            className="inline-flex items-center gap-2 rounded-md bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
+            className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             <Calendar className="h-4 w-4" />
             BOOK NOW
