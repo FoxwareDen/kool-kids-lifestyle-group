@@ -1,6 +1,6 @@
 import PocketBase from 'pocketbase';
 
-const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
+export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
 export interface Component {
   id: string;
@@ -8,7 +8,7 @@ export interface Component {
   collectionName: string;
   components: string;
   type: 'navbar' | 'hero' | 'cardblock';
-  content: Record<string, unknown>;
+  content: Record<string, any>;
   media: string[];
   pages: string;
   created: string;
@@ -47,7 +47,7 @@ export async function fetchPageData(slug: string, language: "en"| "af"="en") {
     try {
     // Query the components collection directly
     // page.expand.components_via_pages = [ navbar, hero, cardblock, ... ]
-      const record = await pb.collection('pages').getFirstListItem(
+      const record: Page = await pb.collection('pages').getFirstListItem(
         `slug = "${slug}" && language = "${language}"`,
         { expand: 'components_via_pages' }
       );
@@ -69,3 +69,4 @@ export async function fetchPageData(slug: string, language: "en"| "af"="en") {
   }
 }
 
+// TODO: add way to upload media components
