@@ -57,6 +57,10 @@ export const Route = createFileRoute('/')({
   component: function () {
     const { pageData } = Route.useLoaderData()
 
+    // console.log('sd');
+    // console.log(pageData.components['hero']);
+    
+
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
