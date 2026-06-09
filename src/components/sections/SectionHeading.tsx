@@ -11,6 +11,7 @@
  * @property {string} title - The main section heading text.
  * @property {SectionHeadingTheme} [theme] - Color theme. "light" for cream
  *   backgrounds, "dark" for the navy background. Defaults to "light".
+ * @property {'center' | 'left'} [align] - Text alignment. Defaults to "center".
  */
 
 /**
@@ -25,13 +26,19 @@ export function SectionHeading({
   eyebrow,
   title,
   theme = 'light',
+  align = 'center',
 }: {
   eyebrow: string
   title: string
   theme?: 'light' | 'dark'
+  align?: 'center' | 'left'
 }) {
   return (
-    <div className="mx-auto max-w-2xl text-center">
+    <div
+      className={
+        align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-xl text-left'
+      }
+    >
       <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
         {eyebrow}
       </p>
