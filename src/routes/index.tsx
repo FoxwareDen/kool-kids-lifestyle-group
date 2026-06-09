@@ -1,4 +1,6 @@
 import { HeroSection } from '#/components/hero/HeroSection';
+import { StoriesSection } from '#/components/sections/StoriesSection';
+import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
@@ -64,6 +66,8 @@ export const Route = createFileRoute('/')({
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
+        <StoriesSection />
+        <ExperiencesSection />
       </main>
     )
   },
