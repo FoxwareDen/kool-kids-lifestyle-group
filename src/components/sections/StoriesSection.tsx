@@ -1,7 +1,9 @@
 import { Landmark, Waves, Mountain, type LucideIcon } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { StoryCard } from './StoryCard'
-
+import churchImg from "../../images/church.jpeg"
+import riverImg from "../../images/river.jpeg"
+import karooImg from "../../images/karoo.jpeg"
 /**
  * A single entry rendered as a {@link StoryCard} within {@link StoriesSection}.
  * @typedef {Object} Story
@@ -27,7 +29,7 @@ const STORIES: {
   href: string
 }[] = [
   {
-    image: '/images/sections/heritage.png',
+    image: churchImg,
     imageAlt: 'Historic white church with a steeple in Prieska',
     icon: Landmark,
     title: 'Heritage',
@@ -36,7 +38,7 @@ const STORIES: {
     href: '#',
   },
   {
-    image: '/images/sections/orange-river.png',
+    image: riverImg,
     imageAlt: 'The Orange River flowing through the Karoo landscape',
     icon: Waves,
     title: 'Orange River',
@@ -45,7 +47,7 @@ const STORIES: {
     href: '#',
   },
   {
-    image: '/images/sections/karoo-landscape.png',
+    image: karooImg,
     imageAlt: 'Karoo landscape at sunset with open plains',
     icon: Mountain,
     title: 'Karoo Landscapes',
