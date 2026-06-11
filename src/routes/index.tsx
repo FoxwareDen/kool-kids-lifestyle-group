@@ -5,9 +5,10 @@ import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
 import { SiteFooter } from '#/components/footer/SiteFooter';
-import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { fetchPageDataSSR, isAuthenticated, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { useEffect } from 'react';
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
@@ -16,7 +17,7 @@ export const getPageData = createServerFn()
     // If language was explicitly passed, use it — otherwise detect from headers
     const resolvedLanguage: 'en' | 'af' = language ?? await (async () => {
       const { getRequestHeaders } = await import('@tanstack/react-start/server')
-      
+
       const headers = getRequestHeaders()
       const acceptLanguage = headers.get('accept-language') ?? 'en'
 
@@ -65,7 +66,13 @@ export const Route = createFileRoute('/')({
 
     // console.log('sd');
     // console.log(pageData.components['hero']);
-    
+
+    useEffect(()=>{
+      (async ()=>{
+        console.log(isAuthenticated());
+        
+      })()
+    },[])
 
     return (
       <main>
