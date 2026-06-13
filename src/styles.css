@@ -168,17 +168,6 @@ body,
   height: 100%;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  color: var(--sea-ink);
-  font-family: var(--font-sans);
-  background-color: #0a1418;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 a {
   color: white;
   text-decoration-color: rgba(50, 143, 151, 0.4);
