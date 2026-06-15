@@ -25,22 +25,23 @@ function WhatsAppIcon({ className }: { className?: string }) {
  * A single top-level navigation entry.
  * @typedef {Object} NavItem
  * @property {string} label - Visible text of the link.
+ * @property {string} href - Link target for the item.
  * @property {boolean} [hasDropdown] - Whether the item shows a dropdown caret.
  */
 
 /**
  * The navigation items rendered in the desktop and mobile menus.
- * @type {Array<{ label: string, hasDropdown?: boolean }>}
+ * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
  */
 const NAV_ITEMS = [
-  { label: 'HOME' },
-  { label: 'ABOUT PRIESKA' },
-  { label: 'EXPERIENCES', hasDropdown: true },
-  { label: 'HERITAGE' },
-  { label: 'GALLERY' },
-  { label: 'EVENTS' },
-  { label: 'BLOG' },
-  { label: 'CONTACT' },
+  { label: 'HOME', href: '/' },
+  { label: 'ABOUT PRIESKA', href: '/about-prieska' },
+  { label: 'EXPERIENCES', href: '#', hasDropdown: true },
+  { label: 'HERITAGE', href: '#' },
+  { label: 'GALLERY', href: '#' },
+  { label: 'EVENTS', href: '#' },
+  { label: 'BLOG', href: '#' },
+  { label: 'CONTACT', href: '#' },
 ]
 
 /**
@@ -82,7 +83,7 @@ useEffect(() => {
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
-              href="#"
+              href={item.href}
               className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
               {item.label}
@@ -131,7 +132,7 @@ useEffect(() => {
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>
                 <a
-                  href="#"
+                  href={item.href}
                   className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
                 >
                   {item.label}
