@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import prieskaImg from '../../images/prieska.jpeg'
 import riverImg from '../../images/orange-river.jpeg'
+import trailImg from "../../images/trail.jpeg"
 
 /**
  * Short bullet points highlighting what makes the destination distinctive.
@@ -28,7 +29,7 @@ export function AboutIntro() {
         {/* Image collage */}
         <div className="relative">
           <img
-            src={prieskaImg}
+            src={trailImg}
             alt="The town of Prieska nestled against the Karoo hills"
             className="h-[26rem] w-full object-cover shadow-lg"
           />
