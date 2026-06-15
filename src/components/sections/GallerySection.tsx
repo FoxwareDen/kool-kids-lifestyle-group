@@ -1,6 +1,12 @@
 import { ArrowRight } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { GalleryItem } from './GalleryItem'
+import koppieImg from "../../images/koppie.jpeg"
+import orangeRiverImg from "../../images/orange-river.jpeg"
+import church2Img from "../../images/church.jpeg"
+import riverImg3 from "../../images/river3.jpeg"
+import priskaImg from "../../images/prieska.jpeg"
+import trailImg from "../../images/trail.jpeg"
 
 /**
  * A single photo rendered as a {@link GalleryItem} within {@link GallerySection}.
@@ -17,33 +23,33 @@ import { GalleryItem } from './GalleryItem'
  */
 const GALLERY_PHOTOS: { image: string; imageAlt: string; href: string }[] = [
   {
-    image: '/images/sections/gallery-1.png',
+    image: orangeRiverImg,
     imageAlt: 'Orange River lined with palm trees',
     href: '#',
   },
   {
-    image: '/images/sections/gallery-2.png',
+    image: church2Img,
     imageAlt: 'Church steeple framed by palm trees',
     href: '#',
   },
   {
-    image: '/images/sections/gallery-3.png',
-    imageAlt: 'Kayakers paddling on the river',
+    image: riverImg3,
+    imageAlt: 'the river',
     href: '#',
   },
   {
-    image: '/images/sections/gallery-4.png',
+    image: koppieImg,
     imageAlt: 'Koppie hill over the Karoo plains',
     href: '#',
   },
   {
-    image: '/images/sections/gallery-5.png',
-    imageAlt: 'Cyclist riding into a Karoo sunset',
+    image: priskaImg,
+    imageAlt: 'The town of prieska',
     href: '#',
   },
   {
-    image: '/images/sections/gallery-6.png',
-    imageAlt: 'Rocky river glowing at sunset',
+    image: trailImg,
+    imageAlt: 'Hiking trail',
     href: '#',
   },
 ]

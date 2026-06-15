@@ -20,6 +20,7 @@ import { IconBadge } from './IconBadge'
  *
  * @param {StoryCardProps} props - Component props.
  * @returns {JSX.Element} The rendered story card.
+ *
  */
 export function StoryCard({
   image,
@@ -38,24 +39,33 @@ export function StoryCard({
   href?: string
   ctaLabel?: string
 }) {
+   const clipId = `wave-clip-${title.replace(/\s+/g, '-').toLowerCase()}`
   return (
     <article className="group flex flex-col bg-white shadow-sm shadow-black/5 transition-transform duration-300 hover:-translate-y-1">
+            {/* SVG wave clipPath definition */}
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <clipPath id={clipId} clipPathUnits="objectBoundingBox">
+            <path d="M0,0 H1 V0.88 C0.75,1 0.25,0.78 0,0.88 Z" />
+          </clipPath>
+        </defs>
+      </svg>
       {/* Banner image with overlapping badge */}
-      <div className="relative">
+      <div className="relative" style={{ clipPath: `url(#${clipId})` }}>
         <img
           src={image || '/placeholder.svg'}
           alt={imageAlt}
-          className="h-44 w-full object-cover"
+          className="h-50 w-full object-cover"
         />
-        <IconBadge icon={icon} className="absolute -bottom-6 left-5" />
+        <IconBadge icon={icon} className="absolute left-4 top-4" />
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 flex-col px-5 pb-6 pt-9">
+      <div className="flex flex-1 flex-col px-5 pb-6 pt-2">
         <h3 className="display-title text-xl font-medium text-[var(--brand-navy)]">
           {title}
         </h3>
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--brand-navy)]/70">
+        <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--brand-navy)]/70 max-w-[50%]">
           {description}
         </p>
 
