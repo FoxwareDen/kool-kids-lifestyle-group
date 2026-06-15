@@ -1,6 +1,6 @@
 import { SectionHeading } from '#/components/sections/SectionHeading'
 import { TimelineItem } from './TimelineItem'
-import heritageImg from '../../images/church-2.jpeg'
+import heritageImg from '../../images/church.jpeg'
 
 /**
  * The milestones rendered in the story timeline. Replace with CMS-driven
