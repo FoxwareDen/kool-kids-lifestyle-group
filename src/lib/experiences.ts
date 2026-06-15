@@ -2,7 +2,9 @@
 // BLOCK TYPES
 // ============================================================
 
-export type Language = string; // e.g. "en", "fr", "af"
+import { createResult, type Result } from "./pocketbase";
+
+export type Language = string;
 
 export type Translatable<T = string> = {
   default: T;
@@ -63,11 +65,14 @@ export type PageBlock =
 // BOOKING PAGE
 // ============================================================
 
+
 export type BookingPage = {
   id: string;
   slug: string;
   title: Translatable;
   description?: Translatable;
+  coverImage?: string;         // URL to the cover image shown on cards
+  category: string[];
   defaultLanguage: Language;
   enabledLanguages: Language[];
   blocks: PageBlock[];
@@ -82,7 +87,16 @@ export type BookingPage = {
 export type CreateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 export type UpdateBookingPageInput = Partial<Omit<BookingPage, "id" | "createdAt" | "updatedAt">>;
 
-export declare function createBookingPage(input: CreateBookingPageInput): Promise<BookingPage>;
+async function createBookingPage(input: CreateBookingPageInput): Promise<Result<BookingPage, string>> {
+  try {
+    // Tell the factory function exactly what types this Result is meant to hold
+    return createResult<BookingPage, string>(null, null); 
+  } catch (error) {
+    // You'll also need to wrap this one, or it will throw a different error
+    return createResult<BookingPage, string>(null, "Something went wrong");
+  }  
+}
+
 export declare function getBookingPageById(id: string): Promise<BookingPage | null>;
 export declare function getBookingPageBySlug(slug: string): Promise<BookingPage | null>;
 export declare function listBookingPages(): Promise<BookingPage[]>;
@@ -103,12 +117,10 @@ export declare function reorderBlocks(pageId: string, orderedBlockIds: string[])
 // UTILITIES
 // ============================================================
 
-/** Resolve a translatable field for a given language, falling back to default */
 export function resolveTranslatable<T>(field: Translatable<T>, lang: Language): T {
   return field.translations?.[lang] ?? field.default;
 }
 
-/** Generate a blank block of a given type with a fresh ID */
 export function createEmptyBlock(type: PageBlock["type"], id: string): PageBlock {
   const base = { id };
   switch (type) {

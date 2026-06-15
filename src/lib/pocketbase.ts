@@ -141,6 +141,26 @@ export interface PageData {
   components: Record<string, Component>
 }
 
+export interface Result<T, E> {
+  value: T | null,
+  error: E | null
+}
+
+const resultPrototype = {
+  isSuccess() {
+    // @ts-ignore
+    return this.error === null;
+  }
+}
+
+// Simplify the return type to just Result<T, E>
+export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> {
+  return Object.assign(Object.create(resultPrototype), {
+    value,
+    error,
+  }) as Result<T, E>; // Use 'as' here so TS knows the prototype injection is safe
+}
+
 // ============= SSR Auth Sharing =============
 
 /**
