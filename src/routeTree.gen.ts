@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
@@ -17,6 +18,11 @@ import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutPrieskaRoute = AboutPrieskaRouteImport.update({
+  id: '/about-prieska',
+  path: '/about-prieska',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRoute = AuthedRouteImport.update({
@@ -36,11 +42,13 @@ const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about-prieska': typeof AboutPrieskaRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about-prieska': typeof AboutPrieskaRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
 }
@@ -48,20 +56,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/about-prieska': typeof AboutPrieskaRoute
   '/login': typeof LoginRoute
   '/_authed/dashboard': typeof AuthedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard'
+  fullPaths: '/' | '/about-prieska' | '/login' | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard'
-  id: '__root__' | '/' | '/_authed' | '/login' | '/_authed/dashboard'
+  to: '/' | '/about-prieska' | '/login' | '/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/about-prieska'
+    | '/login'
+    | '/_authed/dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
+  AboutPrieskaRoute: typeof AboutPrieskaRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -72,6 +88,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-prieska': {
+      id: '/about-prieska'
+      path: '/about-prieska'
+      fullPath: '/about-prieska'
+      preLoaderRoute: typeof AboutPrieskaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -112,6 +135,7 @@ const AuthedRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
+  AboutPrieskaRoute: AboutPrieskaRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
