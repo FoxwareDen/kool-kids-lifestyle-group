@@ -31,6 +31,48 @@ export function buildImageUrl(assetCollId: string, assetId:string, filename: str
   return `${import.meta.env.VITE_CMS_URI}/api/files/${assetCollId}/${assetId}/${filename}`  
 }
 
+/**
+ * Upload a file to the assets collection.
+ * @param file - File object from an <input type="file"> element
+ * @param meta - Optional name, alt, and type metadata
+ */
+export async function uploadAsset(
+  file: File,
+  meta?: { name?: string; alt?: string; type?: "image" | "video" | "svg" }
+): Promise<Result<Asset, string>> {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", meta?.type ?? inferType(file));
+    if (meta?.name) formData.append("name", meta.name);
+    if (meta?.alt)  formData.append("alt", meta.alt);
+
+    const record = await pb.collection("assets").create(formData);
+
+    return createResult<Asset, string>(
+      {
+        id:             record.id,
+        collectionId:   record.collectionId,
+        collectionName: record.collectionName,
+        file:           record.file,
+        type:           record.type,
+        name:           record.name,
+        alt:            record.alt,
+      },
+      null
+    );
+  } catch (error: any) {
+    return createResult<Asset, string>(null, error.message ?? "Upload failed.");
+  }
+}
+
+/** Infer asset type from the browser File MIME type */
+function inferType(file: File): "image" | "video" | "svg" {
+  if (file.type === "image/svg+xml") return "svg";
+  if (file.type.startsWith("video/")) return "video";
+  return "image";
+}
+
 export async function fetchPageData(slug: string, language: "en" | "af" = "en"): Promise<PageData | null> {
   try {
     const record = await pb.collection('pages').getFirstListItem(
@@ -141,12 +183,17 @@ export interface PageData {
   components: Record<string, Component>
 }
 
-export interface Result<T, E> {
-  value: T | null,
-  error: E | null
-}
 
-const resultPrototype = {
+export class Result<T,E> {
+  public value: T | null;
+  public error: E | null;
+  public success: boolean = false;
+  constructor(value: T|null, error: E|null) {
+    this.value=value;
+    this.error = error;
+    this.success = this.error === null;
+  }
+  
   isSuccess() {
     // @ts-ignore
     return this.error === null;
@@ -154,11 +201,10 @@ const resultPrototype = {
 }
 
 // Simplify the return type to just Result<T, E>
-export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> {
-  return Object.assign(Object.create(resultPrototype), {
-    value,
-    error,
-  }) as Result<T, E>; // Use 'as' here so TS knows the prototype injection is safe
+export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> & {
+  isSuccess: () => boolean
+} {
+  return new Result<T, E>(value, error); // Use 'as' here so TS knows the prototype injection is safe
 }
 
 // ============= SSR Auth Sharing =============

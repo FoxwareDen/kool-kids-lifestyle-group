@@ -236,9 +236,12 @@ const BlockEditor = ({
 
 function RouteComponent() {
   const [lang, setLang] = useState<Language>('en')
+  const [categoryInput, setCategoryInput] = useState('')
   const [pageData, setPageData] = useState<SkeletonPageData>({
     defaultLanguage: 'en',
     enabledLanguages: ['en'],
+    category: [],
+    coverImage: undefined,
     title: { default: '' },
     description: { default: '' },
   })
@@ -261,6 +264,18 @@ function RouteComponent() {
     return resolveTranslatable(field, lang)
   }
 
+  const addCategory = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    const val = categoryInput.trim()
+    if (!val || pageData.category.includes(val)) return
+    setPageData((prev) => ({ ...prev, category: [...prev.category, val] }))
+    setCategoryInput('')
+  }
+
+  const removeCategory = (cat: string) => {
+    setPageData((prev) => ({ ...prev, category: prev.category.filter((c) => c !== cat) }))
+  }
+
   const addBlock = (type: PageBlock['type']) => {
     setBlocks((prev) => [...prev, createEmptyBlock(type, crypto.randomUUID())])
   }
@@ -278,14 +293,14 @@ function RouteComponent() {
 
       <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-neutral-200'>
         <div className='w-11/12 shadow-2xl'>
-          <BookingPageRenderer
-          page={{ title: pageData.title, description: pageData.description, blocks }}
-          lang={lang}
-          selection={selection}
-          onSelectionChange={(blockId, ids) =>
-            setSelection((prev) => ({ ...prev, [blockId]: ids }))
-          }
-        />
+          <BookingPageRendereroc
+            page={{ title: pageData.title, description: pageData.description, blocks }}
+            lang={lang}
+            selection={selection}
+            onSelectionChange={(blockId, ids) =>
+              setSelection((prev) => ({ ...prev, [blockId]: ids }))
+            }
+          />
         </div>
       </div>
 
@@ -304,6 +319,41 @@ function RouteComponent() {
         </div>
 
         <div className="flex flex-col gap-3">
+
+          <Field label="Cover Image">
+            <input
+              type="file"
+              accept="image/*"
+              className={inputCls}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setPageData((prev) => ({ ...prev, coverImage: URL.createObjectURL(file) }))
+              }}
+            />
+            {pageData.coverImage && (
+              <img src={pageData.coverImage} alt="Cover preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
+            )}
+          </Field>
+
+          <Field label="Category">
+            <div className="flex flex-wrap gap-1.5 mb-1">
+              {pageData.category.map((cat) => (
+                <span key={cat} className="flex items-center gap-1 text-xs bg-neutral-100 border border-neutral-200 rounded-full px-2.5 py-1">
+                  {cat}
+                  <button type="button" onClick={() => removeCategory(cat)} className="text-neutral-400 hover:text-red-400">✕</button>
+                </span>
+              ))}
+            </div>
+            <input
+              className={inputCls}
+              value={categoryInput}
+              onChange={(e) => setCategoryInput(e.target.value)}
+              onKeyDown={addCategory}
+              placeholder="Type a category and press Enter…"
+            />
+          </Field>
+
           <Field label="Title">
             <input
               name="title"
@@ -314,6 +364,7 @@ function RouteComponent() {
               placeholder="Page title"
             />
           </Field>
+
           <Field label="Description">
             <textarea
               name="description"
@@ -324,6 +375,7 @@ function RouteComponent() {
               placeholder="Short description…"
             />
           </Field>
+
         </div>
 
         <div className="flex flex-col gap-2">
@@ -354,7 +406,7 @@ function RouteComponent() {
         </div>
 
       </div>
-      
+
     </div>
   )
 }
