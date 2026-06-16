@@ -41,7 +41,7 @@ const NAV_ITEMS = [
   { label: 'GALLERY', href: '#' },
   { label: 'EVENTS', href: '#' },
   { label: 'BLOG', href: '#' },
-  { label: 'CONTACT', href: '#' },
+  { label: 'CONTACT', href: '/contact' },
 ]
 
 /**

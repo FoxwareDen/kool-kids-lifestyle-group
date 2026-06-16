@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HeritageRouteImport } from './routes/heritage'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
@@ -24,6 +25,11 @@ const LoginRoute = LoginRouteImport.update({
 const HeritageRoute = HeritageRouteImport.update({
   id: '/heritage',
   path: '/heritage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutPrieskaRoute = AboutPrieskaRouteImport.update({
@@ -49,6 +55,7 @@ const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
@@ -65,20 +73,34 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
   '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/_authed/dashboard': typeof AuthedDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about-prieska' | '/heritage' | '/login' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/about-prieska'
+    | '/contact'
+    | '/heritage'
+    | '/login'
+    | '/dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about-prieska' | '/heritage' | '/login' | '/dashboard'
+  to:
+    | '/'
+    | '/about-prieska'
+    | '/contact'
+    | '/heritage'
+    | '/login'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
     | '/_authed'
     | '/about-prieska'
+    | '/contact'
     | '/heritage'
     | '/login'
     | '/_authed/dashboard'
@@ -88,6 +110,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRoute: typeof AuthedRouteWithChildren
   AboutPrieskaRoute: typeof AboutPrieskaRoute
+  ContactRoute: typeof ContactRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
 }
@@ -106,6 +129,13 @@ declare module '@tanstack/react-router' {
       path: '/heritage'
       fullPath: '/heritage'
       preLoaderRoute: typeof HeritageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about-prieska': {
@@ -154,6 +184,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRoute: AuthedRouteWithChildren,
   AboutPrieskaRoute: AboutPrieskaRoute,
+  ContactRoute: ContactRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
 }
