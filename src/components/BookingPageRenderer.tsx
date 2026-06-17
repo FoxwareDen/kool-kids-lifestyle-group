@@ -3,8 +3,8 @@ import { resolveTranslatable } from '#/lib/experiences'
 
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
-  const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
   const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
+  const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
   return <Tag className={`font-semibold ${cls}`}>{text}</Tag>
 }
 
@@ -14,41 +14,43 @@ const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 
   </p>
 )
 
-const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language }) => (
-  <figure className="flex flex-col gap-1.5">
-    {block.url
-      ? <img
-          src={block.url}
-          alt={resolveTranslatable(block.alt, lang)}
-          className="w-full mx-auto h-96 object-cover rounded-md"
-        />
-      : <div className="w-full h-56 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
-          <span className="text-xs text-neutral-400">No image uploaded</span>
-        </div>
-    }
-    {block.caption && (
-      <figcaption className="text-xs text-neutral-400 text-center">
-        {resolveTranslatable(block.caption, lang)}
-      </figcaption>
-    )}
-  </figure>
-)
+const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language }) => {
+  const src = block.file ? URL.createObjectURL(block.file) : null
+  return (
+    <figure className="flex flex-col gap-1.5">
+      {src
+        ? <img src={src} alt={resolveTranslatable(block.alt, lang)} className="w-full mx-auto h-96 object-cover rounded-md" />
+        : <div className="w-full h-56 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+            <span className="text-xs text-neutral-400">No image uploaded</span>
+          </div>
+      }
+      {block.caption && (
+        <figcaption className="text-xs text-neutral-400 text-center">
+          {resolveTranslatable(block.caption, lang)}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
 
-const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'video' }>; lang: Language }) => (
-  <figure className="flex flex-col gap-1.5">
-    {block.url
-      ? <video src={block.url} controls className="w-full rounded-lg" />
-      : <div className="w-full h-44 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
-          <span className="text-xs text-neutral-400">No video uploaded</span>
-        </div>
-    }
-    {block.title && (
-      <figcaption className="text-xs text-neutral-400">
-        {resolveTranslatable(block.title, lang)}
-      </figcaption>
-    )}
-  </figure>
-)
+const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'video' }>; lang: Language }) => {
+  const src = block.file ? URL.createObjectURL(block.file) : null
+  return (
+    <figure className="flex flex-col gap-1.5">
+      {src
+        ? <video src={src} controls className="w-full rounded-lg" />
+        : <div className="w-full h-44 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
+            <span className="text-xs text-neutral-400">No video uploaded</span>
+          </div>
+      }
+      {block.title && (
+        <figcaption className="text-xs text-neutral-400">
+          {resolveTranslatable(block.title, lang)}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
 
 const SelectableRenderer = ({
   block,
@@ -103,14 +105,13 @@ const SelectableRenderer = ({
   )
 }
 
-
-type SelectionState = Record<string, string[]>
+type SelectionState = Record<number, string[]>
 
 type BookingPageRendererProps = {
-  page: Pick<BookingPage, 'title' | 'description' | 'blocks'>
+  page: Pick<BookingPage, 'blocks'>
   lang: Language
   selection?: SelectionState
-  onSelectionChange?: (blockId: string, ids: string[]) => void
+  onSelectionChange?: (blockIndex: number, ids: string[]) => void
 }
 
 export const BookingPageRenderer = ({
@@ -121,35 +122,24 @@ export const BookingPageRenderer = ({
 }: BookingPageRendererProps) => (
   <div className="w-full h-full overflow-y-auto">
     <div className="flex flex-col gap-5 p-4">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">
-          {resolveTranslatable(page.title, lang)}
-        </h1>
-        {page.description && (
-          <p className="text-sm text-neutral-500">
-            {resolveTranslatable(page.description, lang)}
-          </p>
-        )}
-      </div>
-
       {page.blocks.map((block) => {
         switch (block.type) {
           case 'header':
-            return <HeaderRenderer key={block.id} block={block} lang={lang} />
+            return <HeaderRenderer key={block.index} block={block} lang={lang} />
           case 'paragraph':
-            return <ParagraphRenderer key={block.id} block={block} lang={lang} />
+            return <ParagraphRenderer key={block.index} block={block} lang={lang} />
           case 'image':
-            return <ImageRenderer key={block.id} block={block} lang={lang} />
+            return <ImageRenderer key={block.index} block={block} lang={lang} />
           case 'video':
-            return <VideoRenderer key={block.id} block={block} lang={lang} />
+            return <VideoRenderer key={block.index} block={block} lang={lang} />
           case 'selectable':
             return (
               <SelectableRenderer
-                key={block.id}
+                key={block.index}
                 block={block}
                 lang={lang}
-                value={selection[block.id] ?? []}
-                onChange={(ids) => onSelectionChange?.(block.id, ids)}
+                value={selection[block.index] ?? []}
+                onChange={(ids) => onSelectionChange?.(block.index, ids)}
               />
             )
         }

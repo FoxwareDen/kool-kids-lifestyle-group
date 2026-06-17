@@ -38,14 +38,16 @@ export function buildImageUrl(assetCollId: string, assetId:string, filename: str
  */
 export async function uploadAsset(
   file: File,
-  meta?: { name?: string; alt?: string; type?: "image" | "video" | "svg" }
+  meta?: { name: string; alt?: string; type: "image" | "video" | "svg" }
 ): Promise<Result<Asset, string>> {
   try {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("type", meta?.type ?? inferType(file));
+    formData.append("type", meta?.type ?? "image");
     if (meta?.name) formData.append("name", meta.name);
     if (meta?.alt)  formData.append("alt", meta.alt);
+
+    console.log(Object.fromEntries(formData.entries()));
 
     const record = await pb.collection("assets").create(formData);
 
@@ -62,6 +64,9 @@ export async function uploadAsset(
       null
     );
   } catch (error: any) {
+    // 🚨 THIS extracts the nested JSON that says exactly what field was rejected
+    console.error("EXACT VALIDATION ERROR:", JSON.stringify(error.response, null, 2));
+    
     return createResult<Asset, string>(null, error.message ?? "Upload failed.");
   }
 }

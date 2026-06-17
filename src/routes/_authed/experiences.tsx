@@ -10,7 +10,7 @@ import type {
   SelectableOption,
   Language,
 } from '#/lib/experiences'
-import { resolveTranslatable, createEmptyBlock } from '#/lib/experiences'
+import { resolveTranslatable, createEmptyBlock, createBookingPage } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useCallback, type ChangeEvent } from 'react'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
@@ -72,67 +72,79 @@ const ParagraphBlockEditor = ({ block, lang, onChange }: { block: ParagraphBlock
   </Field>
 )
 
-const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void }) => (
-  <div className="flex flex-col gap-3">
-    <Field label="Image">
-      <input
-        type="file"
-        accept="image/*"
-        className={inputCls}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (!file) return
-          onChange({ ...block, url: URL.createObjectURL(file) })
-        }}
-      />
-    </Field>
-    <Field label="Alt text">
-      <input
-        className={inputCls}
-        value={resolveTranslatable(block.alt, lang)}
-        placeholder="Alt text…"
-        onChange={(e) => onChange({ ...block, alt: setTranslated(block.alt, lang, e.target.value) })}
-      />
-    </Field>
-    <Field label="Caption">
-      <input
-        className={inputCls}
-        value={block.caption ? resolveTranslatable(block.caption, lang) : ''}
-        placeholder="Caption (optional)…"
-        onChange={(e) =>
-          onChange({ ...block, caption: setTranslated(block.caption ?? { default: '' }, lang, e.target.value) })
-        }
-      />
-    </Field>
-  </div>
-)
+const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void }) => {
+  const previewUrl = block.file ? URL.createObjectURL(block.file) : null
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Image">
+        <input
+          type="file"
+          accept="image/*"
+          className={inputCls}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            onChange({ ...block, file })
+          }}
+        />
+        {previewUrl && (
+          <img src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
+        )}
+      </Field>
+      <Field label="Alt text">
+        <input
+          className={inputCls}
+          value={resolveTranslatable(block.alt, lang)}
+          placeholder="Alt text…"
+          onChange={(e) => onChange({ ...block, alt: setTranslated(block.alt, lang, e.target.value) })}
+        />
+      </Field>
+      <Field label="Caption">
+        <input
+          className={inputCls}
+          value={block.caption ? resolveTranslatable(block.caption, lang) : ''}
+          placeholder="Caption (optional)…"
+          onChange={(e) =>
+            onChange({ ...block, caption: setTranslated(block.caption ?? { default: '' }, lang, e.target.value) })
+          }
+        />
+      </Field>
+    </div>
+  )
+}
 
-const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => (
-  <div className="flex flex-col gap-3">
-    <Field label="Video">
-      <input
-        type="file"
-        accept="video/*"
-        className={inputCls}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (!file) return
-          onChange({ ...block, url: URL.createObjectURL(file) })
-        }}
-      />
-    </Field>
-    <Field label="Title">
-      <input
-        className={inputCls}
-        value={block.title ? resolveTranslatable(block.title, lang) : ''}
-        placeholder="Video title (optional)…"
-        onChange={(e) =>
-          onChange({ ...block, title: setTranslated(block.title ?? { default: '' }, lang, e.target.value) })
-        }
-      />
-    </Field>
-  </div>
-)
+const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => {
+  const previewUrl = block.file ? URL.createObjectURL(block.file) : null
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Video">
+        <input
+          type="file"
+          accept="video/*"
+          className={inputCls}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (!file) return
+            onChange({ ...block, file })
+          }}
+        />
+        {previewUrl && (
+          <video src={previewUrl} controls className="mt-1 rounded-md max-h-36 w-full" />
+        )}
+      </Field>
+      <Field label="Title">
+        <input
+          className={inputCls}
+          value={block.title ? resolveTranslatable(block.title, lang) : ''}
+          placeholder="Video title (optional)…"
+          onChange={(e) =>
+            onChange({ ...block, title: setTranslated(block.title ?? { default: '' }, lang, e.target.value) })
+          }
+        />
+      </Field>
+    </div>
+  )
+}
 
 const SelectableBlockEditor = ({ block, lang, onChange }: { block: SelectableBlock; lang: Language; onChange: (b: SelectableBlock) => void }) => {
   const updateOption = (index: number, updated: SelectableOption) => {
@@ -237,20 +249,23 @@ const BlockEditor = ({
 function RouteComponent() {
   const [lang, setLang] = useState<Language>('en')
   const [categoryInput, setCategoryInput] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const [pageData, setPageData] = useState<SkeletonPageData>({
     defaultLanguage: 'en',
     enabledLanguages: ['en'],
-    category: [],
-    coverImage: undefined,
+    category: '',
+    coverImage: undefined as unknown as File,
     title: { default: '' },
     description: { default: '' },
   })
   const [blocks, setBlocks] = useState<PageBlock[]>([])
-  const [selection, setSelection] = useState<Record<string, string[]>>({})
+  const [selection, setSelection] = useState<Record<number, string[]>>({})
 
   const handleMetaChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    const fieldLang: Language = e.target.dataset.lang ?? 'en'
+    const fieldLang: Language = (e.target.dataset.lang as Language) ?? 'en'
     if (name !== 'title' && name !== 'description') return
     setPageData((prev) => ({
       ...prev,
@@ -267,17 +282,13 @@ function RouteComponent() {
   const addCategory = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
     const val = categoryInput.trim()
-    if (!val || pageData.category.includes(val)) return
-    setPageData((prev) => ({ ...prev, category: [...prev.category, val] }))
+    if (!val) return
+    setPageData((prev) => ({ ...prev, category: val }))
     setCategoryInput('')
   }
 
-  const removeCategory = (cat: string) => {
-    setPageData((prev) => ({ ...prev, category: prev.category.filter((c) => c !== cat) }))
-  }
-
   const addBlock = (type: PageBlock['type']) => {
-    setBlocks((prev) => [...prev, createEmptyBlock(type, crypto.randomUUID())])
+    setBlocks((prev) => [...prev, createEmptyBlock(type, prev.length)])
   }
 
   const updateBlock = (index: number, updated: PageBlock) => {
@@ -288,17 +299,52 @@ function RouteComponent() {
     setBlocks((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleSubmit = async () => {
+    setSubmitError(null)
+
+    if (!pageData.coverImage) {
+      setSubmitError('Cover image is required.')
+      return
+    }
+    if (!pageData.title.default.trim()) {
+      setSubmitError('Title is required.')
+      return
+    }
+
+    setSubmitting(true)
+
+    const blocksWithIndex: PageBlock[] = blocks.map((b, i) => ({ ...b, index: i }))
+
+    const result = await createBookingPage({
+      slug: pageData.title.default.toLowerCase().replace(/\s+/g, '-'),
+      title: pageData.title,
+      description: pageData.description,
+      coverImage: pageData.coverImage,
+      category: pageData.category,
+      defaultLanguage: pageData.defaultLanguage,
+      enabledLanguages: pageData.enabledLanguages,
+      blocks: blocksWithIndex,
+    })
+
+    setSubmitting(false)
+
+    if (!result.success) {
+      setSubmitError(result.error ?? 'Something went wrong.')
+    } else {
+      console.log('Created:', result.value)
+    }
+  }
+
   return (
     <div className='flex w-full h-full'>
-
       <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-neutral-200'>
         <div className='w-11/12 shadow-2xl'>
-          <BookingPageRendereroc
-            page={{ title: pageData.title, description: pageData.description, blocks }}
+          <BookingPageRenderer
+            page={{ blocks }}
             lang={lang}
             selection={selection}
-            onSelectionChange={(blockId, ids) =>
-              setSelection((prev) => ({ ...prev, [blockId]: ids }))
+            onSelectionChange={(blockIndex, ids) =>
+              setSelection((prev) => ({ ...prev, [blockIndex]: ids }))
             }
           />
         </div>
@@ -328,23 +374,19 @@ function RouteComponent() {
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (!file) return
-                setPageData((prev) => ({ ...prev, coverImage: URL.createObjectURL(file) }))
+                setPageData((prev) => ({ ...prev, coverImage: file }))
               }}
             />
             {pageData.coverImage && (
-              <img src={pageData.coverImage} alt="Cover preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
+              <img
+                src={URL.createObjectURL(pageData.coverImage)}
+                alt="Cover preview"
+                className="mt-1 rounded-md max-h-36 object-cover w-full"
+              />
             )}
           </Field>
 
           <Field label="Category">
-            <div className="flex flex-wrap gap-1.5 mb-1">
-              {pageData.category.map((cat) => (
-                <span key={cat} className="flex items-center gap-1 text-xs bg-neutral-100 border border-neutral-200 rounded-full px-2.5 py-1">
-                  {cat}
-                  <button type="button" onClick={() => removeCategory(cat)} className="text-neutral-400 hover:text-red-400">✕</button>
-                </span>
-              ))}
-            </div>
             <input
               className={inputCls}
               value={categoryInput}
@@ -352,6 +394,9 @@ function RouteComponent() {
               onKeyDown={addCategory}
               placeholder="Type a category and press Enter…"
             />
+            {pageData.category && (
+              <span className="text-xs text-neutral-500 mt-0.5">Set: <strong>{pageData.category}</strong></span>
+            )}
           </Field>
 
           <Field label="Title">
@@ -383,7 +428,7 @@ function RouteComponent() {
 
           {blocks.map((block, i) => (
             <BlockEditor
-              key={block.id}
+              key={block.index}
               block={block}
               lang={lang}
               onChange={(updated) => updateBlock(i, updated)}
@@ -405,8 +450,20 @@ function RouteComponent() {
           </div>
         </div>
 
-      </div>
+        {submitError && (
+          <p className="text-xs text-red-500">{submitError}</p>
+        )}
 
+        <button
+          type="button"
+          disabled={submitting}
+          onClick={handleSubmit}
+          className="mt-auto text-sm bg-neutral-900 text-white rounded-md px-4 py-2 hover:bg-neutral-700 disabled:opacity-50"
+        >
+          {submitting ? 'Creating…' : 'Create experience'}
+        </button>
+
+      </div>
     </div>
   )
 }
