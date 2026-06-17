@@ -15,6 +15,8 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedTestRouteImport } from './routes/_authed/test'
+import { Route as AuthedExperiencesRouteImport } from './routes/_authed/experiences'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 
 const LoginRoute = LoginRouteImport.update({
@@ -46,6 +48,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedTestRoute = AuthedTestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedExperiencesRoute = AuthedExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -59,6 +71,8 @@ export interface FileRoutesByFullPath {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
+  '/experiences': typeof AuthedExperiencesRoute
+  '/test': typeof AuthedTestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -67,6 +81,8 @@ export interface FileRoutesByTo {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthedDashboardRoute
+  '/experiences': typeof AuthedExperiencesRoute
+  '/test': typeof AuthedTestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,6 +93,8 @@ export interface FileRoutesById {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/_authed/dashboard': typeof AuthedDashboardRoute
+  '/_authed/experiences': typeof AuthedExperiencesRoute
+  '/_authed/test': typeof AuthedTestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,6 +105,8 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/dashboard'
+    | '/experiences'
+    | '/test'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -95,6 +115,8 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/dashboard'
+    | '/experiences'
+    | '/test'
   id:
     | '__root__'
     | '/'
@@ -104,6 +126,8 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/_authed/dashboard'
+    | '/_authed/experiences'
+    | '/_authed/test'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +183,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/test': {
+      id: '/_authed/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof AuthedTestRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/experiences': {
+      id: '/_authed/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof AuthedExperiencesRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/dashboard': {
       id: '/_authed/dashboard'
       path: '/dashboard'
@@ -171,10 +209,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedDashboardRoute: typeof AuthedDashboardRoute
+  AuthedExperiencesRoute: typeof AuthedExperiencesRoute
+  AuthedTestRoute: typeof AuthedTestRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDashboardRoute: AuthedDashboardRoute,
+  AuthedExperiencesRoute: AuthedExperiencesRoute,
+  AuthedTestRoute: AuthedTestRoute,
 }
 
 const AuthedRouteWithChildren =
