@@ -24,7 +24,7 @@ const HIGHLIGHTS: string[] = [
  */
 export function AboutIntro() {
   return (
-    <section className="bg-[#f1ede6] py-20">
+    <section id='about-intro' className="bg-[#f1ede6] py-20">
       <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         {/* Image collage */}
         <div className="relative">
