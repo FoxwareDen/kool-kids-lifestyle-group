@@ -91,11 +91,15 @@ export const Route = createFileRoute('/about-prieska')({
 function AboutPrieskaPage() {
   const { pageData } = Route.useLoaderData()
 
+  console.log(pageData);
+  
 
   return (
     <main>
-      <AboutHero data={pageData.components["about_intro"]}  />
-      <AboutIntro />
+      <AboutHero data={pageData.components["about_hero"]}  />
+      <AboutIntro data={pageData.components["about_intro"]} /> 
+      {/* 
+      */}
       <StatsBand />
       <MissionVisionValues />
       <OurStory />
