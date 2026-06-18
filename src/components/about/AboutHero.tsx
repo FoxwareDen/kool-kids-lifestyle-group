@@ -1,5 +1,20 @@
 import { ChevronRight } from 'lucide-react'
 import { SiteHeader } from '#/components/hero/SiteHeader'
+import { buildImageUrl, type Asset } from '#/lib/pocketbase'
+
+interface AboutHero {
+  id: string,
+  collectionId: string,
+  collectionName: string,
+  content: {
+    kicker: string,
+    title: string,
+    subtitle: string,
+    image_order: string []
+  }
+  media: Record<string, Asset>
+  pages: string
+}
 
 /**
  * The page hero for the "About Prieska" route. Displays a full-width Karoo
@@ -10,13 +25,15 @@ import { SiteHeader } from '#/components/hero/SiteHeader'
  *
  * @returns {JSX.Element} The rendered about hero section.
  */
-export function AboutHero() {
+export function AboutHero({data} : {data: AboutHero}) {
+  const {content: { image_order, kicker, title, subtitle }, media,} = data;
+
   return (
-    <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
+    <section id='about-hero' className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
       <img
-        src="/hero-karoo-landscape.png"
-        alt="Sweeping Karoo landscape surrounding the town of Prieska at golden hour"
+        src={media[image_order[0]] ? buildImageUrl(media[image_order[0]].collectionId, media[image_order[0]].id, media[image_order[0]].file): "/placeholder.svg"}
+        alt={media[image_order[0]] ? media[image_order[0]].alt:""}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
@@ -46,13 +63,13 @@ export function AboutHero() {
         </nav>
 
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-          Get to Know Us
+          {kicker? kicker : "Get to Know Us"}
         </p>
         <h1 className="display-title mt-3 max-w-3xl text-balance text-4xl font-medium leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem]">
-          A Town Where Heritage Meets Adventure
+          {title? title: "A Town Where Heritage Meets Adventure"}
         </h1>
         <p className="script-title mt-2 text-2xl font-semibold text-[var(--brand-orange)] sm:text-3xl">
-          Discover the heart of the Northern Cape.
+          {subtitle? subtitle : "Discover the heart of the Northern Cape."}
         </p>
       </div>
     </section>
