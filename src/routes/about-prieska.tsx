@@ -91,9 +91,6 @@ export const Route = createFileRoute('/about-prieska')({
 function AboutPrieskaPage() {
   const { pageData } = Route.useLoaderData()
 
-  console.log(pageData.components["mission_vision_values"]);
-  
-
   return (
     <main>
       <AboutHero data={pageData.components["about_hero"]}  />
@@ -102,7 +99,7 @@ function AboutPrieskaPage() {
       */}
       <StatsBand />
       <MissionVisionValues data={pageData.components["mission_vision_values"]} />
-      <OurStory />
+      <OurStory data={pageData.components["our_story"]} />
       <WhyVisitPrieska />
       <AboutCta />
       <SiteFooter />
