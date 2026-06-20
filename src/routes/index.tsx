@@ -64,16 +64,6 @@ export const Route = createFileRoute('/')({
   component: function () {
     const { pageData } = Route.useLoaderData()
 
-    // console.log('sd');
-    // console.log(pageData.components['hero']);
-
-    useEffect(()=>{
-      (async ()=>{
-        console.log(isAuthenticated());
-        
-      })()
-    },[])
-
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
@@ -82,7 +72,6 @@ export const Route = createFileRoute('/')({
         <PlanYourVisitSection />
         <GallerySection />
         <PreFooterSection />
-        <SiteFooter />
       </main>
     )
   },

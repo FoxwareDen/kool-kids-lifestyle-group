@@ -3,6 +3,7 @@ import PocketBase from 'pocketbase';
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
+
 /**
  * Client-side helper to check if the current user session exists and is valid.
  */
@@ -144,23 +145,35 @@ export interface Asset {
     type: string,
 }
 
-export interface Component {
+export interface Component<T = unknown> {
   id: string;
   collectionId: string;
   collectionName: string;
   components: string;
-  type: 'navbar' | 'hero' | 'cardblock';
-  content: Record<string, any>;
+  content: Record<string, Content<T>>;
   media: Record<string,Asset>;
   pages: string;
-  created: string;
-  updated: string;
+  created?: string;
+  updated?: string;
   expand?: {
     media: Asset[]
   }
 }
 
-export interface Page {
+export interface Content<T=unknown> {
+  collectionId: string;
+  collectionName: string;
+  component: string,
+  content: T
+  created: string,
+  updated: string,
+  lang: "en"|"af",
+  media: Record<string, Asset>
+  pages?: string
+  id?: string
+}
+
+export interface Page<T = unknown> {
   id: string;
   collectionId: string;
   collectionName: string;
@@ -171,11 +184,11 @@ export interface Page {
   created: string;
   updated: string;
   expand?: {
-    components_via_pages: Component[];
+    components_via_pages: Component<T>[];
   };
 }
 
-export interface PageData {
+export interface PageData<T = unknown>  {
   id: string;
   collectionId: string;
   collectionName: string;
@@ -185,7 +198,7 @@ export interface PageData {
   project: string;
   created: string;
   updated: string;
-  components: Record<string, Component>
+  components: Record<string, Component<T>>
 }
 
 

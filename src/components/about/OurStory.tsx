@@ -1,6 +1,7 @@
 import { SectionHeading } from '#/components/sections/SectionHeading'
 import { TimelineItem } from './TimelineItem'
 import heritageImg from '../../images/church.jpeg'
+import type { Content } from '#/lib/pocketbase';
 
 /**
  * The milestones rendered in the story timeline. Replace with CMS-driven
@@ -34,6 +35,18 @@ const MILESTONES: { year: string; title: string; description: string }[] = [
   },
 ]
 
+interface OurStory {
+  kicker: string,
+  title: string,
+  image_badge_subtitle: string,
+  image_badge_kicker: string,
+  timeline: {
+    year: string,
+    title: string,
+    description: string
+  }[]
+}
+
 /**
  * The "Our Story" section. A two-column layout pairing a heritage photograph
  * with a vertical timeline of {@link TimelineItem} milestones, on a light cream
@@ -41,7 +54,10 @@ const MILESTONES: { year: string; title: string; description: string }[] = [
  *
  * @returns {JSX.Element} The rendered story section.
  */
-export function OurStory() {
+export function OurStory({data}: {data: Content<Partial<OurStory>>}) {
+  const { content: { kicker, title, image_badge_kicker, image_badge_subtitle, timeline }, media } = data;
+  
+
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto grid w-full max-w-[1180px] items-start gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
@@ -53,21 +69,21 @@ export function OurStory() {
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"
           />
           <span className="absolute bottom-0 left-0 bg-[var(--brand-navy)] px-6 py-4 text-white">
-            <span className="script-title block text-2xl text-[var(--brand-orange)]">Since the river first ran</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/70">Heritage of the Northern Cape</span>
+            <span className="script-title block text-2xl text-[var(--brand-orange)]">{image_badge_subtitle?image_badge_subtitle : "Since the river first ran"}</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">{image_badge_kicker? image_badge_kicker : "Heritage of the Northern Cape"}</span>
           </span>
         </div>
 
         {/* Timeline */}
         <div>
           <SectionHeading
-            eyebrow="Our Story"
-            title="A Journey Rooted in Place"
+            eyebrow={kicker?kicker:"Our Story"}
+            title={title?title:"A Journey Rooted in Place"}
             theme="light"
             align="left"
           />
           <ol className="mt-10">
-            {MILESTONES.map((milestone, index) => (
+            {(timeline? timeline:MILESTONES).map((milestone, index) => (
               <TimelineItem
                 key={milestone.title}
                 {...milestone}
