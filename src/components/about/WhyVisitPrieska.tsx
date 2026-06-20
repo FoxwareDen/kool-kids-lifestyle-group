@@ -1,13 +1,6 @@
-import {
-  Waves,
-  Mountain,
-  Landmark,
-  Tent,
-  Sun,
-  HandHeart,
-  type LucideIcon,
-} from 'lucide-react'
 import { SectionHeading } from '#/components/sections/SectionHeading'
+import type { Content } from '#/lib/pocketbase';
+import { mapIcon } from '#/lib/utils';
 
 /**
  * A single reason-to-visit rendered in the {@link WhyVisitPrieska} grid.
@@ -22,38 +15,49 @@ import { SectionHeading } from '#/components/sections/SectionHeading'
  * when wiring up live data.
  * @type {Reason[]}
  */
-const REASONS: { icon: LucideIcon; title: string; description: string }[] = [
+const REASONS: { icon: string; title: string; description: string }[] = [
   {
-    icon: Waves,
+    icon: "Waves",
     title: 'The Orange River',
     description: "Boating, fishing and riverside calm along South Africa's longest river.",
   },
   {
-    icon: Mountain,
+    icon: "Mountain",
     title: 'Open Karoo Landscapes',
     description: 'Endless plains, dramatic koppies and some of the clearest night skies anywhere.',
   },
   {
-    icon: Landmark,
+    icon: "Landmark",
     title: 'Living Heritage',
     description: 'Historic landmarks and stories that span generations of the Northern Cape.',
   },
   {
-    icon: Tent,
+    icon: "Tent",
     title: 'Adventure & Recreation',
     description: 'Hiking, cycling, quad trails and guided outdoor experiences for every pace.',
   },
   {
-    icon: Sun,
+    icon: "Sun",
     title: 'Unforgettable Sunsets',
     description: "Golden-hour views that turn the Karoo into a photographer's dream.",
   },
   {
-    icon: HandHeart,
+    icon: "HandHeart",
     title: 'Genuine Hospitality',
     description: 'Warm, community-driven service that makes every visitor feel at home.',
   },
 ]
+
+interface WhyVisitPrieska {
+  kicker: string,
+  title: string,
+  reasons: 
+  {
+    icon: string,
+    title: string,
+    description: string
+  }[]
+}
 
 /**
  * The "Why Visit Prieska" section. A centered {@link SectionHeading} above a
@@ -62,29 +66,42 @@ const REASONS: { icon: LucideIcon; title: string; description: string }[] = [
  *
  * @returns {JSX.Element} The rendered why-visit section.
  */
-export function WhyVisitPrieska() {
+export function WhyVisitPrieska({data}:{data: Content<Partial<WhyVisitPrieska>>}) {
+  const {content: {kicker, title, reasons}} = data;
+
+
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="A Destination Like No Other"
-          title="Why Visit Prieska"
+          eyebrow={kicker?kicker:"A Destination Like No Other"}
+          title={title?title:"Why Visit Prieska"}
           theme="dark"
         />
 
         <div className="mt-14 grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
-          {REASONS.map(({ icon: Icon, title, description }) => (
-            <div
-              key={title}
-              className="group flex flex-col gap-3 bg-[var(--brand-navy)] p-8 transition-colors hover:bg-white/[0.04]"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange)]/15 text-[var(--brand-orange)] transition-colors group-hover:bg-[var(--brand-orange)] group-hover:text-white">
-                <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
-              </span>
-              <h3 className="display-title text-lg font-medium text-white">{title}</h3>
-              <p className="text-sm leading-relaxed text-white/70">{description}</p>
-            </div>
-          ))}
+          {(reasons ?? REASONS).map(({ icon, title, description }: {icon:string, title: string, description:string}) => {
+            const Icon = mapIcon(icon);
+
+            return (
+              <div
+                key={title}
+                className="group flex flex-col gap-3 bg-[var(--brand-navy)] p-8 transition-colors hover:bg-white/[0.04]"
+              >
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange)]/15 text-[var(--brand-orange)] transition-colors group-hover:bg-[var(--brand-orange)] group-hover:text-white">
+                  <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden="true" />
+                </span>
+
+                <h3 className="display-title text-lg font-medium text-white">
+                  {title}
+                </h3>
+
+                <p className="text-sm leading-relaxed text-white/70">
+                  {description}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

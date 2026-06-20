@@ -11,6 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import { SiteFooter } from '#/components/footer/SiteFooter'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -58,6 +59,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
         {children}
+        <SiteFooter />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

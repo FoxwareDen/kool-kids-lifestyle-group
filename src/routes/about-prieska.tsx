@@ -100,9 +100,8 @@ function AboutPrieskaPage() {
       <StatsBand />
       <MissionVisionValues data={pageData.components["mission_vision_values"]} />
       <OurStory data={pageData.components["our_story"]} />
-      <WhyVisitPrieska />
-      <AboutCta />
-      <SiteFooter />
+      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]}/>
+      <AboutCta data={pageData.components["about_cta"]} />
     </main>
   )
 }

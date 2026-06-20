@@ -72,7 +72,6 @@ export const Route = createFileRoute('/')({
         <PlanYourVisitSection />
         <GallerySection />
         <PreFooterSection />
-        <SiteFooter />
       </main>
     )
   },
