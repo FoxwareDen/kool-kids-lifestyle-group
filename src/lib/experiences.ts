@@ -74,6 +74,12 @@ export type PageBlock =
 // BOOKING PAGE
 // ============================================================
 
+// NOTE: `category` stays a plain string because that's what the PocketBase
+// field actually is (Text, single column — see collection schema). It is NOT
+// a single-category string though: it holds multiple categories joined by
+// commas, e.g. "hiking,family,outdoors". Always go through
+// parseCategories()/serializeCategories() below instead of touching the
+// comma-joined string by hand.
 export type BookingPage = {
   id: string;
   slug: string;
@@ -201,6 +207,24 @@ export declare function reorderBlocks(pageId: string, orderedBlockIds: string[])
 // ============================================================
 export function resolveTranslatable<T>(field: Translatable<T>, lang: Language): T {
   return field.translations?.[lang] ?? field.default;
+}
+
+// `category` on BookingPage is a single comma-separated string (matches the
+// PocketBase Text field). These two helpers are the only places that should
+// ever split/join it, so the comma-joining logic isn't duplicated wherever a
+// page is read or written.
+export function parseCategories(category: string): string[] {
+  return category
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+}
+
+export function serializeCategories(categories: string[]): string {
+  return categories
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .join(",");
 }
 
 export function createEmptyBlock(type: PageBlock["type"], index: number): PageBlock {

@@ -10,7 +10,7 @@ import type {
   SelectableOption,
   Language,
 } from '#/lib/experiences'
-import { resolveTranslatable, createEmptyBlock, createBookingPage } from '#/lib/experiences'
+import { resolveTranslatable, createEmptyBlock, createBookingPage, parseCategories, serializeCategories } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useCallback, type ChangeEvent } from 'react'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
@@ -263,6 +263,12 @@ function RouteComponent() {
   const [blocks, setBlocks] = useState<PageBlock[]>([])
   const [selection, setSelection] = useState<Record<number, string[]>>({})
 
+  // `pageData.category` is stored as a single comma-separated string (that's
+  // the actual PocketBase field type). `categories` is just that string
+  // parsed out for rendering as chips below — always derived, never a
+  // separate source of truth.
+  const categories = parseCategories(pageData.category)
+
   const handleMetaChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     const fieldLang: Language = (e.target.dataset.lang as Language) ?? 'en'
@@ -281,10 +287,22 @@ function RouteComponent() {
 
   const addCategory = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
+    e.preventDefault()
     const val = categoryInput.trim()
     if (!val) return
-    setPageData((prev) => ({ ...prev, category: val }))
+    setPageData((prev) => {
+      const existing = parseCategories(prev.category)
+      if (existing.includes(val)) return prev
+      return { ...prev, category: serializeCategories([...existing, val]) }
+    })
     setCategoryInput('')
+  }
+
+  const removeCategory = (val: string) => {
+    setPageData((prev) => ({
+      ...prev,
+      category: serializeCategories(parseCategories(prev.category).filter((c) => c !== val)),
+    }))
   }
 
   const addBlock = (type: PageBlock['type']) => {
@@ -386,7 +404,7 @@ function RouteComponent() {
             )}
           </Field>
 
-          <Field label="Category">
+          <Field label="Categories">
             <input
               className={inputCls}
               value={categoryInput}
@@ -394,8 +412,24 @@ function RouteComponent() {
               onKeyDown={addCategory}
               placeholder="Type a category and press Enter…"
             />
-            {pageData.category && (
-              <span className="text-xs text-neutral-500 mt-0.5">Set: <strong>{pageData.category}</strong></span>
+            {categories.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {categories.map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-1 text-xs bg-neutral-100 text-neutral-700 rounded-full pl-2.5 pr-1.5 py-0.5"
+                  >
+                    {c}
+                    <button
+                      type="button"
+                      onClick={() => removeCategory(c)}
+                      className="text-neutral-400 hover:text-red-400 leading-none"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
             )}
           </Field>
 
