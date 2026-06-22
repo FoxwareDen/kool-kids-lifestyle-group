@@ -15,9 +15,10 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedTestRouteImport } from './routes/_authed/test'
-import { Route as AuthedExperiencesRouteImport } from './routes/_authed/experiences'
-import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
+import { Route as ExperiencesSplatRouteImport } from './routes/experiences/$'
+import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
+import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -48,21 +49,27 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedTestRoute = AuthedTestRouteImport.update({
-  id: '/test',
-  path: '/test',
+const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
+  id: '/experiences/',
+  path: '/experiences/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesSplatRoute = ExperiencesSplatRouteImport.update({
+  id: '/experiences/$',
+  path: '/experiences/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedExperiencesRoute = AuthedExperiencesRouteImport.update({
-  id: '/experiences',
-  path: '/experiences',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthedRoute,
-} as any)
+const AuthedDashboardExperiencesRoute =
+  AuthedDashboardExperiencesRouteImport.update({
+    id: '/dashboard/experiences',
+    path: '/dashboard/experiences',
+    getParentRoute: () => AuthedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -70,9 +77,10 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof AuthedDashboardRoute
-  '/experiences': typeof AuthedExperiencesRoute
-  '/test': typeof AuthedTestRoute
+  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences/': typeof ExperiencesIndexRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -80,9 +88,10 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof AuthedDashboardRoute
-  '/experiences': typeof AuthedExperiencesRoute
-  '/test': typeof AuthedTestRoute
+  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences': typeof ExperiencesIndexRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -92,9 +101,10 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/_authed/dashboard': typeof AuthedDashboardRoute
-  '/_authed/experiences': typeof AuthedExperiencesRoute
-  '/_authed/test': typeof AuthedTestRoute
+  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences/': typeof ExperiencesIndexRoute
+  '/_authed/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -104,9 +114,10 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/dashboard'
-    | '/experiences'
-    | '/test'
+    | '/experiences/$'
+    | '/experiences/'
+    | '/dashboard/experiences'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -114,9 +125,10 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/dashboard'
+    | '/experiences/$'
     | '/experiences'
-    | '/test'
+    | '/dashboard/experiences'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
@@ -125,9 +137,10 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/_authed/dashboard'
-    | '/_authed/experiences'
-    | '/_authed/test'
+    | '/experiences/$'
+    | '/experiences/'
+    | '/_authed/dashboard/experiences'
+    | '/_authed/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,6 +150,8 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
+  ExperiencesSplatRoute: typeof ExperiencesSplatRoute
+  ExperiencesIndexRoute: typeof ExperiencesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,40 +198,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/test': {
-      id: '/_authed/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof AuthedTestRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/_authed/experiences': {
-      id: '/_authed/experiences'
+    '/experiences/': {
+      id: '/experiences/'
       path: '/experiences'
-      fullPath: '/experiences'
-      preLoaderRoute: typeof AuthedExperiencesRouteImport
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof ExperiencesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences/$': {
+      id: '/experiences/$'
+      path: '/experiences/$'
+      fullPath: '/experiences/$'
+      preLoaderRoute: typeof ExperiencesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/dashboard/': {
+      id: '/_authed/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/dashboard': {
-      id: '/_authed/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthedDashboardRouteImport
+    '/_authed/dashboard/experiences': {
+      id: '/_authed/dashboard/experiences'
+      path: '/dashboard/experiences'
+      fullPath: '/dashboard/experiences'
+      preLoaderRoute: typeof AuthedDashboardExperiencesRouteImport
       parentRoute: typeof AuthedRoute
     }
   }
 }
 
 interface AuthedRouteChildren {
-  AuthedDashboardRoute: typeof AuthedDashboardRoute
-  AuthedExperiencesRoute: typeof AuthedExperiencesRoute
-  AuthedTestRoute: typeof AuthedTestRoute
+  AuthedDashboardExperiencesRoute: typeof AuthedDashboardExperiencesRoute
+  AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedDashboardRoute: AuthedDashboardRoute,
-  AuthedExperiencesRoute: AuthedExperiencesRoute,
-  AuthedTestRoute: AuthedTestRoute,
+  AuthedDashboardExperiencesRoute: AuthedDashboardExperiencesRoute,
+  AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -229,6 +249,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
+  ExperiencesSplatRoute: ExperiencesSplatRoute,
+  ExperiencesIndexRoute: ExperiencesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

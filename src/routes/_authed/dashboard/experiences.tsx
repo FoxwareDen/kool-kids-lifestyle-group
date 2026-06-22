@@ -15,7 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useCallback, type ChangeEvent } from 'react'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 
-export const Route = createFileRoute('/_authed/experiences')({
+export const Route = createFileRoute('/_authed/dashboard/experiences')({
   component: RouteComponent,
 })
 

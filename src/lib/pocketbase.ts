@@ -315,3 +315,19 @@ export async function fetchPageDataSSR(
     throw error;
   }
 }
+
+
+export async function fetchFeaturedExperience(lang: "en"|"af"="en", cookieHeader?: string){
+  const client = createPB_SSR(cookieHeader);
+
+  try {
+    const records = await client.collection("Experiences").getFullList({
+      filter: `category = "featured" || category ~ "featured," || category ~ ",featured"`,
+    })
+
+    return new Result(records, null);
+  } catch (error) {
+    console.error(error);
+    return new Result(null, "failed to retrieve data")
+  }
+}
