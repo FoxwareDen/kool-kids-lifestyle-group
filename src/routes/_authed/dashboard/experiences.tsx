@@ -356,8 +356,8 @@ function RouteComponent() {
 
   return (
     <div className='flex w-full h-full bg-[#f1ede6]'>
-      <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-[var(--brand-navy)]/15 p-6'>
-        <div className='w-11/12 shadow-2xl shadow-[var(--brand-navy)]/10'>
+      <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-[var(--brand-navy)]/15 p-6 overflow-y-auto'>
+        <div className='w-11/12 overflow-hidden rounded-2xl border border-[var(--brand-navy)]/10 shadow-2xl shadow-[var(--brand-navy)]/15'>
           <BookingPageRenderer
             page={{ blocks }}
             lang={lang}

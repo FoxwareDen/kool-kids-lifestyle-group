@@ -3,13 +3,13 @@ import { resolveTranslatable } from '#/lib/experiences'
 
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
-  const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
+  const cls = { 1: 'text-3xl md:text-4xl', 2: 'text-2xl md:text-3xl', 3: 'text-xl md:text-2xl' }[block.level]
   const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
-  return <Tag className={`font-semibold ${cls}`}>{text}</Tag>
+  return <Tag className={`display-title font-medium tracking-tight text-balance text-[var(--brand-navy)] ${cls}`}>{text}</Tag>
 }
 
 const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'paragraph' }>; lang: Language }) => (
-  <p className="text-sm leading-relaxed text-neutral-700">
+  <p className="text-[15px] leading-relaxed text-pretty text-[var(--brand-navy)]/75">
     {resolveTranslatable(block.text, lang)}
   </p>
 )
@@ -17,15 +17,15 @@ const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 
 const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language }) => {
   const src = block.file ? URL.createObjectURL(block.file) : null
   return (
-    <figure className="flex flex-col gap-1.5">
+    <figure className="flex flex-col gap-2">
       {src
-        ? <img src={src} alt={resolveTranslatable(block.alt, lang)} className="w-full mx-auto h-96 object-cover rounded-md" />
-        : <div className="w-full h-56 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
-            <span className="text-xs text-neutral-400">No image uploaded</span>
+        ? <img src={src} alt={resolveTranslatable(block.alt, lang)} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+        : <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No image uploaded</span>
           </div>
       }
       {block.caption && (
-        <figcaption className="text-xs text-neutral-400 text-center">
+        <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
           {resolveTranslatable(block.caption, lang)}
         </figcaption>
       )}
@@ -36,15 +36,15 @@ const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'ima
 const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'video' }>; lang: Language }) => {
   const src = block.file ? URL.createObjectURL(block.file) : null
   return (
-    <figure className="flex flex-col gap-1.5">
+    <figure className="flex flex-col gap-2">
       {src
-        ? <video src={src} controls className="w-full rounded-lg" />
-        : <div className="w-full h-44 rounded-lg bg-neutral-100 border border-neutral-200 flex items-center justify-center">
-            <span className="text-xs text-neutral-400">No video uploaded</span>
+        ? <video src={src} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+        : <div className="flex h-44 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No video uploaded</span>
           </div>
       }
       {block.title && (
-        <figcaption className="text-xs text-neutral-400">
+        <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
           {resolveTranslatable(block.title, lang)}
         </figcaption>
       )}
@@ -68,33 +68,33 @@ const SelectableRenderer = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium">
+    <div className="flex flex-col gap-3">
+      <span className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
         {resolveTranslatable(block.prompt, lang)}
-        {block.required && <span className="text-red-400 ml-0.5">*</span>}
+        {block.required && <span className="text-[var(--brand-orange)] ml-1">*</span>}
       </span>
-      <div className="flex flex-row flex-wrap gap-2">
+      <div className="flex flex-row flex-wrap gap-3">
         {block.options.map((opt) => (
           <label
             key={opt.id}
-            className="flex flex-col gap-0.5 flex-1 min-w-32 border border-neutral-200 rounded-md p-2.5 cursor-pointer hover:border-neutral-400 has-[:checked]:border-neutral-800 transition-colors"
+            className="group flex flex-1 min-w-32 cursor-pointer flex-col gap-1 rounded-xl border border-[var(--brand-navy)]/15 bg-white p-3.5 transition-all hover:border-[var(--brand-orange)]/60 hover:shadow-md hover:shadow-[var(--brand-orange)]/10 has-[:checked]:border-[var(--brand-orange)] has-[:checked]:bg-[var(--brand-orange)]/5 has-[:checked]:shadow-md has-[:checked]:shadow-[var(--brand-orange)]/15"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm">{resolveTranslatable(opt.label, lang)}</span>
+              <span className="text-sm font-semibold text-[var(--brand-navy)]">{resolveTranslatable(opt.label, lang)}</span>
               <input
                 type="checkbox"
-                className="shrink-0"
+                className="shrink-0 accent-[var(--brand-orange)]"
                 checked={value.includes(opt.id)}
                 onChange={() => toggle(opt.id)}
               />
             </div>
             {opt.description && (
-              <span className="text-xs text-neutral-400">
+              <span className="text-xs leading-relaxed text-[var(--brand-navy)]/55">
                 {resolveTranslatable(opt.description, lang)}
               </span>
             )}
             {opt.priceModifier != null && (
-              <span className="text-xs text-neutral-500 mt-auto pt-1">
+              <span className="mt-auto inline-flex w-fit items-center rounded-full bg-[var(--brand-orange)]/10 px-2.5 py-0.5 pt-1 text-xs font-bold text-[var(--brand-orange-deep)]">
                 {opt.priceModifier >= 0 ? '+' : ''}{opt.priceModifier}
               </span>
             )}
@@ -120,8 +120,8 @@ export const BookingPageRenderer = ({
   selection = {},
   onSelectionChange,
 }: BookingPageRendererProps) => (
-  <div className="w-full h-full overflow-y-auto">
-    <div className="flex flex-col gap-5 p-4">
+  <div className="w-full h-full overflow-y-auto bg-white">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 md:px-10 md:py-14">
       {page.blocks.map((block) => {
         switch (block.type) {
           case 'header':
