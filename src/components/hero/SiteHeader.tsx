@@ -36,7 +36,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 const NAV_ITEMS = [
   { label: 'HOME', href: '/' },
   { label: 'ABOUT PRIESKA', href: '/about-prieska' },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true },
+  { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true },
   { label: 'HERITAGE', href: '/heritage' },
   { label: 'GALLERY', href: '#' },
   { label: 'EVENTS', href: '#' },

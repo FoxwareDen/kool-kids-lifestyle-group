@@ -33,7 +33,7 @@ const QUICK_LINKS: { label: string; href: string }[][] = [
   [
     { label: 'Home', href: '/' },
     { label: 'About Prieska', href: '/about-prieska' },
-    { label: 'Experiences', href: '#' },
+    { label: 'Experiences', href: '/experiences' },
     { label: 'Heritage', href: '/heritage' },
     { label: 'Gallery', href: '#' },
   ],
