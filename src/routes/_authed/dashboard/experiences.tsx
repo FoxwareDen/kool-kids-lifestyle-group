@@ -29,13 +29,13 @@ function setTranslated<T>(field: Translatable<T>, lang: Language, value: T): Tra
 }
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="flex flex-col gap-1">
-    <label className="text-xs text-neutral-500">{label}</label>
+  <div className="flex flex-col gap-1.5">
+    <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">{label}</label>
     {children}
   </div>
 )
 
-const inputCls = "border border-neutral-200 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-neutral-400"
+const inputCls = "w-full rounded-md border border-[var(--brand-navy)]/15 bg-white px-3 py-2 text-sm text-[var(--brand-navy)] outline-none transition-colors placeholder:text-[var(--brand-navy)]/40 focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20"
 
 const HeaderBlockEditor = ({ block, lang, onChange }: { block: HeaderBlock; lang: Language; onChange: (b: HeaderBlock) => void }) => (
   <div className="flex flex-col gap-3">
@@ -168,19 +168,20 @@ const SelectableBlockEditor = ({ block, lang, onChange }: { block: SelectableBlo
         />
       </Field>
 
-      <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-[var(--brand-navy)]/70 cursor-pointer">
         <input
           type="checkbox"
           checked={block.required}
+          className="accent-[var(--brand-orange)]"
           onChange={(e) => onChange({ ...block, required: e.target.checked })}
         />
         Required
       </label>
 
       <div className="flex flex-col gap-2">
-        <span className="text-xs text-neutral-500">Options</span>
+        <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Options</span>
         {block.options.map((opt, i) => (
-          <div key={opt.id} className="flex flex-col gap-1.5 p-2 border border-neutral-200 rounded-md">
+          <div key={opt.id} className="flex flex-col gap-1.5 rounded-md border border-[var(--brand-navy)]/15 bg-[#f1ede6]/50 p-2.5">
             <input
               className={inputCls}
               value={resolveTranslatable(opt.label, lang)}
@@ -207,7 +208,7 @@ const SelectableBlockEditor = ({ block, lang, onChange }: { block: SelectableBlo
               />
               <button
                 type="button"
-                className="ml-auto text-xs text-neutral-400 hover:text-red-400"
+                className="ml-auto text-xs font-semibold uppercase tracking-wide text-[var(--brand-navy)]/40 hover:text-[var(--brand-orange)]"
                 onClick={() => removeOption(i)}
               >
                 Remove
@@ -217,7 +218,7 @@ const SelectableBlockEditor = ({ block, lang, onChange }: { block: SelectableBlo
         ))}
         <button
           type="button"
-          className="text-xs text-neutral-500 hover:text-neutral-800 text-left"
+          className="text-left text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-orange)] hover:text-[var(--brand-orange-deep)]"
           onClick={addOption}
         >
           + Add option
@@ -232,10 +233,10 @@ const BlockEditor = ({
 }: {
   block: PageBlock; lang: Language; onChange: (u: PageBlock) => void; onDelete: () => void
 }) => (
-  <div className="border border-neutral-200 rounded-lg p-3 flex flex-col gap-3 bg-white">
-    <div className="flex items-center justify-between">
-      <span className="text-xs font-medium text-neutral-400 uppercase tracking-wide">{block.type}</span>
-      <button type="button" onClick={onDelete} className="text-xs text-neutral-300 hover:text-red-400">✕</button>
+  <div className="flex flex-col gap-3 rounded-lg border border-[var(--brand-navy)]/15 bg-white p-3.5 shadow-sm shadow-[var(--brand-navy)]/5">
+    <div className="flex items-center justify-between border-b border-[var(--brand-navy)]/10 pb-2.5">
+      <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-orange)]">{block.type}</span>
+      <button type="button" onClick={onDelete} className="text-xs text-[var(--brand-navy)]/30 hover:text-[var(--brand-orange)]">✕</button>
     </div>
 
     {block.type === 'header'     && <HeaderBlockEditor     block={block} lang={lang} onChange={onChange} />}
@@ -354,9 +355,9 @@ function RouteComponent() {
   }
 
   return (
-    <div className='flex w-full h-full'>
-      <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-neutral-200'>
-        <div className='w-11/12 shadow-2xl'>
+    <div className='flex w-full h-full bg-[#f1ede6]'>
+      <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-[var(--brand-navy)]/15 p-6'>
+        <div className='w-11/12 shadow-2xl shadow-[var(--brand-navy)]/10'>
           <BookingPageRenderer
             page={{ blocks }}
             lang={lang}
@@ -368,14 +369,23 @@ function RouteComponent() {
         </div>
       </div>
 
-      <div id='right' className='flex-1 p-4 flex flex-col gap-4 overflow-y-auto'>
+      <div id='right' className='flex-1 p-5 flex flex-col gap-4 overflow-y-auto bg-white'>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
+            Dashboard
+          </p>
+          <h1 className="display-title mt-1.5 text-2xl font-medium text-[var(--brand-navy)]">
+            Create Experience
+          </h1>
+        </div>
 
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs text-neutral-500">Language</span>
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Language</span>
           <div className="flex gap-4">
             {(['en', 'af'] as const).map((l) => (
-              <label key={l} className="flex items-center gap-1.5 text-sm text-neutral-700 cursor-pointer">
-                <input type="radio" name="lang_group" value={l} checked={lang === l} onChange={() => setLang(l)} />
+              <label key={l} className="flex items-center gap-1.5 text-sm text-[var(--brand-navy)]/80 cursor-pointer">
+                <input type="radio" name="lang_group" value={l} checked={lang === l} className="accent-[var(--brand-orange)]" onChange={() => setLang(l)} />
                 {l === 'en' ? 'English' : 'Afrikaans'}
               </label>
             ))}
@@ -417,13 +427,13 @@ function RouteComponent() {
                 {categories.map((c) => (
                   <span
                     key={c}
-                    className="inline-flex items-center gap-1 text-xs bg-neutral-100 text-neutral-700 rounded-full pl-2.5 pr-1.5 py-0.5"
+                    className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-orange)]/10 py-0.5 pl-2.5 pr-1.5 text-xs font-semibold text-[var(--brand-navy)]"
                   >
                     {c}
                     <button
                       type="button"
                       onClick={() => removeCategory(c)}
-                      className="text-neutral-400 hover:text-red-400 leading-none"
+                      className="leading-none text-[var(--brand-navy)]/40 hover:text-[var(--brand-orange)]"
                     >
                       ✕
                     </button>
@@ -458,7 +468,7 @@ function RouteComponent() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs text-neutral-500">Blocks</span>
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Blocks</span>
 
           {blocks.map((block, i) => (
             <BlockEditor
@@ -476,7 +486,7 @@ function RouteComponent() {
                 key={type}
                 type="button"
                 onClick={() => addBlock(type)}
-                className="text-xs border border-neutral-200 rounded px-2 py-1 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700"
+                className="rounded-md border border-[var(--brand-navy)]/15 px-2.5 py-1 text-xs font-semibold text-[var(--brand-navy)]/70 transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange)]"
               >
                 + {type}
               </button>
@@ -485,16 +495,16 @@ function RouteComponent() {
         </div>
 
         {submitError && (
-          <p className="text-xs text-red-500">{submitError}</p>
+          <p className="rounded-md bg-[var(--brand-orange)]/10 px-3 py-2 text-xs font-medium text-[var(--brand-orange-deep)]">{submitError}</p>
         )}
 
         <button
           type="button"
           disabled={submitting}
           onClick={handleSubmit}
-          className="mt-auto text-sm bg-neutral-900 text-white rounded-md px-4 py-2 hover:bg-neutral-700 disabled:opacity-50"
+          className="mt-auto inline-flex items-center justify-center gap-2 bg-[var(--brand-orange)] px-7 py-3 text-xs font-bold uppercase tracking-widest !text-white shadow-lg shadow-black/10 transition-colors hover:bg-[var(--brand-orange-deep)] disabled:opacity-50"
         >
-          {submitting ? 'Creating…' : 'Create experience'}
+          {submitting ? 'Creating…' : 'Create Experience'}
         </button>
 
       </div>
