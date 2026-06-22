@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { ExperienceCard } from './ExperienceCard'
+import type { Content } from '#/lib/pocketbase'
+import { resolveTranslatable, type BookingPage } from '#/lib/experiences'
 
 /**
  * A single entry rendered as an {@link ExperienceCard} within
@@ -86,6 +88,14 @@ const EXPERIENCES: {
   },
 ]
 
+
+interface ExperiencesSection {
+  kicker: string,
+  title: string
+}
+
+type Card = Pick<BookingPage, "coverImage" | "defaultLanguage" | "title" | "description" | "category">
+
 /**
  * The "Choose Your Experience" section. Renders a centered
  * {@link SectionHeading} on a dark navy background, a responsive grid of
@@ -93,19 +103,25 @@ const EXPERIENCES: {
  *
  * @returns {JSX.Element} The rendered experiences section.
  */
-export function ExperiencesSection() {
+export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSection>> & { list: Card[]}}) {
+  const { content: { kicker, title },  list } = data;
+  
+
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Adventure Awaits"
-          title="Choose Your Experience"
+          eyebrow={kicker??"Adventure Awaits"}
+          title={title??"Choose Your Experience"}
           theme="dark"
         />
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {EXPERIENCES.map((experience) => (
-            <ExperienceCard key={experience.title} {...experience} />
+          {(list ?? EXPERIENCES).map((experience) => (
+            <ExperienceCard key={experience.title}
+                description={experience.defaultLanguage}
+                imageAlt=""
+             />
           ))}
         </div>
 

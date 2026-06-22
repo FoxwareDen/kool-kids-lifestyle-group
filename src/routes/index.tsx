@@ -70,7 +70,7 @@ export const Route = createFileRoute('/')({
       <main>
         <HeroSection data={pageData.components['hero']} />
         <StoriesSection />
-        <ExperiencesSection />
+        <ExperiencesSection data={{data:pageData.components["experiences_section"], list: featuredList}}/>
         <PlanYourVisitSection />
         <GallerySection />
         <PreFooterSection />

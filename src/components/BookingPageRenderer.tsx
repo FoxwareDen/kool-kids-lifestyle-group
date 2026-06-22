@@ -1,11 +1,14 @@
 import type { PageBlock, BookingPage, Language } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
 
+
+import style from "./BookingPageRenderer.module.css"
+
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
-  const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
+  const cls =  `level-${block.level}` //{ 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
   const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
-  return <Tag className={`font-semibold ${cls}`}>{text}</Tag>
+  return <Tag className={`font-semibold ${style[cls]}`}>{text}</Tag>
 }
 
 const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'paragraph' }>; lang: Language }) => (
