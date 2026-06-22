@@ -4,11 +4,9 @@ import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { SiteFooter } from '#/components/footer/SiteFooter';
-import { fetchPageDataSSR, isAuthenticated, type PageData } from '#/lib/pocketbase';
+import { fetchFeaturedExperience, fetchPageDataSSR, isAuthenticated, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { useEffect } from 'react';
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
@@ -40,7 +38,6 @@ export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-
   loader: async ({ location }) => {
     const slug = location.pathname.replace(/^\/|\/$/g, '')
     
@@ -48,13 +45,16 @@ export const Route = createFileRoute('/')({
     const params = new URLSearchParams(location.search)
     const lang = params.get('lang') as 'en' | 'af' | null
 
+    // @ts-ignore
     const pageData: PageData | null = await getPageData({
       data: { slug, language: lang ?? undefined },
     })
 
     if (!pageData) throw notFound()
 
-    return { pageData }
+    const experience = await fetchFeaturedExperience(lang??undefined)    
+
+    return { pageData, featuredList: experience.value }
   },
 
   notFoundComponent: () => <div>Page not found</div>,
@@ -62,7 +62,9 @@ export const Route = createFileRoute('/')({
   errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
 
   component: function () {
-    const { pageData } = Route.useLoaderData()
+    const { pageData, featuredList } = Route.useLoaderData()
+    console.log(featuredList);
+    
 
     return (
       <main>
