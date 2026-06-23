@@ -1,5 +1,5 @@
 import PocketBase from 'pocketbase';
-import type { BookingPage, FlatBookingPage, Language } from './experiences';
+import type { BookingPage, FlatBookingPage, HydratedBookingPage, Language } from './experiences';
 
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
@@ -352,5 +352,34 @@ export async function fetchFeaturedExperienceCard(lang: Language="en", cookieHea
   } catch (error) {
     console.error(error);
     return createResult(null, "failed to retrieve data")
+  }
+}
+
+export async function fetchExperiences(cookieHeader?: string): Promise<Result<HydratedBookingPage[], string>> {
+  const client = createPB_SSR(cookieHeader);
+
+  try {
+    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
+      filter:  `status = "Published"`,
+      expand: 'coverImage'
+    });
+
+    const t: HydratedBookingPage[] = records.map((obj)=>{
+      // @ts-ignore
+      const image = obj.expand["coverImage"];      
+      return {
+        ...obj,
+        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+        description: obj.description
+          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
+      }
+    });
+
+    return createResult(t, null);    
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "failed to get experiences")        
   }
 }
