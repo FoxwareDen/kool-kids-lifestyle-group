@@ -95,6 +95,7 @@ export type BookingPage = {
 };
 
 type FlatPageBlock = HeaderBlock | ParagraphBlock | SelectableBlock | Omit<FlatMedia, "id">;
+
 export type FlatBookingPage = {
   id: string;
   slug: string;

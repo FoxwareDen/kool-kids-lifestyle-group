@@ -10,8 +10,11 @@ import {
 } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { ExperienceCard } from './ExperienceCard'
-import type { Content } from '#/lib/pocketbase'
+import { buildImageUrl, type Content, type FeatureCard } from '#/lib/pocketbase'
 import { resolveTranslatable, type BookingPage } from '#/lib/experiences'
+import { Link } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { mapIcon } from '#/lib/utils'
 
 /**
  * A single entry rendered as an {@link ExperienceCard} within
@@ -94,8 +97,6 @@ interface ExperiencesSection {
   title: string
 }
 
-type Card = Pick<BookingPage, "coverImage" | "defaultLanguage" | "title" | "description" | "category">
-
 /**
  * The "Choose Your Experience" section. Renders a centered
  * {@link SectionHeading} on a dark navy background, a responsive grid of
@@ -103,9 +104,13 @@ type Card = Pick<BookingPage, "coverImage" | "defaultLanguage" | "title" | "desc
  *
  * @returns {JSX.Element} The rendered experiences section.
  */
-export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSection>> & { list: Card[]}}) {
-  const { content: { kicker, title },  list } = data;
+export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSection>> & { list: FeatureCard[]}}) {
+  const { content: { title, kicker },  list } = data;  
+
   
+    useEffect(()=>{
+      console.log(list);
+    }, [])
 
   return (
     <section className="bg-[var(--brand-navy)] py-20">
@@ -118,9 +123,14 @@ export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSect
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {(list ?? EXPERIENCES).map((experience) => (
-            <ExperienceCard key={experience.title}
-                description={experience.defaultLanguage}
+            <ExperienceCard 
+                description={experience.description}
+                title={experience.title}
+                image={experience.coverImage}
+                icon={mapIcon("help")}
                 imageAlt=""
+                href={`/experiences/${experience.id}`}
+                lang={experience.lang}
              />
           ))}
         </div>

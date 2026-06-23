@@ -4,12 +4,13 @@ import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchFeaturedExperience, fetchPageDataSSR, isAuthenticated, type PageData } from '#/lib/pocketbase';
+import { fetchFeaturedExperienceCard, fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
+  // @ts-ignore
   .handler(async ({ data: { slug, language } }) => {
     
     // If language was explicitly passed, use it — otherwise detect from headers
@@ -52,7 +53,7 @@ export const Route = createFileRoute('/')({
 
     if (!pageData) throw notFound()
 
-    const experience = await fetchFeaturedExperience(lang??undefined)    
+    const experience = await fetchFeaturedExperienceCard("en")    
 
     return { pageData, featuredList: experience.value }
   },
@@ -63,14 +64,13 @@ export const Route = createFileRoute('/')({
 
   component: function () {
     const { pageData, featuredList } = Route.useLoaderData()
-    console.log(featuredList);
-    
+
 
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
         <StoriesSection />
-        <ExperiencesSection data={{data:pageData.components["experiences_section"], list: featuredList}}/>
+        <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}}/>
         <PlanYourVisitSection />
         <GallerySection />
         <PreFooterSection />

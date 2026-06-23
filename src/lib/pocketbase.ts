@@ -1,4 +1,5 @@
 import PocketBase from 'pocketbase';
+import type { BookingPage, FlatBookingPage, Language } from './experiences';
 
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
@@ -47,8 +48,6 @@ export async function uploadAsset(
     formData.append("type", meta?.type ?? "image");
     if (meta?.name) formData.append("name", meta.name);
     if (meta?.alt)  formData.append("alt", meta.alt);
-
-    console.log(Object.fromEntries(formData.entries()));
 
     const record = await pb.collection("assets").create(formData);
 
@@ -316,18 +315,42 @@ export async function fetchPageDataSSR(
   }
 }
 
+export type FeatureCard = Omit<FlatBookingPage, "expand" | "blocks" | "slug" | "coverImage"> & {
+  coverImage: string;
+  lang: Language;
+}
 
-export async function fetchFeaturedExperience(lang: "en"|"af"="en", cookieHeader?: string){
+export async function fetchFeaturedExperienceCard(lang: Language="en", cookieHeader?: string): Promise<Result<FeatureCard[], string>>{
   const client = createPB_SSR(cookieHeader);
 
   try {
-    const records = await client.collection("Experiences").getFullList({
-      filter: `category = "featured" || category ~ "featured," || category ~ ",featured"`,
+    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
+      filter:  `(category = "featured" || category ~ "featured," || category ~ ",featured") && status = "Published"`,
+      expand: 'coverImage'
     })
 
-    return new Result(records, null);
+    const t: FeatureCard[] = records.map((obj)=>{
+      // @ts-ignore
+      const image = obj.expand["coverImage"];      
+      return {
+        id: obj.id,
+        category: obj.category,
+        defaultLanguage: obj.defaultLanguage,
+        enabledLanguages: obj.enabledLanguages,
+        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+        description: obj.description
+          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+          : undefined,
+        createdAt: obj.createdAt,
+        updatedAt: obj.updatedAt,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+        lang,
+      }
+    })
+
+    return createResult(t, null);
   } catch (error) {
     console.error(error);
-    return new Result(null, "failed to retrieve data")
+    return createResult(null, "failed to retrieve data")
   }
 }
