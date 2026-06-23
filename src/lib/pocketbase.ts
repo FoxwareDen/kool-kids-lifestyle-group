@@ -383,3 +383,29 @@ export async function fetchExperiences(cookieHeader?: string): Promise<Result<Hy
     return createResult(null, "failed to get experiences")        
   }
 }
+
+export async function fetchExperienceById(id:string, cookieHeader?:string) {
+  const client = createPB_SSR(cookieHeader);
+
+  try {
+    const record: FlatBookingPage | null = await client.collection("Experiences").getOne(id, {
+      expand: "coverImage"
+    });
+    if (!record) return createResult(null, "Failed to get experiences")
+
+    // @ts-ignore
+    const image = record.expand["coverImage"];
+
+    return createResult<HydratedBookingPage, string>({
+        ...record,
+        title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
+        description: record.description
+          ? (typeof record.description === "string" ? JSON.parse(record.description) : record.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
+      }, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to get experiences");
+  }
+}
