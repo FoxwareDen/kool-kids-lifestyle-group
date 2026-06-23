@@ -108,10 +108,6 @@ export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSect
   const { content: { title, kicker },  list } = data;  
 
   
-    useEffect(()=>{
-      console.log(list);
-    }, [])
-
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">

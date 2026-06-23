@@ -167,7 +167,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       enabledLanguages: input.enabledLanguages,
       coverImage: fCover.value!.id,
       blocks: flatPack,
-      status: "Draft",
+      status: "Published",
     });
 
     return createResult<FlatBookingPage, string>({

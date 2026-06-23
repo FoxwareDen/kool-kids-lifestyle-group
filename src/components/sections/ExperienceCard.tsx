@@ -38,8 +38,6 @@ export function ExperienceCard({
   href?: string,
   lang: Language
 }) {
-  console.log(typeof title);
-  console.log(title);
   
   
   return (
@@ -63,7 +61,7 @@ export function ExperienceCard({
           {resolveTranslatable(title!, lang)}
         </h3>
         <p className="text-xs leading-relaxed text-white/70">
-        {resolveTranslatable(description!, lang)}
+        {resolveTranslatable(description!, lang).length > 85 ? resolveTranslatable(description!, lang).slice(0, 85) + " ...":resolveTranslatable(description!, lang)}
         </p>
       </div>
     </a>
