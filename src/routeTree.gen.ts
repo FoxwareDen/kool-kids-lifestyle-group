@@ -16,7 +16,7 @@ import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
-import { Route as ExperiencesSplatRouteImport } from './routes/experiences/$'
+import { Route as ExperiencesIdRouteImport } from './routes/experiences/$id'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
 
@@ -54,9 +54,9 @@ const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
   path: '/experiences/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExperiencesSplatRoute = ExperiencesSplatRouteImport.update({
-  id: '/experiences/$',
-  path: '/experiences/$',
+const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
+  id: '/experiences/$id',
+  path: '/experiences/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
@@ -77,7 +77,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
   '/experiences/': typeof ExperiencesIndexRoute
   '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
@@ -88,7 +88,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
   '/experiences': typeof ExperiencesIndexRoute
   '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
@@ -101,7 +101,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
-  '/experiences/$': typeof ExperiencesSplatRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
   '/experiences/': typeof ExperiencesIndexRoute
   '/_authed/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
@@ -114,7 +114,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/experiences/$'
+    | '/experiences/$id'
     | '/experiences/'
     | '/dashboard/experiences'
     | '/dashboard/'
@@ -125,7 +125,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/experiences/$'
+    | '/experiences/$id'
     | '/experiences'
     | '/dashboard/experiences'
     | '/dashboard'
@@ -137,7 +137,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/heritage'
     | '/login'
-    | '/experiences/$'
+    | '/experiences/$id'
     | '/experiences/'
     | '/_authed/dashboard/experiences'
     | '/_authed/dashboard/'
@@ -150,7 +150,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
-  ExperiencesSplatRoute: typeof ExperiencesSplatRoute
+  ExperiencesIdRoute: typeof ExperiencesIdRoute
   ExperiencesIndexRoute: typeof ExperiencesIndexRoute
 }
 
@@ -205,11 +205,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperiencesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experiences/$': {
-      id: '/experiences/$'
-      path: '/experiences/$'
-      fullPath: '/experiences/$'
-      preLoaderRoute: typeof ExperiencesSplatRouteImport
+    '/experiences/$id': {
+      id: '/experiences/$id'
+      path: '/experiences/$id'
+      fullPath: '/experiences/$id'
+      preLoaderRoute: typeof ExperiencesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/dashboard/': {
@@ -249,7 +249,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
-  ExperiencesSplatRoute: ExperiencesSplatRoute,
+  ExperiencesIdRoute: ExperiencesIdRoute,
   ExperiencesIndexRoute: ExperiencesIndexRoute,
 }
 export const routeTree = rootRouteImport

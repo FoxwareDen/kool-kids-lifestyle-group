@@ -95,6 +95,7 @@ export type BookingPage = {
 };
 
 type FlatPageBlock = HeaderBlock | ParagraphBlock | SelectableBlock | Omit<FlatMedia, "id">;
+
 export type FlatBookingPage = {
   id: string;
   slug: string;
@@ -109,13 +110,27 @@ export type FlatBookingPage = {
   updatedAt: Date;
 };
 
+export type HydratedBookingPage = {
+  id: string;
+  slug: string;
+  title: Translatable;
+  description?: Translatable;
+  coverImage: string;
+  category: string;
+  defaultLanguage: Language;
+  enabledLanguages: Language[];
+  blocks: FlatPageBlock[];
+  createdAt: Date;
+  updatedAt: Date;  
+}
+
 // ============================================================
 // CRUD FUNCTION SIGNATURES
 // ============================================================
 export type CreateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 export type UpdateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 
-export async function createBookingPage(input: CreateBookingPageInput): Promise<Result<FlatBookingPage, string>> {
+export async function createBookingPage(input: CreateBookingPageInput): Promise<Result<HydratedBookingPage, string>> {
   try {
     const fCover = await uploadAsset(input.coverImage, {
       name: `${input.title.default}-cover`,
@@ -166,10 +181,10 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       enabledLanguages: input.enabledLanguages,
       coverImage: fCover.value!.id,
       blocks: flatPack,
-      status: "Draft",
+      status: "Published",
     });
 
-    return createResult<FlatBookingPage, string>({
+    return createResult<HydratedBookingPage, string>({
       id: result.id,
       slug: input.slug,
       title: input.title,
@@ -183,7 +198,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       updatedAt: new Date(result.updated),
     }, null);
   } catch (error) {
-    return createResult<FlatBookingPage, string>(null, `${error}`);
+    return createResult<HydratedBookingPage, string>(null, `${error}`);
   }
 }
 
