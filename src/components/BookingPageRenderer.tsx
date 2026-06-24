@@ -1,9 +1,11 @@
 import type { PageBlock, BookingPage, Language } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
 
+
+
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
-  const cls = { 1: 'text-3xl md:text-4xl', 2: 'text-2xl md:text-3xl', 3: 'text-xl md:text-2xl' }[block.level]
+  const cls =  { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
   const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
   return <Tag className={`display-title font-medium tracking-tight text-balance text-[var(--brand-navy)] ${cls}`}>{text}</Tag>
 }
