@@ -38,7 +38,6 @@ function ContactPage() {
       <ContactSection />
       <LocationMap />
       <ContactCta />
-      <SiteFooter />
     </main>
   )
 }

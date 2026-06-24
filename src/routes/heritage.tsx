@@ -42,7 +42,6 @@ function HeritagePage() {
       <HeritageSites />
       <CulturalTraditions />
       <HeritageCta />
-      <SiteFooter />
     </main>
   )
 }
