@@ -202,21 +202,6 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
   }
 }
 
-export declare function getBookingPageById(id: string): Promise<BookingPage | null>;
-export declare function getBookingPageBySlug(slug: string): Promise<BookingPage | null>;
-export declare function listBookingPages(): Promise<BookingPage[]>;
-export declare function updateBookingPage(id: string, input: UpdateBookingPageInput): Promise<BookingPage>;
-export declare function deleteBookingPage(id: string): Promise<void>;
-export declare function publishBookingPage(id: string): Promise<BookingPage>;
-
-// ============================================================
-// BLOCK OPERATIONS
-// ============================================================
-export declare function addBlock(pageId: string, block: PageBlock): Promise<BookingPage>;
-export declare function updateBlock(pageId: string, blockId: string, block: Partial<PageBlock>): Promise<BookingPage>;
-export declare function removeBlock(pageId: string, blockId: string): Promise<BookingPage>;
-export declare function reorderBlocks(pageId: string, orderedBlockIds: string[]): Promise<BookingPage>;
-
 // ============================================================
 // UTILITIES
 // ============================================================
