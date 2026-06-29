@@ -10,11 +10,9 @@ import {
 } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { ExperienceCard } from './ExperienceCard'
-import { buildImageUrl, type Content, type FeatureCard } from '#/lib/pocketbase'
-import { resolveTranslatable, type BookingPage } from '#/lib/experiences'
-import { Link } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { type Content, type FeatureCard } from '#/lib/pocketbase'
 import { mapIcon } from '#/lib/utils'
+import type { Language } from '#/lib/experiences'
 
 /**
  * A single entry rendered as an {@link ExperienceCard} within
@@ -91,10 +89,10 @@ const EXPERIENCES: {
   },
 ]
 
-
 interface ExperiencesSection {
   kicker: string,
-  title: string
+  title: string,
+  button: {title: string}
 }
 
 /**
@@ -104,9 +102,8 @@ interface ExperiencesSection {
  *
  * @returns {JSX.Element} The rendered experiences section.
  */
-export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSection>> & { list: FeatureCard[]}}) {
-  const { content: { title, kicker },  list } = data;  
-
+export function ExperiencesSection({data, lang }:{data: Content<Partial<ExperiencesSection>> & { list: FeatureCard[]}, lang: Language}) {
+  const { content: { title, kicker, button },  list } = data;
   
   return (
     <section className="bg-[var(--brand-navy)] py-20">
@@ -126,7 +123,7 @@ export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSect
                 icon={mapIcon("help")}
                 imageAlt=""
                 href={`/experiences/${experience.id}`}
-                lang={experience.lang}
+                lang={lang}
              />
           ))}
         </div>
@@ -136,7 +133,7 @@ export function ExperiencesSection({data}:{data: Content<Partial<ExperiencesSect
             href="#"
             className="group inline-flex items-center gap-4 bg-transparent border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline shadow-lg shadow-black/30 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
-            View all experiences
+            {button?.title??""}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </a>
         </div>

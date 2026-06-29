@@ -6,10 +6,8 @@ import { MissionVisionValues } from '#/components/about/MissionVisionValues'
 import { OurStory } from '#/components/about/OurStory'
 import { WhyVisitPrieska } from '#/components/about/WhyVisitPrieska'
 import { AboutCta } from '#/components/about/AboutCta'
-import { SiteFooter } from '#/components/footer/SiteFooter'
 import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase'
 import { createServerFn } from '@tanstack/react-start'
-import { useEffect } from 'react'
 
 
 export const getPageData = createServerFn()
