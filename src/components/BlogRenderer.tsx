@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 
-function BlogRenderer() {
+function BlogRenderer({ slug }:{slug: string}) {
   return (
     <div>
       <Link to="/events">Events</Link>
