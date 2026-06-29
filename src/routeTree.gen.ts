@@ -17,7 +17,11 @@ import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
 import { Route as ExperiencesIdRouteImport } from './routes/experiences/$id'
+import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
 
@@ -60,9 +64,29 @@ const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
   path: '/experiences/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogsIndexRoute = BlogsIndexRouteImport.update({
+  id: '/blogs/',
+  path: '/blogs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
   id: '/experiences/$id',
   path: '/experiences/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogsBlogIdRoute = BlogsBlogIdRouteImport.update({
+  id: '/blogs/$blogId',
+  path: '/blogs/$blogId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
@@ -84,7 +108,11 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs/': typeof BlogsIndexRoute
+  '/events/': typeof EventsIndexRoute
   '/experiences/': typeof ExperiencesIndexRoute
   '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
@@ -96,7 +124,11 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs': typeof BlogsIndexRoute
+  '/events': typeof EventsIndexRoute
   '/experiences': typeof ExperiencesIndexRoute
   '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
@@ -110,7 +142,11 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs/': typeof BlogsIndexRoute
+  '/events/': typeof EventsIndexRoute
   '/experiences/': typeof ExperiencesIndexRoute
   '/_authed/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
@@ -124,7 +160,11 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
     | '/experiences/$id'
+    | '/blogs/'
+    | '/events/'
     | '/experiences/'
     | '/dashboard/experiences'
     | '/dashboard/'
@@ -136,7 +176,11 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
     | '/experiences/$id'
+    | '/blogs'
+    | '/events'
     | '/experiences'
     | '/dashboard/experiences'
     | '/dashboard'
@@ -149,7 +193,11 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
     | '/experiences/$id'
+    | '/blogs/'
+    | '/events/'
     | '/experiences/'
     | '/_authed/dashboard/experiences'
     | '/_authed/dashboard/'
@@ -163,7 +211,11 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
+  BlogsBlogIdRoute: typeof BlogsBlogIdRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
   ExperiencesIdRoute: typeof ExperiencesIdRoute
+  BlogsIndexRoute: typeof BlogsIndexRoute
+  EventsIndexRoute: typeof EventsIndexRoute
   ExperiencesIndexRoute: typeof ExperiencesIndexRoute
 }
 
@@ -225,11 +277,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperiencesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blogs/': {
+      id: '/blogs/'
+      path: '/blogs'
+      fullPath: '/blogs/'
+      preLoaderRoute: typeof BlogsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/experiences/$id': {
       id: '/experiences/$id'
       path: '/experiences/$id'
       fullPath: '/experiences/$id'
       preLoaderRoute: typeof ExperiencesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blogs/$blogId': {
+      id: '/blogs/$blogId'
+      path: '/blogs/$blogId'
+      fullPath: '/blogs/$blogId'
+      preLoaderRoute: typeof BlogsBlogIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/dashboard/': {
@@ -270,7 +350,11 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
+  BlogsBlogIdRoute: BlogsBlogIdRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
   ExperiencesIdRoute: ExperiencesIdRoute,
+  BlogsIndexRoute: BlogsIndexRoute,
+  EventsIndexRoute: EventsIndexRoute,
   ExperiencesIndexRoute: ExperiencesIndexRoute,
 }
 export const routeTree = rootRouteImport
