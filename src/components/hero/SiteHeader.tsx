@@ -39,8 +39,8 @@ const NAV_ITEMS = [
   { label: 'EXPERIENCES', href: '#', hasDropdown: true },
   { label: 'HERITAGE', href: '/heritage' },
   { label: 'GALLERY', href: '/gallery' },
-  { label: 'EVENTS', href: '#' },
-  { label: 'BLOG', href: '#' },
+  { label: 'EVENTS', href: '/events' },
+  { label: 'BLOG', href: '/blogs' },
   { label: 'CONTACT', href: '/contact' },
 ]
 
