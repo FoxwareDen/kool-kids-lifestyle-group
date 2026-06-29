@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HeritageRouteImport } from './routes/heritage'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
@@ -28,6 +29,11 @@ const LoginRoute = LoginRouteImport.update({
 const HeritageRoute = HeritageRouteImport.update({
   id: '/heritage',
   path: '/heritage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about-prieska': typeof AboutPrieskaRoute
   '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/experiences/$id': typeof ExperiencesIdRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about-prieska': typeof AboutPrieskaRoute
   '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/experiences/$id': typeof ExperiencesIdRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/about-prieska': typeof AboutPrieskaRoute
   '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/experiences/$id': typeof ExperiencesIdRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about-prieska'
     | '/contact'
+    | '/gallery'
     | '/heritage'
     | '/login'
     | '/experiences/$id'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about-prieska'
     | '/contact'
+    | '/gallery'
     | '/heritage'
     | '/login'
     | '/experiences/$id'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/about-prieska'
     | '/contact'
+    | '/gallery'
     | '/heritage'
     | '/login'
     | '/experiences/$id'
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   AboutPrieskaRoute: typeof AboutPrieskaRoute
   ContactRoute: typeof ContactRoute
+  GalleryRoute: typeof GalleryRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
   ExperiencesIdRoute: typeof ExperiencesIdRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/heritage'
       fullPath: '/heritage'
       preLoaderRoute: typeof HeritageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -247,6 +267,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   AboutPrieskaRoute: AboutPrieskaRoute,
   ContactRoute: ContactRoute,
+  GalleryRoute: GalleryRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
   ExperiencesIdRoute: ExperiencesIdRoute,

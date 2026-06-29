@@ -79,7 +79,7 @@ export function GallerySection() {
 
         <div className="mt-10 flex justify-center">
           <a
-            href="#"
+            href="/gallery"
             className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline hover:!text-[var(--brand-orange-deep)]"
           >
             View full gallery
