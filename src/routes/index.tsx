@@ -55,7 +55,7 @@ export const Route = createFileRoute('/')({
 
     const experience = await fetchFeaturedExperienceCard("en")    
 
-    return { pageData, featuredList: experience.value }
+    return { pageData, featuredList: experience.value, lang}
   },
 
   notFoundComponent: () => <div>Page not found</div>,
@@ -63,14 +63,14 @@ export const Route = createFileRoute('/')({
   errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
 
   component: function () {
-    const { pageData, featuredList } = Route.useLoaderData()
+    const { pageData, featuredList, lang } = Route.useLoaderData()
 
 
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
         <StoriesSection />
-        <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}}/>
+        <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}} lang={lang} />
         <PlanYourVisitSection />
         <GallerySection />
         <PreFooterSection />
