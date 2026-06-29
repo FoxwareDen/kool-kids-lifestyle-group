@@ -20,7 +20,9 @@ import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
 import { Route as ExperiencesIdRouteImport } from './routes/experiences/$id'
+import { Route as EventsTimelineRouteImport } from './routes/events/timeline'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as BlogsTimelineRouteImport } from './routes/blogs/timeline'
 import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
@@ -79,9 +81,19 @@ const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
   path: '/experiences/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsTimelineRoute = EventsTimelineRouteImport.update({
+  id: '/events/timeline',
+  path: '/events/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
   id: '/events/$eventId',
   path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogsTimelineRoute = BlogsTimelineRouteImport.update({
+  id: '/blogs/timeline',
+  path: '/blogs/timeline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogsBlogIdRoute = BlogsBlogIdRouteImport.update({
@@ -109,7 +121,9 @@ export interface FileRoutesByFullPath {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/blogs/timeline': typeof BlogsTimelineRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/timeline': typeof EventsTimelineRoute
   '/experiences/$id': typeof ExperiencesIdRoute
   '/blogs/': typeof BlogsIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -125,7 +139,9 @@ export interface FileRoutesByTo {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/blogs/timeline': typeof BlogsTimelineRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/timeline': typeof EventsTimelineRoute
   '/experiences/$id': typeof ExperiencesIdRoute
   '/blogs': typeof BlogsIndexRoute
   '/events': typeof EventsIndexRoute
@@ -143,7 +159,9 @@ export interface FileRoutesById {
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
   '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/blogs/timeline': typeof BlogsTimelineRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/events/timeline': typeof EventsTimelineRoute
   '/experiences/$id': typeof ExperiencesIdRoute
   '/blogs/': typeof BlogsIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -161,7 +179,9 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/blogs/$blogId'
+    | '/blogs/timeline'
     | '/events/$eventId'
+    | '/events/timeline'
     | '/experiences/$id'
     | '/blogs/'
     | '/events/'
@@ -177,7 +197,9 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/blogs/$blogId'
+    | '/blogs/timeline'
     | '/events/$eventId'
+    | '/events/timeline'
     | '/experiences/$id'
     | '/blogs'
     | '/events'
@@ -194,7 +216,9 @@ export interface FileRouteTypes {
     | '/heritage'
     | '/login'
     | '/blogs/$blogId'
+    | '/blogs/timeline'
     | '/events/$eventId'
+    | '/events/timeline'
     | '/experiences/$id'
     | '/blogs/'
     | '/events/'
@@ -212,7 +236,9 @@ export interface RootRouteChildren {
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
   BlogsBlogIdRoute: typeof BlogsBlogIdRoute
+  BlogsTimelineRoute: typeof BlogsTimelineRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
+  EventsTimelineRoute: typeof EventsTimelineRoute
   ExperiencesIdRoute: typeof ExperiencesIdRoute
   BlogsIndexRoute: typeof BlogsIndexRoute
   EventsIndexRoute: typeof EventsIndexRoute
@@ -298,11 +324,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperiencesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/timeline': {
+      id: '/events/timeline'
+      path: '/events/timeline'
+      fullPath: '/events/timeline'
+      preLoaderRoute: typeof EventsTimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events/$eventId': {
       id: '/events/$eventId'
       path: '/events/$eventId'
       fullPath: '/events/$eventId'
       preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blogs/timeline': {
+      id: '/blogs/timeline'
+      path: '/blogs/timeline'
+      fullPath: '/blogs/timeline'
+      preLoaderRoute: typeof BlogsTimelineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blogs/$blogId': {
@@ -351,7 +391,9 @@ const rootRouteChildren: RootRouteChildren = {
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
   BlogsBlogIdRoute: BlogsBlogIdRoute,
+  BlogsTimelineRoute: BlogsTimelineRoute,
   EventsEventIdRoute: EventsEventIdRoute,
+  EventsTimelineRoute: EventsTimelineRoute,
   ExperiencesIdRoute: ExperiencesIdRoute,
   BlogsIndexRoute: BlogsIndexRoute,
   EventsIndexRoute: EventsIndexRoute,
