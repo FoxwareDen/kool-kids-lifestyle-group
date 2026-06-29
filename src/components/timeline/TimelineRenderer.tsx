@@ -1,60 +1,55 @@
-import type { TimelineEntry } from '#/lib/timeline'
+import type { TimelineEntry, TimelineEntryKind } from '#/lib/timeline'
 import { TimelineHero } from './TimelineHero'
 import { TimelineFeed } from './TimelineFeed'
-import type { TimelineFilterValue } from './TimelineFilter'
 
 /**
- * Identifies which section of the site the timeline is being viewed from. This
- * only affects the hero copy and the default filter — the underlying feed is
- * the same combined blogs + events timeline on both routes.
- * @typedef {"blog" | "event"} TimelineSection
- */
-export type TimelineSection = 'blog' | 'event'
-
-/**
- * Per-section hero copy and breadcrumb configuration.
+ * Per-section hero copy and breadcrumb configuration. The blogs route and the
+ * events route share the same components and only differ in this framing.
  */
 const SECTION_CONFIG: Record<
-  TimelineSection,
+  TimelineEntryKind,
   {
     crumbLabel: string
     crumbHref: string
     eyebrow: string
     title: string
     subtitle: string
-    defaultFilter: TimelineFilterValue
+    emptyMessage: string
   }
 > = {
   blog: {
     crumbLabel: 'Blog',
     crumbHref: '/blogs',
-    eyebrow: 'Stories & Happenings',
-    title: 'The Blog & Events Timeline',
-    subtitle: 'Every story and event, newest first.',
-    defaultFilter: 'all',
+    eyebrow: 'Stories & Reflections',
+    title: 'The Blog Timeline',
+    subtitle: 'Every story, newest first.',
+    emptyMessage:
+      'There’s nothing here just yet. Check back soon for new stories from Prieska.',
   },
   event: {
     crumbLabel: 'Events',
     crumbHref: '/events',
-    eyebrow: 'Stories & Happenings',
-    title: 'The Events & Blog Timeline',
-    subtitle: 'Every event and story, newest first.',
-    defaultFilter: 'all',
+    eyebrow: 'Gatherings & Happenings',
+    title: 'The Events Timeline',
+    subtitle: 'Every event, newest first.',
+    emptyMessage:
+      'No events have been scheduled yet. Check back soon for upcoming happenings.',
   },
 }
 
 /**
  * Props for the {@link TimelineRenderer} component.
  * @typedef {Object} TimelineRendererProps
- * @property {TimelineSection} section - Which section the timeline is shown in.
- * @property {TimelineEntry[]} entries - The combined, pre-sorted feed entries.
+ * @property {TimelineEntryKind} section - Which content kind is being shown.
+ * @property {TimelineEntry[]} entries - The pre-sorted (newest-first) entries.
+ * @property {boolean} [isLoading] - Whether the entries are still loading.
  */
 
 /**
- * The shared page body for both the `/blogs/timeline` and `/events/timeline`
- * routes. Composes the {@link TimelineHero} and {@link TimelineFeed} so both
- * routes render an identical chronological feed of all blogs and events, with
- * only the hero framing varying per section.
+ * The shared page body for the `/blogs` and `/events` index routes. Composes
+ * the {@link TimelineHero} and {@link TimelineFeed} so both routes render an
+ * identical chronological feed, with only the hero framing and empty-state copy
+ * varying per section.
  *
  * @param {TimelineRendererProps} props - Component props.
  * @returns {JSX.Element} The rendered timeline page body.
@@ -62,9 +57,11 @@ const SECTION_CONFIG: Record<
 export function TimelineRenderer({
   section,
   entries,
+  isLoading = false,
 }: {
-  section: TimelineSection
+  section: TimelineEntryKind
   entries: TimelineEntry[]
+  isLoading?: boolean
 }) {
   const config = SECTION_CONFIG[section]
 
@@ -77,7 +74,11 @@ export function TimelineRenderer({
         title={config.title}
         subtitle={config.subtitle}
       />
-      <TimelineFeed entries={entries} defaultFilter={config.defaultFilter} />
+      <TimelineFeed
+        entries={entries}
+        isLoading={isLoading}
+        emptyMessage={config.emptyMessage}
+      />
     </main>
   )
 }

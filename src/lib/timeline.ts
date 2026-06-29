@@ -1,5 +1,9 @@
-import { pb } from "./pocketbase";
-import type { ContentBlock } from "./cms";
+import { listBlogPages, listEvents } from "./blog";
+import type {
+  HydratedBlogPage,
+  HydratedEvent,
+} from "./blog";
+import { resolveTranslatable, type Language } from "./experiences";
 
 /**
  * Discriminator describing whether a {@link TimelineEntry} originated from a
@@ -9,9 +13,9 @@ import type { ContentBlock } from "./cms";
 export type TimelineEntryKind = "blog" | "event";
 
 /**
- * A single, normalised item rendered in the combined blogs + events timeline.
- * Both blog posts and events are flattened into this shape so the UI can sort
- * and render them in one chronological feed.
+ * A single, normalised item rendered on a timeline. Blog posts and events are
+ * flattened into this shared shape so the UI can sort and render either content
+ * type with the same components.
  *
  * @typedef {Object} TimelineEntry
  * @property {string} id - CMS record id, used to link to the detail route.
@@ -19,7 +23,7 @@ export type TimelineEntryKind = "blog" | "event";
  * @property {string} title - Display title of the entry.
  * @property {string} excerpt - Short plain-text preview derived from content.
  * @property {string} date - ISO date string used for sorting and display.
- *   Events use their start date, blogs use their creation date.
+ *   Events use their start date; blogs use their creation date.
  * @property {string} [startDate] - Event start date (ISO), events only.
  * @property {string} [endDate] - Event end date (ISO), events only.
  */
@@ -34,97 +38,117 @@ export interface TimelineEntry {
 }
 
 /**
- * Raw PocketBase record shape for the shared "blog" collection that stores both
- * blog posts and events, discriminated by the `type` field.
+ * Flattened content block as stored on hydrated blog/event records. Only the
+ * text-bearing blocks ("header"/"paragraph") are relevant for building an
+ * excerpt; media blocks are ignored.
+ * @typedef {Object} TextualBlock
  */
-interface RawPostRecord {
-  id: string;
-  title?: string;
-  content?: ContentBlock[];
-  type?: TimelineEntryKind;
-  created?: string;
-  start_date?: string;
-  end_date?: string;
+type TextualBlock = {
+  type: string;
+  text?: { default?: string };
+};
+
+/**
+ * Maps a route slug (or pathname) to the {@link TimelineEntryKind} whose data
+ * should be loaded. Anything containing "event" resolves to events; everything
+ * else falls back to blogs.
+ *
+ * @param {string} slug - The route slug or pathname, e.g. "/events" or "/blogs".
+ * @returns {TimelineEntryKind} The content kind to fetch for that route.
+ */
+export function kindFromSlug(slug: string): TimelineEntryKind {
+  return slug.toLowerCase().includes("event") ? "event" : "blog";
 }
 
 /**
- * Strips HTML tags and collapses whitespace from a string so rich-text content
- * can be shown as a clean plain-text preview.
+ * Derives a short plain-text preview from a record's flattened content blocks.
+ * Prefers the first paragraph and falls back to the first header.
  *
- * @param {string} value - The raw (possibly HTML) string.
- * @returns {string} A trimmed, tag-free string.
- */
-function toPlainText(value: string): string {
-  return value
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-/**
- * Derives a short preview from a CMS content block array. Prefers the first
- * paragraph/rich-text block and falls back to the first heading.
- *
- * @param {ContentBlock[] | undefined} content - The entry's content blocks.
+ * @param {TextualBlock[] | undefined} content - The record's content blocks.
  * @param {number} [max=180] - Maximum length of the excerpt.
- * @returns {string} A plain-text excerpt, truncated with an ellipsis if needed.
+ * @returns {string} A trimmed excerpt, ellipsised if it exceeds {@link max}.
  */
-function extractExcerpt(content: ContentBlock[] | undefined, max = 180): string {
+function extractExcerpt(content: TextualBlock[] | undefined, max = 180): string {
   if (!Array.isArray(content)) return "";
 
-  const textual = content.find(
-    (block) => block.type === "text" || block.type === "richtext",
-  ) as { content?: string } | undefined;
+  const paragraph = content.find((block) => block.type === "paragraph");
+  const header = content.find((block) => block.type === "header");
+  const source = (paragraph ?? header)?.text?.default ?? "";
 
-  const heading = content.find((block) =>
-    ["h1", "h2", "h3", "h4", "h5", "h6"].includes(block.type),
-  ) as { content?: string } | undefined;
-
-  const source = textual?.content ?? heading?.content ?? "";
-  const plain = toPlainText(source);
-
+  const plain = source.replace(/\s+/g, " ").trim();
   return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain;
 }
 
 /**
- * Normalises a raw CMS record into a {@link TimelineEntry}.
+ * Normalises a hydrated blog record into a {@link TimelineEntry}.
  *
- * @param {RawPostRecord} record - The PocketBase record.
- * @returns {TimelineEntry} The normalised timeline entry.
+ * @param {HydratedBlogPage} record - The hydrated blog page.
+ * @param {Language} lang - Language used to resolve the translatable title.
+ * @returns {TimelineEntry} The normalised entry.
  */
-function toTimelineEntry(record: RawPostRecord): TimelineEntry {
-  const kind: TimelineEntryKind = record.type === "event" ? "event" : "blog";
-  const date =
-    kind === "event" && record.start_date ? record.start_date : (record.created ?? "");
-
+function blogToEntry(record: HydratedBlogPage, lang: Language): TimelineEntry {
   return {
     id: record.id,
-    kind,
-    title: record.title?.trim() || "Untitled",
-    excerpt: extractExcerpt(record.content),
-    date,
-    startDate: record.start_date || undefined,
-    endDate: record.end_date || undefined,
+    kind: "blog",
+    title: resolveTranslatable(record.title, lang)?.trim() || "Untitled",
+    excerpt: extractExcerpt(record.content as TextualBlock[]),
+    date: record.createdAt.toISOString(),
   };
 }
 
 /**
- * Fetches all blog posts and events from the CMS and merges them into a single
- * timeline ordered newest-first. Network/CMS failures resolve to an empty array
- * so the UI can show a graceful empty state rather than an error.
+ * Normalises a hydrated event record into a {@link TimelineEntry}.
  *
- * @returns {Promise<TimelineEntry[]>} The combined, chronologically sorted feed.
+ * @param {HydratedEvent} record - The hydrated event.
+ * @param {Language} lang - Language used to resolve the translatable title.
+ * @returns {TimelineEntry} The normalised entry.
  */
-export async function fetchTimeline(): Promise<TimelineEntry[]> {
-  try {
-    const records = await pb.collection("blog").getFullList<RawPostRecord>({
-      sort: "-created",
-    });
+function eventToEntry(record: HydratedEvent, lang: Language): TimelineEntry {
+  return {
+    id: record.id,
+    kind: "event",
+    title: resolveTranslatable(record.title, lang)?.trim() || "Untitled",
+    excerpt: extractExcerpt(record.content as TextualBlock[]),
+    date: record.startDate.toISOString(),
+    startDate: record.startDate.toISOString(),
+    endDate: record.endDate.toISOString(),
+  };
+}
 
-    return records
-      .map(toTimelineEntry)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  } catch {
-    return [];
+/**
+ * Sorts timeline entries newest-first by their primary {@link TimelineEntry.date}.
+ *
+ * @param {TimelineEntry[]} entries - Entries to sort (mutated in place).
+ * @returns {TimelineEntry[]} The same array, sorted newest-first.
+ */
+function sortNewestFirst(entries: TimelineEntry[]): TimelineEntry[] {
+  return entries.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+}
+
+/**
+ * Fetches the timeline entries for a single content kind and returns them
+ * ordered newest-first. The kind is chosen from the route slug, so the blogs
+ * route loads blog posts and the events route loads events. Any CMS/network
+ * failure resolves to an empty array so the UI can show a graceful empty state
+ * instead of an error.
+ *
+ * @param {TimelineEntryKind} kind - Which content type to load.
+ * @param {Language} [lang="en"] - Language used to resolve translatable titles.
+ * @returns {Promise<TimelineEntry[]>} The chronologically sorted entries.
+ */
+export async function fetchTimelineEntries(
+  kind: TimelineEntryKind,
+  lang: Language = "en",
+): Promise<TimelineEntry[]> {
+  if (kind === "event") {
+    const result = await listEvents();
+    if (!result.success || !result.value) return [];
+    return sortNewestFirst(result.value.map((record) => eventToEntry(record, lang)));
   }
+
+  const result = await listBlogPages();
+  if (!result.success || !result.value) return [];
+  return sortNewestFirst(result.value.map((record) => blogToEntry(record, lang)));
 }

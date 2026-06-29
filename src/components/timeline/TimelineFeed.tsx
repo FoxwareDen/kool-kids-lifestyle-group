@@ -1,63 +1,48 @@
-import { useMemo, useState } from 'react'
 import type { TimelineEntry } from '#/lib/timeline'
 import { TimelineEntryCard } from './TimelineEntryCard'
 import { TimelineEmptyState } from './TimelineEmptyState'
-import { TimelineFilter, type TimelineFilterValue } from './TimelineFilter'
+import { TimelineSkeleton } from './TimelineSkeleton'
 
 /**
  * Props for the {@link TimelineFeed} component.
  * @typedef {Object} TimelineFeedProps
- * @property {TimelineEntry[]} entries - The full, pre-sorted list of entries.
- * @property {TimelineFilterValue} [defaultFilter] - Filter to apply on first
- *   render. Defaults to "all".
+ * @property {TimelineEntry[]} entries - The pre-sorted (newest-first) entries.
+ * @property {boolean} [isLoading] - Whether entries are still being fetched.
+ * @property {string} [emptyMessage] - Message shown when there are no entries.
  */
 
 /**
- * The interactive body of the timeline page. Renders the filter control and a
- * vertical, newest-first rail of {@link TimelineEntryCard} items. Filtering is
- * handled client-side over the already-loaded entries, and a graceful empty
- * state is shown whenever the current filter yields no results.
+ * The body of a timeline page. Renders a vertical, newest-first rail of
+ * {@link TimelineEntryCard} items. While loading it shows a {@link
+ * TimelineSkeleton}, and when the CMS returns no data it shows a graceful
+ * {@link TimelineEmptyState} so the page never looks broken.
  *
  * @param {TimelineFeedProps} props - Component props.
  * @returns {JSX.Element} The rendered feed.
  */
 export function TimelineFeed({
   entries,
-  defaultFilter = 'all',
+  isLoading = false,
+  emptyMessage,
 }: {
   entries: TimelineEntry[]
-  defaultFilter?: TimelineFilterValue
+  isLoading?: boolean
+  emptyMessage?: string
 }) {
-  const [filter, setFilter] = useState<TimelineFilterValue>(defaultFilter)
-
-  const visible = useMemo(
-    () =>
-      filter === 'all' ? entries : entries.filter((entry) => entry.kind === filter),
-    [entries, filter],
-  )
-
   return (
     <section className="bg-[#f1ede6] py-16 sm:py-20">
       <div className="mx-auto w-full max-w-[820px] px-4 sm:px-6 lg:px-8">
-        <div className="mb-10 flex items-center justify-center">
-          <TimelineFilter value={filter} onChange={setFilter} />
-        </div>
-
-        {visible.length === 0 ? (
-          <TimelineEmptyState
-            message={
-              entries.length === 0
-                ? 'There’s nothing here just yet. Check back soon for new stories and events.'
-                : 'No entries match this filter yet. Try a different category.'
-            }
-          />
+        {isLoading ? (
+          <TimelineSkeleton />
+        ) : entries.length === 0 ? (
+          <TimelineEmptyState message={emptyMessage} />
         ) : (
           <ol>
-            {visible.map((entry, index) => (
+            {entries.map((entry, index) => (
               <TimelineEntryCard
                 key={`${entry.kind}-${entry.id}`}
                 entry={entry}
-                isLast={index === visible.length - 1}
+                isLast={index === entries.length - 1}
               />
             ))}
           </ol>
