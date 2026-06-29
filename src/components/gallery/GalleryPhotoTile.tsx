@@ -29,12 +29,12 @@ export function GalleryPhotoTile({
       type="button"
       onClick={onOpen}
       aria-label={`View ${photo.title}`}
-      className="group relative mb-4 block w-full overflow-hidden break-inside-avoid bg-[var(--brand-navy)]/5 text-left"
+      className="group relative block w-full overflow-hidden break-inside-avoid bg-[var(--brand-navy)]/5 text-left sm:mb-4"
     >
       <img
         src={photo.image || '/placeholder.svg'}
         alt={photo.alt}
-        className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:aspect-auto"
       />
 
       {/* Hover overlay */}

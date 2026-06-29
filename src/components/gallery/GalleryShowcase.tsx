@@ -64,7 +64,7 @@ export function GalleryShowcase() {
           <GalleryFilter active={activeCategory} onChange={handleFilterChange} />
         </div>
 
-        <div className="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
+        <div className="mt-12 grid grid-cols-3 gap-1 sm:block sm:columns-2 sm:gap-4 lg:columns-3">
           {visiblePhotos.map((photo, index) => (
             <GalleryPhotoTile
               key={photo.id}
