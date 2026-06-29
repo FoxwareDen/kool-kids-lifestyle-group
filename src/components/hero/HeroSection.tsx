@@ -79,8 +79,6 @@ export function HeroSection({data}:{data: any|null}) {
       {/* Top fade so the solid navy navbar blends into the hero image */}
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
 
-      <SiteHeader />
-
       {/* Content */}
       <div className="relative z-10 flex h-full items-center">
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">

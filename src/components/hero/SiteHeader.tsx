@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
+import { isAuthenticated } from "@/lib/pocketbase";
+import { Link } from '@tanstack/react-router';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -34,14 +36,15 @@ function WhatsAppIcon({ className }: { className?: string }) {
  * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
  */
 const NAV_ITEMS = [
-  { label: 'HOME', href: '/' },
-  { label: 'ABOUT PRIESKA', href: '/about-prieska' },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true },
-  { label: 'HERITAGE', href: '/heritage' },
-  { label: 'GALLERY', href: '/gallery' },
-  { label: 'EVENTS', href: '#' },
-  { label: 'BLOG', href: '#' },
-  { label: 'CONTACT', href: '/contact' },
+  { label: 'HOME', href: '/', authed: false },
+  { label: "DashBoard", href: "/dashboard" , authed: true},
+  { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
+  { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
+  { label: 'HERITAGE', href: '/heritage', authed: false },
+  { label: 'GALLERY', href: '/gallery', authed: false },
+  { label: 'EVENTS', href: '#', authed: false },
+  { label: 'BLOG', href: '#', authed: false },
+  { label: 'CONTACT', href: '/contact', authed: false },
 ]
 
 /**
@@ -55,6 +58,7 @@ const NAV_ITEMS = [
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const isAuthed = useMemo(()=>isAuthenticated(),[])
 
 useEffect(() => {
   const onScroll = () => setScrolled(window.scrollY > 80)
@@ -80,16 +84,31 @@ useEffect(() => {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
-            <a
+          {NAV_ITEMS.map((item) => {
+            return item.authed ? (
+              <>{
+                isAuthed ? (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+                    >
+                      {item.label}
+                      {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+                    </Link>
+                ) : (<></>)
+              }</>
+            ) : (
+              <Link
               key={item.label}
-              href={item.href}
+              to={item.href}
               className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
               {item.label}
               {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
-            </a>
-          ))}
+            </Link>
+            );
+          })}
         </nav>
 
         {/* Actions */}
