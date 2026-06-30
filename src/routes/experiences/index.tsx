@@ -1,43 +1,20 @@
 import {
   deriveCategories,
   experienceHasCategory,
-  type HydratedBookingPage,
   type Language,
 } from '#/lib/experiences'
-import { fetchExperiences } from '#/lib/pocketbase'
-import { createFileRoute, notFound } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
+import { createFileRoute } from '@tanstack/react-router'
+import { useExperiences } from '#/hooks/useExperiences'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
 import { CategoryFilter } from '#/components/experiences/CategoryFilter'
 import { ExperienceListCard } from '#/components/experiences/ExperienceListCard'
-import { Compass } from 'lucide-react'
-
-const getPageData = createServerFn().handler(async () => {
-  const result = await fetchExperiences()
-
-  if (result.success) {
-    return result.value
-  } else {
-    throw new Error(result.error || '')
-  }
-})
+import { Compass, Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/experiences/')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? 'en',
     category: (search.category as string) || undefined,
   }),
-  loader: async () => {
-    try {
-      const experiences = await getPageData()
-
-      if (!experiences) throw notFound()
-
-      return experiences
-    } catch (error) {
-      throw notFound()
-    }
-  },
   component: RouteComponent,
 })
 
@@ -54,8 +31,8 @@ function categoryLabel(category: string): string {
 }
 
 function RouteComponent() {
-  const experiences = Route.useLoaderData() as HydratedBookingPage[]
   const { lang, category } = Route.useSearch()
+  const { experiences, isLoading, isError } = useExperiences()
 
   const categories = deriveCategories(experiences)
   const filtered = category
@@ -83,16 +60,33 @@ function RouteComponent() {
               <h2 className="display-title text-2xl font-medium text-[var(--brand-navy)] sm:text-3xl">
                 {heading}
               </h2>
-              <span className="text-sm font-medium text-[var(--brand-navy)]/55">
-                {filtered.length} {filtered.length === 1 ? 'experience' : 'experiences'}
-              </span>
+              {!isLoading && !isError && (
+                <span className="text-sm font-medium text-[var(--brand-navy)]/55">
+                  {filtered.length} {filtered.length === 1 ? 'experience' : 'experiences'}
+                </span>
+              )}
             </div>
           </div>
 
           <CategoryFilter categories={categories} active={category} />
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="mt-12 flex flex-col items-center justify-center gap-3 py-20 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-orange)]" strokeWidth={1.5} />
+            <p className="text-sm font-medium text-[var(--brand-navy)]/55">Loading experiences…</p>
+          </div>
+        ) : isError ? (
+          <div className="mt-12 flex flex-col items-center justify-center gap-3 border border-dashed border-[var(--brand-navy)]/20 bg-white/60 py-20 text-center">
+            <Compass className="h-8 w-8 text-[var(--brand-navy)]/30" strokeWidth={1.5} />
+            <p className="text-base font-semibold text-[var(--brand-navy)]">
+              We couldn&apos;t load experiences
+            </p>
+            <p className="max-w-sm text-sm text-[var(--brand-navy)]/55">
+              Something went wrong while fetching experiences. Please refresh the page to try again.
+            </p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="mt-12 flex flex-col items-center justify-center gap-3 border border-dashed border-[var(--brand-navy)]/20 bg-white/60 py-20 text-center">
             <Compass className="h-8 w-8 text-[var(--brand-navy)]/30" strokeWidth={1.5} />
             <p className="text-base font-semibold text-[var(--brand-navy)]">

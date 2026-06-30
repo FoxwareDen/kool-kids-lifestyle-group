@@ -4,68 +4,19 @@ import {
   type HydratedBookingPage,
   type Language,
 } from '#/lib/experiences'
-import { fetchExperienceById } from '#/lib/pocketbase'
-import { createFileRoute, notFound } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
+import { fetchExperienceByIdClient } from '#/lib/pocketbase'
+import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { CalendarDays, Clock, MapPin, Users } from 'lucide-react'
+import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
 import { ExperienceContent } from '#/components/experiences/ExperienceContent'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
-
-const getPageData = createServerFn()
-  .inputValidator((input: { id: string; language?: Language }) => input)
-  .handler(async ({ data: { id, language } }) => {
-    const resolvedLanguage: 'en' | 'af' =
-      language ??
-      (await (async () => {
-        const { getRequestHeaders } = await import('@tanstack/react-start/server')
-
-        const headers = getRequestHeaders()
-        const acceptLanguage = headers.get('accept-language') ?? 'en'
-
-        const languages = acceptLanguage
-          .split(',')
-          .map((part) => {
-            const [lang, q] = part.trim().split(';q=')
-            return { lang: lang.trim(), q: q ? parseFloat(q) : 1.0 }
-          })
-          .sort((a, b) => b.q - a.q)
-
-        const primaryLang = languages[0].lang.split('-')[0].toLowerCase()
-        return primaryLang === 'af' ? 'af' : 'en'
-      })())
-
-    const result = await fetchExperienceById(id)
-
-    if (result.success) {
-      return { data: result.value, lang: resolvedLanguage }
-    } else {
-      throw new Error(result.error || '')
-    }
-  })
 
 export const Route = createFileRoute('/experiences/$id')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? 'en',
   }),
-  loader: async ({ location, params }) => {
-    const { id } = params
-
-    const urlParams = new URLSearchParams(location.search)
-    const lang = urlParams.get('lang') as 'en' | 'af' | undefined
-
-    const result = await getPageData({ data: { id, language: lang } })
-
-    if (!result?.data) throw notFound()
-
-    return result
-  },
-  notFoundComponent: () => (
-    <div className="flex min-h-[60svh] items-center justify-center text-[var(--brand-navy)]">
-      Experience not found.
-    </div>
-  ),
   component: RouteComponent,
 })
 
@@ -82,11 +33,52 @@ function categoryLabel(category: string): string {
 }
 
 function RouteComponent() {
-  const { data, lang } = Route.useLoaderData() as {
-    data: HydratedBookingPage
-    lang: Language
-  }
+  const { id } = Route.useParams()
+  const { lang } = Route.useSearch()
   const [bookingOpen, setBookingOpen] = useState(false)
+
+  const {
+    data,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['experience', id],
+    queryFn: async (): Promise<HydratedBookingPage | null> => {
+      const result = await fetchExperienceByIdClient(id)
+      if (!result.success || !result.value) return null
+      return result.value
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
+  if (isLoading) {
+    return (
+      <main className="flex min-h-[70svh] flex-col items-center justify-center gap-3 bg-[#f4efe7]">
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-orange)]" strokeWidth={1.5} />
+        <p className="text-sm font-medium text-[var(--brand-navy)]/55">Loading experience…</p>
+      </main>
+    )
+  }
+
+  if (isError || !data) {
+    return (
+      <main className="flex min-h-[70svh] flex-col items-center justify-center gap-4 bg-[#f4efe7] px-6 text-center">
+        <h1 className="display-title text-2xl font-medium text-[var(--brand-navy)]">
+          Experience not found
+        </h1>
+        <p className="max-w-md text-sm text-[var(--brand-navy)]/60">
+          We couldn&apos;t find the experience you were looking for. It may have been moved or is no
+          longer available.
+        </p>
+        <a
+          href="/experiences"
+          className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-sm font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-[var(--brand-orange-deep)]"
+        >
+          Browse all experiences
+        </a>
+      </main>
+    )
+  }
 
   const title = resolveTranslatable(data.title, lang)
   const description = data.description ? resolveTranslatable(data.description, lang) : ''

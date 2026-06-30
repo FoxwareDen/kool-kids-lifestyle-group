@@ -78,7 +78,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileExpOpen, setMobileExpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { categories } = useExperienceCategories()
+  const { categories, isLoading: categoriesLoading } = useExperienceCategories()
 
 useEffect(() => {
   const onScroll = () => setScrolled(window.scrollY > 80)
@@ -128,7 +128,7 @@ useEffect(() => {
                     </a>
                     {categories.length === 0 ? (
                       <span className="block px-4 py-3 text-xs text-white/50">
-                        Loading categories…
+                        {categoriesLoading ? 'Loading categories…' : 'No categories yet'}
                       </span>
                     ) : (
                       categories.map((cat) => (
@@ -219,7 +219,9 @@ useEffect(() => {
                   {mobileExpOpen && (
                     <ul className="mb-1 ml-3 flex flex-col gap-0.5 border-l border-white/10 pl-3">
                       {categories.length === 0 ? (
-                        <li className="px-3 py-2 text-xs text-white/50">Loading categories…</li>
+                        <li className="px-3 py-2 text-xs text-white/50">
+                          {categoriesLoading ? 'Loading categories…' : 'No categories yet'}
+                        </li>
                       ) : (
                         categories.map((cat) => (
                           <li key={cat}>

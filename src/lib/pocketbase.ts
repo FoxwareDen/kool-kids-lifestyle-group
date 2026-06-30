@@ -432,6 +432,40 @@ export async function resolveAssetUrlClient(assetId: string): Promise<string | n
   }
 }
 
+/**
+ * Client-side variant of {@link fetchExperienceById}. Loads a single published
+ * experience by id using the browser PocketBase singleton, hydrating the cover
+ * image and parsing translatable JSON fields.
+ */
+export async function fetchExperienceByIdClient(
+  id: string,
+): Promise<Result<HydratedBookingPage, string>> {
+  try {
+    const record: FlatBookingPage | null = await pb.collection("Experiences").getOne(id, {
+      expand: "coverImage",
+    });
+    if (!record) return createResult(null, "Experience not found");
+
+    // @ts-ignore - expand is injected by PocketBase
+    const image = record.expand["coverImage"];
+
+    return createResult<HydratedBookingPage, string>(
+      {
+        ...record,
+        title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
+        description: record.description
+          ? (typeof record.description === "string" ? JSON.parse(record.description) : record.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+      },
+      null,
+    );
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to get experience");
+  }
+}
+
 export async function fetchExperienceById(id:string, cookieHeader?:string) {
   const client = createPB_SSR(cookieHeader);
 
