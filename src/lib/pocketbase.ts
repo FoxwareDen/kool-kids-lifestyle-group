@@ -384,6 +384,54 @@ export async function fetchExperiences(cookieHeader?: string): Promise<Result<Hy
   }
 }
 
+/**
+ * Client-side variant of {@link fetchExperiences}. Uses the browser PocketBase
+ * singleton (VITE_CMS_URI) so it can run from React components / loaders that
+ * execute on the client. Returns published experiences with hydrated cover
+ * image URLs.
+ */
+export async function fetchExperiencesClient(): Promise<Result<HydratedBookingPage[], string>> {
+  try {
+    const records: FlatBookingPage[] = await pb.collection("Experiences").getFullList({
+      filter: `status = "Published"`,
+      expand: 'coverImage',
+    });
+
+    const t: HydratedBookingPage[] = records.map((obj) => {
+      // @ts-ignore - expand is injected by PocketBase
+      const image = obj.expand["coverImage"];
+      return {
+        ...obj,
+        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+        description: obj.description
+          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+      };
+    });
+
+    return createResult(t, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "failed to get experiences");
+  }
+}
+
+/**
+ * Client-side helper that resolves a stored asset id (as found on flat media
+ * blocks) into a fully qualified file URL. Returns null if the asset can't be
+ * resolved.
+ */
+export async function resolveAssetUrlClient(assetId: string): Promise<string | null> {
+  try {
+    const record = await pb.collection("assets").getOne(assetId);
+    return buildImageUrl(record.collectionId, record.id, record.file);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 export async function fetchExperienceById(id:string, cookieHeader?:string) {
   const client = createPB_SSR(cookieHeader);
 

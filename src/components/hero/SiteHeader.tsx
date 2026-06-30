@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
+import { ChevronDown, Menu, Calendar, X, ArrowRight } from 'lucide-react'
+import { useExperienceCategories } from '#/hooks/useExperiences'
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -36,13 +37,34 @@ function WhatsAppIcon({ className }: { className?: string }) {
 const NAV_ITEMS = [
   { label: 'HOME', href: '/' },
   { label: 'ABOUT PRIESKA', href: '/about-prieska' },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true },
+  { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true },
   { label: 'HERITAGE', href: '/heritage' },
   { label: 'GALLERY', href: '/gallery' },
   { label: 'EVENTS', href: '/events' },
   { label: 'BLOG', href: '/blogs' },
   { label: 'CONTACT', href: '/contact' },
 ]
+
+/**
+ * Build the experiences index URL filtered to a single category.
+ * @param {string} category - The raw category label.
+ * @returns {string} A link to the experiences index pre-filtered by category.
+ */
+function categoryHref(category: string): string {
+  return `/experiences?category=${encodeURIComponent(category)}`
+}
+
+/**
+ * Title-case a raw category string for display, e.g. "heritage" -> "Heritage".
+ * @param {string} category - The raw category label.
+ * @returns {string} The display label.
+ */
+function categoryLabel(category: string): string {
+  return category
+    .split(/[\s-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
 
 /**
  * The fixed, transparent site header that overlays the hero section.
@@ -54,7 +76,9 @@ const NAV_ITEMS = [
  */
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileExpOpen, setMobileExpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { categories } = useExperienceCategories()
 
 useEffect(() => {
   const onScroll = () => setScrolled(window.scrollY > 80)
@@ -80,16 +104,56 @@ useEffect(() => {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
-            >
-              {item.label}
-              {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
-            </a>
-          ))}
+          {NAV_ITEMS.map((item) =>
+            item.hasDropdown ? (
+              <div key={item.label} className="group relative">
+                <a
+                  href={item.href}
+                  className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)] group-hover:!text-[var(--brand-orange)]"
+                  aria-haspopup="true"
+                >
+                  {item.label}
+                  <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
+                </a>
+
+                {/* Dropdown panel */}
+                <div className="invisible absolute left-1/2 top-full z-40 w-60 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                  <div className="overflow-hidden border border-white/10 bg-[var(--brand-navy)] shadow-2xl shadow-black/40">
+                    <a
+                      href="/experiences"
+                      className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-white/5 hover:!text-[var(--brand-orange)]"
+                    >
+                      All Experiences
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </a>
+                    {categories.length === 0 ? (
+                      <span className="block px-4 py-3 text-xs text-white/50">
+                        Loading categories…
+                      </span>
+                    ) : (
+                      categories.map((cat) => (
+                        <a
+                          key={cat}
+                          href={categoryHref(cat)}
+                          className="block px-4 py-2.5 text-sm font-medium !text-white/80 no-underline transition-colors hover:bg-white/5 hover:!text-[var(--brand-orange)]"
+                        >
+                          {categoryLabel(cat)}
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+              >
+                {item.label}
+              </a>
+            ),
+          )}
         </nav>
 
         {/* Actions */}
@@ -129,17 +193,59 @@ useEffect(() => {
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
-                >
-                  {item.label}
-                  {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
-                </a>
-              </li>
-            ))}
+            {NAV_ITEMS.map((item) =>
+              item.hasDropdown ? (
+                <li key={item.label}>
+                  <div className="flex items-center justify-between rounded-md pr-1 transition-colors hover:bg-white/10">
+                    <a
+                      href={item.href}
+                      className="flex-1 rounded-md px-3 py-2.5 text-sm font-semibold !text-white/85 no-underline"
+                    >
+                      {item.label}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setMobileExpOpen((v) => !v)}
+                      aria-label="Toggle experience categories"
+                      aria-expanded={mobileExpOpen}
+                      className="flex h-9 w-9 items-center justify-center rounded-md text-white"
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${mobileExpOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  </div>
+
+                  {mobileExpOpen && (
+                    <ul className="mb-1 ml-3 flex flex-col gap-0.5 border-l border-white/10 pl-3">
+                      {categories.length === 0 ? (
+                        <li className="px-3 py-2 text-xs text-white/50">Loading categories…</li>
+                      ) : (
+                        categories.map((cat) => (
+                          <li key={cat}>
+                            <a
+                              href={categoryHref(cat)}
+                              className="block rounded-md px-3 py-2 text-sm font-medium !text-white/75 no-underline transition-colors hover:bg-white/10 hover:!text-[var(--brand-orange)]"
+                            >
+                              {categoryLabel(cat)}
+                            </a>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                  )}
+                </li>
+              ) : (
+                <li key={item.label}>
+                  <a
+                    href={item.href}
+                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold !text-white/85 no-underline transition-colors hover:bg-white/10"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ),
+            )}
           </ul>
         </nav>
       )}
