@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { handleGoogleLogin } from '#/lib/pocketbase';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { motion } from 'motion/react';
 
 import orangeRiverImg from "../images/orange-river.jpeg"
 import riverImg3 from "../images/river3.jpeg"
@@ -78,6 +79,38 @@ function Carousel() {
   );
 }
 
+function AnimatedBackdrop() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" />;
+  }
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <motion.div
+        className="absolute -left-24 -top-24 h-72 w-72 rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(232,130,30,0.18), transparent 70%)' }}
+        animate={{ x: [0, 24, 0], y: [0, 18, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute -bottom-28 left-10 h-80 w-80 rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(47,106,74,0.16), transparent 70%)' }}
+        animate={{ x: [0, -20, 0], y: [0, -16, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute right-0 top-1/3 h-64 w-64 rounded-full blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(23,58,64,0.12), transparent 70%)' }}
+        animate={{ x: [0, 16, 0], y: [0, -22, 0] }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </div>
+  );
+}
+
 function RouteComponent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,43 +130,47 @@ function RouteComponent() {
   };
 
   return (
-    <div className="flex min-h-screen w-full" style={{ background: 'white' }}>
+    <div className="flex min-h-screen w-full" style={{ background: 'var(--foam)', fontFamily: 'var(--font-sans)' }}>
  
-      <div className="flex flex-col px-10 pt-12 sm:px-14" style={{ width: '380px', flexShrink: 0 }}>
-        <a href="/" className="mb-10 flex items-center gap-2">
-          <span className="script-title text-2xl" style={{ color: 'var(--sea-ink)' }}>360</span>
-          <span className="display-title text-sm font-semibold uppercase tracking-widest" style={{ color: 'var(--sea-ink)' }}>
-            Prieska
-          </span>
-        </a>
- 
-        <h1 className="display-title text-3xl font-semibold" style={{ color: 'var(--sea-ink)' }}>
-          Log in to your Admin account
-        </h1>
- 
-        <div className="mt-6 flex flex-col gap-3">
-          <button
-            onClick={handleGoogleSubmit}
-            type="button"
-            className="flex items-center justify-center gap-3 rounded-md border px-4 py-2.5 text-sm font-medium"
-            style={{ borderColor: 'var(--line)', color: 'var(--sea-ink)', background: 'white' }}
-          >
-          <GoogleIcon /> Google
-          </button>
-        </div>
- 
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
-          <span className="whitespace-nowrap text-xs" style={{ color: 'var(--sea-ink-soft)' }}>Go back</span>
-          <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
-        </div>
-        <div className="mt-6 flex flex-col gap-3">
-          <a href='/'
-              className="flex items-center justify-center gap-3 rounded-md border px-4 py-2.5 text-sm font-medium"
-              style={{ borderColor: 'var(--line)', color: 'var(--sea-ink)', background: 'white' }}
-          >
-            <ArrowLeft /> Back
+      <div className="relative flex flex-col px-10 pt-12 sm:px-14" style={{ width: '380px', flexShrink: 0 }}>
+        <AnimatedBackdrop />
+
+        <div className="relative z-10 flex flex-1 flex-col">
+          <a href="/" className="mb-10 flex items-center" aria-label="360 Experiences home">
+            <span className="inline-flex items-center rounded-xl px-4 py-3" style={{ background: 'var(--brand-navy)' }}>
+              <img src="/logo-2.png" alt="360 Experiences" className="h-12 w-auto object-contain" />
+            </span>
           </a>
+ 
+          <h1 className="display-title text-3xl font-semibold leading-tight text-balance" style={{ color: 'var(--sea-ink)' }}>
+            Log in to your Admin account
+          </h1>
+ 
+          <div className="mt-6 flex flex-col gap-3">
+            <button
+              onClick={handleGoogleSubmit}
+              type="button"
+              className="flex items-center justify-center gap-3 rounded-md border px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--brand-orange)] active:translate-y-0 active:scale-[0.98]"
+              style={{ borderColor: 'var(--line)', color: 'var(--sea-ink)', background: 'var(--surface-strong)' }}
+            >
+            <GoogleIcon /> Google
+            </button>
+          </div>
+ 
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
+            <span className="whitespace-nowrap text-xs" style={{ color: 'var(--sea-ink-soft)' }}>Go back</span>
+            <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
+          </div>
+          <div className="mt-6 flex flex-col gap-3">
+            <a
+              href='/'
+              className="flex items-center justify-center gap-3 rounded-md border px-4 py-2.5 text-sm font-semibold !no-underline shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--brand-orange)] active:translate-y-0 active:scale-[0.98]"
+              style={{ borderColor: 'var(--line)', color: 'var(--sea-ink)', background: 'var(--surface-strong)' }}
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </a>
+          </div>
         </div>
       </div>
  
