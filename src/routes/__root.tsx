@@ -61,10 +61,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
         {
-          slug.split("\/").includes("dashboard") ? null : <SiteHeader />
+          slug.split("\/").includes("dashboard") || slug.split("\/").includes("login") ? null : <SiteHeader />
         }
         {children}
-        <SiteFooter />
+        {
+          slug.split("\/").includes("login") ? null : <SiteFooter />
+        }
+        
         <TanStackDevtools
           config={{
             position: 'bottom-right',
