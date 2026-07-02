@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { handleGoogleLogin } from '#/lib/pocketbase';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { motion } from 'motion/react';
 
 import orangeRiverImg from "../images/orange-river.jpeg"
 import riverImg3 from "../images/river3.jpeg"
@@ -79,37 +78,6 @@ function Carousel() {
   );
 }
 
-function AnimatedBackdrop() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) {
-    return <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true" />;
-  }
-
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <motion.div
-        className="absolute -left-24 -top-24 h-72 w-72 rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(232,130,30,0.18), transparent 70%)' }}
-        animate={{ x: [0, 24, 0], y: [0, 18, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute -bottom-28 left-10 h-80 w-80 rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(47,106,74,0.16), transparent 70%)' }}
-        animate={{ x: [0, -20, 0], y: [0, -16, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute right-0 top-1/3 h-64 w-64 rounded-full blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(23,58,64,0.12), transparent 70%)' }}
-        animate={{ x: [0, 16, 0], y: [0, -22, 0] }}
-        transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-      />
-    </div>
-  );
-}
 
 function RouteComponent() {
   const [loading, setLoading] = useState(false);
@@ -141,20 +109,19 @@ function RouteComponent() {
   className="pointer-events-none absolute inset-0"
   style={{
     background: 'var(--brand-navy)',
-    clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+    clipPath: 'polygon(0 0, 45% 0, 0 30%)',
   }}
   aria-hidden="true"
 />
-        <AnimatedBackdrop />
 
-        <div className="relative z-10 flex flex-1 flex-col">
-          <a href="/" className="mb-10 flex items-center" aria-label="360 Experiences home">
-            <span className="inline-flex items-center px-4 py-3">
-              <img src="/logo-2.png" alt="360 Experiences" className="h-12 w-auto object-contain" />
+        
+          <a href="/" className="absolute left-0 top-0 z-20 flex items-center" aria-label="360 Experiences home">
+            <span className="inline-flex items-center px-1 py-3">
+              <img src="/logo-2.png" alt="360 Experiences" className="h-17 w-auto object-contain" />
             </span>
           </a>
  
-          <h1 className="display-title text-3xl font-semibold leading-tight text-balance" style={{ color: 'var(--brand-orange)' }}>
+          <h1 className="display-title text-3xl font-semibold leading-tight text-balance mt-24" style={{ color: 'var(--sea-ink-soft)' }}>
             Log in to your Admin account
           </h1>
  
@@ -183,7 +150,7 @@ function RouteComponent() {
               <ArrowLeft className="h-4 w-4" /> Back
             </a>
           </div>
-        </div>
+        
       </div>
  
       <div className="relative flex-1" style={{ minWidth: '320px' }}>
