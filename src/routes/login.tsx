@@ -132,17 +132,29 @@ function RouteComponent() {
   return (
     <div className="flex min-h-screen w-full" style={{ background: 'var(--foam)', fontFamily: 'var(--font-sans)' }}>
  
-      <div className="relative flex flex-col px-10 pt-12 sm:px-14" style={{ width: '380px', flexShrink: 0 }}>
+      <div
+  className="relative flex flex-col px-10 pt-12 sm:px-14 overflow-hidden"
+  style={{ width: '380px', flexShrink: 0, background: 'var(--foam)' }}
+>
+  {/* Diagonal navy layer */}
+<div
+  className="pointer-events-none absolute inset-0"
+  style={{
+    background: 'var(--brand-navy)',
+    clipPath: 'polygon(0 0, 100% 0, 0 100%)',
+  }}
+  aria-hidden="true"
+/>
         <AnimatedBackdrop />
 
         <div className="relative z-10 flex flex-1 flex-col">
           <a href="/" className="mb-10 flex items-center" aria-label="360 Experiences home">
-            <span className="inline-flex items-center rounded-xl px-4 py-3" style={{ background: 'var(--brand-navy)' }}>
+            <span className="inline-flex items-center px-4 py-3">
               <img src="/logo-2.png" alt="360 Experiences" className="h-12 w-auto object-contain" />
             </span>
           </a>
  
-          <h1 className="display-title text-3xl font-semibold leading-tight text-balance" style={{ color: 'var(--sea-ink)' }}>
+          <h1 className="display-title text-3xl font-semibold leading-tight text-balance" style={{ color: 'var(--brand-orange)' }}>
             Log in to your Admin account
           </h1>
  
@@ -159,7 +171,7 @@ function RouteComponent() {
  
           <div className="my-6 flex items-center gap-3">
             <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
-            <span className="whitespace-nowrap text-xs" style={{ color: 'var(--sea-ink-soft)' }}>Go back</span>
+            <span className="whitespace-nowrap text-xs" style={{ color: 'var(--sea-ink)' }}>Go back</span>
             <div className="h-px flex-1" style={{ background: 'var(--line)' }} />
           </div>
           <div className="mt-6 flex flex-col gap-3">
