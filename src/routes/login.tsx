@@ -4,7 +4,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
 import orangeRiverImg from "../images/orange-river.jpeg"
 import riverImg3 from "../images/river3.jpeg"
-import priskaImg from "../images/prieska.jpeg"
+import trailImg from "../images/trail.jpeg"
 import { ArrowLeft } from 'lucide-react';
 
 export const Route = createFileRoute('/login')({
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/login')({
 const SLIDES = [
   { src: riverImg3, alt: 'Heritage church in Prieska' },
   { src: orangeRiverImg, alt: 'Orange River' },
-  { src: priskaImg, alt: 'Karoo landscape' },
+  { src: trailImg, alt: 'Karoo landscape' },
 ];
 
 function Carousel() {
