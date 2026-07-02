@@ -1,5 +1,4 @@
-import type { HydratedBookingPage, Language } from '#/lib/experiences'
-import { fetchExperiences, Result } from '#/lib/pocketbase'
+import { fetchExperiences, type Language } from '#/lib/experiences'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 

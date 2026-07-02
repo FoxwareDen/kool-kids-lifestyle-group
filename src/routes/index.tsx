@@ -4,9 +4,10 @@ import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchFeaturedExperienceCard, fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { fetchFeaturedExperienceCard } from '#/lib/experiences';
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)

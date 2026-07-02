@@ -13,6 +13,7 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
+import { isAuthenticated } from '#/lib/pocketbase'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -48,6 +49,10 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 function RootDocument({ children }: { children: React.ReactNode }) {
   const { slug } = Route.useLoaderData();
 
+  console.log("root test");
+  console.log(slug.split("\/").includes("dashboard") ? null : <SiteHeader />);
+  console.log(isAuthenticated());
+  
   return (
     <html lang="en" className="h-full">
       <head>

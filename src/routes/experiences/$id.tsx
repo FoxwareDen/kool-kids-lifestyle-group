@@ -1,5 +1,4 @@
-import type { Language } from '#/lib/experiences'
-import { fetchExperienceById } from '#/lib/pocketbase'
+import { fetchExperienceById, type Language } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
