@@ -2,6 +2,10 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  useNavigate,
+  useRouter,
+  useRouterState,
+  useSearch,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -13,6 +17,7 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
+import { useEffect } from 'react'
 import { isAuthenticated } from '#/lib/pocketbase'
 
 interface MyRouterContext {
@@ -20,6 +25,38 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loader: async ({location}) =>{
+    const params = new URLSearchParams(location.search)
+    const urlLang = params.get('lang') as 'en' | 'af' | null
+
+    let resolvedLanguage: 'en' | 'af'
+
+    if (urlLang) {
+      // 1. URL ALWAYS wins
+      resolvedLanguage = urlLang
+    } else {
+      // 2. fallback to browser
+      const { getRequestHeaders } = await import('@tanstack/react-start/server')
+
+      const headers = getRequestHeaders()
+      const acceptLanguage = headers.get('accept-language') ?? 'en'
+
+      const primaryLang = acceptLanguage
+        .split(',')[0]
+        .split('-')[0]
+        .toLowerCase()
+
+      resolvedLanguage = primaryLang === 'af' ? 'af' : 'en'
+    }
+
+    return {
+      isAuthed: isAuthenticated(),
+      lang: resolvedLanguage,
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -40,31 +77,31 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  loader: ({location}) =>{
-    return { slug: location.pathname};
-  },
   shellComponent: RootDocument
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const { slug } = Route.useLoaderData();
-
-  console.log("root test");
-  console.log(slug.split("\/").includes("dashboard") ? null : <SiteHeader />);
-  console.log(isAuthenticated());
+  const { pathname } = useRouterState({
+    select(state) {
+      return state.location;
+    },
+  })
+  const { isAuthed } = Route.useLoaderData();
   
   return (
-    <html lang="en" className="h-full">
+    <html className="h-full">
       <head>
         <HeadContent />
       </head>
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
         {
-          slug.split("\/").includes("dashboard") ? null : <SiteHeader />
+          pathname.split("\/").includes("dashboard") ||  pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} />
         }
         {children}
-        <SiteFooter />
+        {
+          pathname.split("\/").includes("login") ? null : <SiteFooter />
+        }
         <TanStackDevtools
           config={{
             position: 'bottom-right',

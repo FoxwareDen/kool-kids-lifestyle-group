@@ -89,6 +89,7 @@ export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
                     <Link
                       key={item.label + index}
                       to={item.href}
+                      search={(prev)=> prev}
                       className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
                     >
                       {item.label}
@@ -99,6 +100,7 @@ export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
               <Link
               key={item.label + index}
               to={item.href}
+              search={(prev)=> prev}
               className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
               {item.label}

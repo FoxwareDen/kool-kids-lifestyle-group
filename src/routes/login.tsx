@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { handleGoogleLogin } from '#/lib/pocketbase';
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
 import orangeRiverImg from "../images/orange-river.jpeg"
 import riverImg3 from "../images/river3.jpeg"

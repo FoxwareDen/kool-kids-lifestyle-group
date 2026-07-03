@@ -10,9 +10,9 @@ import {
 } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { ExperienceCard } from './ExperienceCard'
-import { type Content, type FeatureCard } from '#/lib/pocketbase'
+import { type Content } from '#/lib/pocketbase'
 import { mapIcon } from '#/lib/utils'
-import type { Language } from '#/lib/experiences'
+import type { FeatureCard, Language } from '#/lib/experiences'
 
 /**
  * A single entry rendered as an {@link ExperienceCard} within
@@ -115,8 +115,9 @@ export function ExperiencesSection({data, lang }:{data: Content<Partial<Experien
         />
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {(list ?? EXPERIENCES).map((experience) => (
+          {(list ?? EXPERIENCES).map((experience, i) => (
             <ExperienceCard 
+                key={experience.coverImage+i}
                 description={experience.description}
                 title={experience.title}
                 image={experience.coverImage}

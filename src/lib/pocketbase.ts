@@ -1,14 +1,24 @@
 import PocketBase from 'pocketbase';
-import type { BookingPage, FlatBookingPage, HydratedBookingPage, Language } from './experiences';
+import { environmentManager } from '@tanstack/react-query';
 
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
+
+const getSession = (cookieHeader?: string) => {
+  if (environmentManager.isServer()) {
+    return createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    return pb
+  }
+}
 
 /**
  * Client-side helper to check if the current user session exists and is valid.
  */
 export function isAuthenticated(): boolean {
-  return pb.authStore.isValid;
+  const client = getSession()
+  return client.authStore.isValid;
 }
 
 /**
@@ -16,14 +26,16 @@ export function isAuthenticated(): boolean {
  * Replaces the deprecated .model property with the modern .record property.
  */
 export function getCurrentUser() {
-  return pb.authStore.record;
+  const client = getSession()
+  return client.authStore.record;
 }
 
 /**
  * Log out and clear tokens from both PocketBase memory and browser cookies.
  */
 export function handleLogout() {
-  pb.authStore.clear();
+  const client = getSession()
+  client.authStore.clear();
   // Clear the cookie by setting an expired date
   document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
 }

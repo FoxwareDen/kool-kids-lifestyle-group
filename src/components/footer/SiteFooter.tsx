@@ -42,7 +42,7 @@ const QUICK_LINKS: { label: string; href: string }[][] = [
     { label: 'Blog', href: 'blogs' },
     { label: 'Contact', href: '/contact' },
     { label: 'Book Now', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
+    { label: 'Admin Login', href: '/login' },
   ],
 ]
 

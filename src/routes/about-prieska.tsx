@@ -1,3 +1,5 @@
+// HAS CMS MANAGING
+
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { AboutHero } from '#/components/about/AboutHero'
 import { AboutIntro } from '#/components/about/AboutIntro'
@@ -8,32 +10,16 @@ import { WhyVisitPrieska } from '#/components/about/WhyVisitPrieska'
 import { AboutCta } from '#/components/about/AboutCta'
 import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase'
 import { createServerFn } from '@tanstack/react-start'
+import type { Language } from '#/lib/experiences'
 
 
 export const getPageData = createServerFn()
-  .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
-  .handler(async ({ data: { slug, language } }) => {
-    
-    // If language was explicitly passed, use it — otherwise detect from headers
-    const resolvedLanguage: 'en' | 'af' = language ?? await (async () => {
-      const { getRequestHeaders } = await import('@tanstack/react-start/server')
+  .inputValidator((input: { slug: string; lang?: Language }) => input)
+  // @ts-ignore
+  .handler(async ({ data: { slug, lang } }) => {
+    const result = await fetchPageDataSSR(slug, lang)
 
-      const headers = getRequestHeaders()
-      const acceptLanguage = headers.get('accept-language') ?? 'en'
-
-      const languages = acceptLanguage
-        .split(',')
-        .map(part => {
-          const [lang, q] = part.trim().split(';q=')
-          return { lang: lang.trim(), q: q ? parseFloat(q) : 1.0 }
-        })
-        .sort((a, b) => b.q - a.q)
-
-      const primaryLang = languages[0].lang.split('-')[0].toLowerCase()
-      return primaryLang === 'af' ? 'af' : 'en'
-    })()
-
-    return fetchPageDataSSR(slug, resolvedLanguage)
+    return result;
   })
 
 
@@ -58,15 +44,13 @@ export const Route = createFileRoute('/about-prieska')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loader: async ({ location }) => {
+  loaderDeps: ({ search: {lang}  }) => ({lang}),
+  loader: async ({ location, deps: { lang } }) => {
     const slug = location.pathname.replace(/^\/|\/$/g, '')
-    
-  //   // Parse ?lang= from the URL
-    const params = new URLSearchParams(location.search)
-    const lang = params.get('lang') as 'en' | 'af' | null
 
-    const pageData: PageData | null = await getPageData({
-      data: { slug, language: lang ?? undefined },
+    // @ts-ignore
+    const pageData: PageData<unknown> = await getPageData({
+      data: { slug, lang },
     })
 
     if (!pageData) throw notFound()
