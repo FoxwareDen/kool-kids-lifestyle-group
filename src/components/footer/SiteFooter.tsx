@@ -1,5 +1,6 @@
 import { Facebook, Instagram, MessageCircle, ArrowRight, } from 'lucide-react'
 import logo from "../../images/logo-2.png"
+import type { Language } from '#/lib/experiences'
 
 /**
  * A navigation link shown in a footer link column.
@@ -29,22 +30,40 @@ import logo from "../../images/logo-2.png"
 }
 
 
-const QUICK_LINKS: { label: string; href: string }[][] = [
-  [
-    { label: 'Home', href: '/' },
-    { label: 'About Prieska', href: '/about-prieska' },
-    { label: 'Experiences', href: '#' },
-    { label: 'Heritage', href: '/heritage' },
-    { label: 'Gallery', href: '/gallery' },
+const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
+  en: [
+      [
+      { label: 'Home', href: '/' },
+      { label: 'About Prieska', href: '/about-prieska' },
+      { label: 'Experiences', href: '#' },
+      { label: 'Heritage', href: '/heritage' },
+      { label: 'Gallery', href: '/gallery' },
+    ],
+    [
+      { label: 'Events', href: 'events' },
+      { label: 'Blog', href: 'blogs' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Book Now', href: '#' },
+      { label: 'Admin Login', href: '/login' },
+    ]
   ],
-  [
-    { label: 'Events', href: 'events' },
-    { label: 'Blog', href: 'blogs' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Book Now', href: '#' },
-    { label: 'Privacy Policy', href: '#' },
-  ],
-]
+  af: [
+    [
+      { label: 'Tuis', href: '/' },
+      { label: 'Oor Prieska', href: '/about-prieska' },
+      { label: 'Ervarings', href: '#' },
+      { label: 'Erfenis', href: '/heritage' },
+      { label: 'Galery', href: '/gallery' },
+    ],
+    [
+      { label: 'Gebeure', href: 'events' },
+      { label: 'Blog', href: 'blogs' },
+      { label: 'Kontak', href: '/contact' },
+      { label: 'Bespreek Nou', href: '#' },
+      { label: 'Admin-intekening', href: '/login' }, // "Admin-intekening" or just "Admin Login" (widely accepted in SA tech)
+    ]
+  ]
+}
 
 const SOCIAL_LINKS = [
   { label: 'Facebook', href: '#', icon: Facebook },
@@ -59,7 +78,7 @@ const SOCIAL_LINKS = [
  *
  * @returns {JSX.Element} The rendered site footer.
  */
-export function SiteFooter() {
+export function SiteFooter({lang="en"}:{lang?:Language}) {
   const year = new Date().getFullYear()
 
 
@@ -78,15 +97,15 @@ export function SiteFooter() {
               <div className="leading-tight">
                 <p className="display-title text-xl font-semibold">360</p>
                 <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-white/70">
-                  Experiences
+                  {lang=="af" ? "Ervarings": "Experiences"}
                 </p>
               </div>
             </div>
             <p className="mt-4 text-sm text-white/70">
-              Explore more. Experience more.
+              {lang =="af"? "Verken meer.": "Explore more."}
             </p>
             <p className="mt-1 text-xs text-white/55">
-              Prieska • Northern Cape • South Africa
+              {lang=="af"? "Prieska • Noord-Kaap • Suid-Afrika":"Prieska • Northern Cape • South Africa"}
             </p>
 
             <div className="mt-5 flex items-center gap-3">
@@ -106,10 +125,10 @@ export function SiteFooter() {
           {/* Quick links */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
-              Quick Links
+              {lang=="af"? "Vinnige Skakels" :"Quick Links"}
             </h2>
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3">
-              {QUICK_LINKS.flat().map((link) => (
+              {QUICK_LINKS[lang].flat().map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
@@ -124,18 +143,17 @@ export function SiteFooter() {
           {/* Newsletter */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
-              Stay Connected
+              {lang=="af"? "Bly In Skakeling":"Stay Connected"}
             </h2>
             <p className="mt-5 text-sm text-white/70">
-              Subscribe to our newsletter for updates on events, experiences and
-              special offers.
+              {lang=="af"? "Teken in op ons nuusbrief vir opdaterings oor gebeure, ervarings en spesiale aanbiedinge.":"Subscribe to our newsletter for updates on events, experiences and special offers."}
             </p>
             <form
               className="mt-5 flex"
               onSubmit={(e) => e.preventDefault()}
             >
               <label htmlFor="footer-email" className="sr-only">
-                Email address
+                {lang=="af"? "E-posadres":"Email address"}
               </label>
               <input
                 id="footer-email"
@@ -148,7 +166,7 @@ export function SiteFooter() {
                 type="submit"
                 className="group inline-flex shrink-0 items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-[var(--brand-orange-deep)]"
               >
-                Subscribe
+                {lang=="af"? "Teken in":"Subscribe"}
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>

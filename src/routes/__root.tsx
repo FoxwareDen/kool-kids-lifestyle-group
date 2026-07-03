@@ -2,6 +2,10 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  useNavigate,
+  useRouter,
+  useRouterState,
+  useSearch,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -12,12 +16,47 @@ import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
+import { SiteHeader } from '#/components/hero/SiteHeader'
+import { useEffect } from 'react'
+import { isAuthenticated } from '#/lib/pocketbase'
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loader: async ({location}) =>{
+    const params = new URLSearchParams(location.search)
+    const urlLang = params.get('lang') as 'en' | 'af' | null
+
+    let resolvedLanguage: 'en' | 'af'
+
+    if (urlLang) {
+      // 1. URL ALWAYS wins
+      resolvedLanguage = urlLang
+    } else {
+      // 2. fallback to browser
+      const { getRequestHeaders } = await import('@tanstack/react-start/server')
+
+      const headers = getRequestHeaders()
+      const acceptLanguage = headers.get('accept-language') ?? 'en'
+
+      const primaryLang = acceptLanguage
+        .split(',')[0]
+        .split('-')[0]
+        .toLowerCase()
+
+      resolvedLanguage = primaryLang === 'af' ? 'af' : 'en'
+    }
+
+    return {
+      isAuthed: isAuthenticated(),
+      lang: resolvedLanguage,
+    }
+  },
   head: () => ({
     meta: [
       {
@@ -42,24 +81,27 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const browserLang =
-    typeof window !== 'undefined'
-      ? navigator.language || navigator.languages?.[0]
-      : 'en'
-
-  const lang = browserLang?.startsWith('af') ? 'af' : 'en'
-
-  // TODO: set the lang into the url param forcing a page load on inital one and chec for broser settings tooo
-
+  const { pathname } = useRouterState({
+    select(state) {
+      return state.location;
+    },
+  })
+  const { isAuthed, lang} = Route.useLoaderData();
+  
   return (
-    <html lang="en" className="h-full">
+    <html className="h-full">
       <head>
         <HeadContent />
       </head>
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
+        {
+          pathname.split("\/").includes("dashboard") ||  pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} lang={lang} />
+        }
         {children}
-        <SiteFooter />
+        {
+          pathname.split("\/").includes("login") ? null : <SiteFooter lang={lang} />
+        }
         <TanStackDevtools
           config={{
             position: 'bottom-right',

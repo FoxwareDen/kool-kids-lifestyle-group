@@ -1,9 +1,9 @@
+// Has CMS MANAGING
+
 import { Landmark, Waves, Mountain, type LucideIcon } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { StoryCard } from './StoryCard'
-import churchImg from "../../images/church.jpeg"
-import riverImg from "../../images/river.jpeg"
-import karooImg from "../../images/karoo.jpeg"
+import { buildImageUrl, type Content } from '#/lib/pocketbase'
 /**
  * A single entry rendered as a {@link StoryCard} within {@link StoriesSection}.
  * @typedef {Object} Story
@@ -20,42 +20,18 @@ import karooImg from "../../images/karoo.jpeg"
  * content when wiring up live data.
  * @type {Story[]}
  */
-const STORIES: {
-  image: string
-  imageAlt: string
-  icon: LucideIcon
+const STORIES = []
+
+export interface StoriesSectionProps {
+  kicker: string,
   title: string
-  description: string
-  href: string
-}[] = [
-  {
-    image: churchImg,
-    imageAlt: 'Historic white church with a steeple in Prieska',
-    icon: Landmark,
-    title: 'Heritage',
-    description:
-      'Explore the rich history, architecture and stories that have shaped Prieska for generations.',
-    href: '#',
-  },
-  {
-    image: riverImg,
-    imageAlt: 'The Orange River flowing through the Karoo landscape',
-    icon: Waves,
-    title: 'Orange River',
-    description:
-      'Experience the life-giving river that flows through the heart of our town and defines its identity.',
-    href: '#',
-  },
-  {
-    image: karooImg,
-    imageAlt: 'Karoo landscape at sunset with open plains',
-    icon: Mountain,
-    title: 'Karoo Landscapes',
-    description:
-      'Wide open spaces, spectacular sunsets and unforgettable natural beauty.',
-    href: '#',
-  },
-]
+  stories: {
+    imageName: string
+    imageAlt: string,
+    description: string,
+    title: string
+  }[]
+}
 
 /**
  * The "Discover the Stories, Landscapes and Experiences" section. Renders a
@@ -65,20 +41,23 @@ const STORIES: {
  *
  * @returns {JSX.Element} The rendered stories section.
  */
-export function StoriesSection() {
+export function StoriesSection({data}:{data: Content<StoriesSectionProps>}) {
+  const { content: {kicker, title, stories}, media } = data;
+  
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="A Destination Like No Other"
-          title="Discover the Stories, Landscapes and Experiences of Prieska"
+          eyebrow={kicker}
+          title={title}
           theme="light"
         />
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {STORIES.map((story) => (
-            <StoryCard key={story.title} {...story} />
-          ))}
+          {(stories).map((story) => {
+            const image = media[story.imageName];
+            return <StoryCard key={story.title} {...story} href='#' image={buildImageUrl(image.collectionId, image.id, image.file)} />
+          })}
         </div>
       </div>
     </section>

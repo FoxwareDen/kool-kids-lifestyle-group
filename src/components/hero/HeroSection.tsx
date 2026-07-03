@@ -64,7 +64,7 @@ export function HeroSection({data}:{data: any|null}) {
       {/* Background carousel */}
       {SLIDES.map((slide, i) => (
         <img
-          // key={media[slide.name].name}
+          key={media[slide.name].name+i}
           src={media[slide.name] ? (buildImageUrl(media[slide.name].collectionId, media[slide.name].id, media[slide.name].file)): ('/placeholder.svg')}
           alt={media[slide.name]? media[slide.name].alt : ""}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
@@ -78,8 +78,6 @@ export function HeroSection({data}:{data: any|null}) {
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)]/70 via-transparent to-[var(--brand-navy)]/30" />
       {/* Top fade so the solid navy navbar blends into the hero image */}
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
-
-      <SiteHeader />
 
       {/* Content */}
       <div className="relative z-10 flex h-full items-center">

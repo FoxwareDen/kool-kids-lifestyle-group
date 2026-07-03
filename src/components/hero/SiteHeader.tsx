@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
+import { Link } from '@tanstack/react-router';
+import type { Language } from '#/lib/experiences';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -33,16 +35,29 @@ function WhatsAppIcon({ className }: { className?: string }) {
  * The navigation items rendered in the desktop and mobile menus.
  * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
  */
-const NAV_ITEMS = [
-  { label: 'HOME', href: '/' },
-  { label: 'ABOUT PRIESKA', href: '/about-prieska' },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true },
-  { label: 'HERITAGE', href: '/heritage' },
-  { label: 'GALLERY', href: '/gallery' },
-  { label: 'EVENTS', href: '/events' },
-  { label: 'BLOG', href: '/blogs' },
-  { label: 'CONTACT', href: '/contact' },
-]
+const NAV_ITEMS: Record<Language, any> = {
+  en: [{ label: 'HOME', href: '/', authed: false },
+  { label: "DashBoard", href: "/dashboard" , authed: true},
+  { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
+  { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
+  { label: 'HERITAGE', href: '/heritage', authed: false },
+  { label: 'GALLERY', href: '/gallery', authed: false },
+  { label: 'EVENTS', href: '#', authed: false },
+  { label: 'BLOG', href: '#', authed: false },
+  { label: 'CONTACT', href: '/contact', authed: false },
+  ],
+  af: [
+    { label: 'TUIS', href: '/', authed: false },
+    { label: "Proneel", href: "/dashboard" , authed: true}, // Alternatively: "Dashboard" is also widely used in SA tech
+    { label: 'OOR PRIESKA', href: '/about-prieska', authed: false },
+    { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
+    { label: 'ERFENIS', href: '/heritage', authed: false },
+    { label: 'GALERY', href: '/gallery', authed: false },
+    { label: 'GEBEURE', href: '#', authed: false },
+    { label: 'BLOG', href: '#', authed: false },
+    { label: 'KONTAK', href: '/contact', authed: false },
+  ]
+}
 
 /**
  * The fixed, transparent site header that overlays the hero section.
@@ -52,15 +67,15 @@ const NAV_ITEMS = [
  *
  * @returns {JSX.Element} The rendered header element.
  */
-export function SiteHeader() {
+export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-useEffect(() => {
-  const onScroll = () => setScrolled(window.scrollY > 80)
-  window.addEventListener('scroll', onScroll, { passive: true })
-  return () => window.removeEventListener('scroll', onScroll)
-}, [])
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
@@ -80,16 +95,32 @@ useEffect(() => {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
+          {NAV_ITEMS[lang].map((item, index) => {
+            return item.authed ? (
+              
+                isAuthed ? (
+                    <Link
+                      key={item.label + index}
+                      to={item.href}
+                      search={(prev)=> prev}
+                      className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+                    >
+                      {item.label}
+                      {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+                    </Link>
+                ) : null
+            ) : (
+              <Link
+              key={item.label + index}
+              to={item.href}
+              search={(prev)=> prev}
               className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
               {item.label}
               {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
-            </a>
-          ))}
+            </Link>
+            );
+          })}
         </nav>
 
         {/* Actions */}
@@ -107,7 +138,7 @@ useEffect(() => {
             className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             <Calendar className="h-4 w-4" />
-            BOOK NOW
+            {lang == "af" ? "BESPREEK NOU": "BOOK NOW"}
           </a>
 
           <button
@@ -129,8 +160,8 @@ useEffect(() => {
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
+            {NAV_ITEMS[lang].map((item, index) => (
+              <li key={item.label + index}>
                 <a
                   href={item.href}
                   className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
