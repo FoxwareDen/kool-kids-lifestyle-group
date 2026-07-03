@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
-import { isAuthenticated } from "@/lib/pocketbase";
 import { Link } from '@tanstack/react-router';
 
 /**
@@ -55,16 +54,15 @@ const NAV_ITEMS = [
  *
  * @returns {JSX.Element} The rendered header element.
  */
-export function SiteHeader() {
+export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const isAuthed = useMemo(()=>isAuthenticated(),[])
 
-useEffect(() => {
-  const onScroll = () => setScrolled(window.scrollY > 80)
-  window.addEventListener('scroll', onScroll, { passive: true })
-  return () => window.removeEventListener('scroll', onScroll)
-}, [])
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
@@ -84,23 +82,22 @@ useEffect(() => {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.map((item, index) => {
             return item.authed ? (
-              <>{
+              
                 isAuthed ? (
                     <Link
-                      key={item.label}
+                      key={item.label + index}
                       to={item.href}
                       className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
                     >
                       {item.label}
                       {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
                     </Link>
-                ) : (<></>)
-              }</>
+                ) : null
             ) : (
               <Link
-              key={item.label}
+              key={item.label + index}
               to={item.href}
               className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
             >
@@ -148,8 +145,8 @@ useEffect(() => {
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
+            {NAV_ITEMS.map((item, index) => (
+              <li key={item.label + index}>
                 <a
                   href={item.href}
                   className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
