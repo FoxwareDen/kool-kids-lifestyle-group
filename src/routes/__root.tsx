@@ -86,7 +86,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       return state.location;
     },
   })
-  const { isAuthed } = Route.useLoaderData();
+  const { isAuthed, lang} = Route.useLoaderData();
   
   return (
     <html className="h-full">
@@ -96,11 +96,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
         {
-          pathname.split("\/").includes("dashboard") ||  pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} />
+          pathname.split("\/").includes("dashboard") ||  pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} lang={lang} />
         }
         {children}
         {
-          pathname.split("\/").includes("login") ? null : <SiteFooter />
+          pathname.split("\/").includes("login") ? null : <SiteFooter lang={lang} />
         }
         <TanStackDevtools
           config={{

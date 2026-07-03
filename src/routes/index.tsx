@@ -1,12 +1,12 @@
 // HAS CMS MANAGING
 
 import { HeroSection } from '#/components/hero/HeroSection';
-import { StoriesSection } from '#/components/sections/StoriesSection';
+import { StoriesSection, type StoriesSectionProps } from '#/components/sections/StoriesSection';
 import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { fetchPageDataSSR, type Content, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { fetchFeaturedExperienceCard } from '#/lib/experiences';
@@ -43,15 +43,14 @@ export const Route = createFileRoute('/')({
   errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
 
   component: function () {
-    const { pageData, featuredList, lang } = Route.useLoaderData()
-
+    const { pageData, featuredList, lang } = Route.useLoaderData()    
 
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
-        <StoriesSection />
+        <StoriesSection data={pageData.components["stories_section"]!} />
         <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}} lang={lang} />
-        <PlanYourVisitSection />
+        <PlanYourVisitSection lang={lang}/>
         <GallerySection />
         <PreFooterSection />
       </main>

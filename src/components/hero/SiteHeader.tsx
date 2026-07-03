@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
 import { Link } from '@tanstack/react-router';
+import type { Language } from '#/lib/experiences';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -34,8 +35,8 @@ function WhatsAppIcon({ className }: { className?: string }) {
  * The navigation items rendered in the desktop and mobile menus.
  * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
  */
-const NAV_ITEMS = [
-  { label: 'HOME', href: '/', authed: false },
+const NAV_ITEMS: Record<Language, any> = {
+  en: [{ label: 'HOME', href: '/', authed: false },
   { label: "DashBoard", href: "/dashboard" , authed: true},
   { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
   { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
@@ -44,7 +45,19 @@ const NAV_ITEMS = [
   { label: 'EVENTS', href: '#', authed: false },
   { label: 'BLOG', href: '#', authed: false },
   { label: 'CONTACT', href: '/contact', authed: false },
-]
+  ],
+  af: [
+    { label: 'TUIS', href: '/', authed: false },
+    { label: "Proneel", href: "/dashboard" , authed: true}, // Alternatively: "Dashboard" is also widely used in SA tech
+    { label: 'OOR PRIESKA', href: '/about-prieska', authed: false },
+    { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
+    { label: 'ERFENIS', href: '/heritage', authed: false },
+    { label: 'GALERY', href: '/gallery', authed: false },
+    { label: 'GEBEURE', href: '#', authed: false },
+    { label: 'BLOG', href: '#', authed: false },
+    { label: 'KONTAK', href: '/contact', authed: false },
+  ]
+}
 
 /**
  * The fixed, transparent site header that overlays the hero section.
@@ -54,7 +67,7 @@ const NAV_ITEMS = [
  *
  * @returns {JSX.Element} The rendered header element.
  */
-export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
+export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
@@ -82,7 +95,7 @@ export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item, index) => {
+          {NAV_ITEMS[lang].map((item, index) => {
             return item.authed ? (
               
                 isAuthed ? (
@@ -125,7 +138,7 @@ export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
             className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             <Calendar className="h-4 w-4" />
-            BOOK NOW
+            {lang == "af" ? "BESPREEK NOU": "BOOK NOW"}
           </a>
 
           <button
@@ -147,7 +160,7 @@ export function SiteHeader({isAuthed}:{isAuthed: boolean}) {
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item, index) => (
+            {NAV_ITEMS[lang].map((item, index) => (
               <li key={item.label + index}>
                 <a
                   href={item.href}
