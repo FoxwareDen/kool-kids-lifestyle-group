@@ -16,8 +16,8 @@ const getSession = (cookieHeader?: string) => {
 /**
  * Client-side helper to check if the current user session exists and is valid.
  */
-export function isAuthenticated(): boolean {
-  const client = getSession()
+export function isAuthenticated(cookieHeader?:string): boolean {
+  const client = getSession(cookieHeader)
   return client.authStore.isValid;
 }
 
