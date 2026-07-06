@@ -17,19 +17,34 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { isAuthenticated } from '#/lib/pocketbase'
 import { getRequestHeader } from '@tanstack/react-start/server'
-import { createServerFn } from '@tanstack/react-start'
+import { createMiddleware, createServerFn } from '@tanstack/react-start'
+
+
+export const getSessionMiddleware = createMiddleware().server(({next})=>{
+  const cookieHeader = getRequestHeader("Cookie");
+  const isAuthed = isAuthenticated(cookieHeader);  
+  return next({
+    context: {
+      isAuthed,
+      language: getRequestHeader("Accept-Language") 
+    }
+  })
+});
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
 
-
-const getAcceptLanguage = createServerFn()
-  .handler(async () =>{
-    return { acceptLanguage: getRequestHeader("Accept-Language") }
+const getSessionData = createServerFn()
+  .middleware([getSessionMiddleware])
+  .handler(async ({context}) =>{
+    return {
+      isAuthed: context.isAuthed,
+      language: context.language
+    }
   })
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
@@ -42,14 +57,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
     let resolvedLanguage: 'en' | 'af'
     
-    // FIXME: get the correct sever side method to get headers
+    const { language, isAuthed } = await getSessionData();
+
     if (urlLang) {
       // 1. URL ALWAYS wins
       resolvedLanguage = urlLang || "en"
     } else {
-      const { acceptLanguage } = await getAcceptLanguage();
-
-      const primaryLang = acceptLanguage ? acceptLanguage
+      const primaryLang = language ? language
         .split(',')[0]
         .split('-')[0]
         .toLowerCase(): "en";
@@ -59,6 +73,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
     return {
       lang: resolvedLanguage,
+      isAuthed: isAuthed,
     }
   },
   head: () => ({
@@ -90,9 +105,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       return state.location;
     },
   })
-  const { lang} = Route.useLoaderData();
-  const isAuthed  = useMemo(()=> isAuthenticated(),[]);
-  
+  const { lang, isAuthed} = Route.useLoaderData();  
   
   return (
     <html className="h-full">
