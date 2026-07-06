@@ -17,12 +17,20 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { isAuthenticated } from '#/lib/pocketbase'
+import { getRequestHeader } from '@tanstack/react-start/server'
+import { createServerFn } from '@tanstack/react-start'
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
+
+
+const getAcceptLanguage = createServerFn()
+  .handler(async () =>{
+    return { acceptLanguage: getRequestHeader("Accept-Language") }
+  })
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -33,27 +41,23 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     const urlLang = params.get('lang') as 'en' | 'af' | null
 
     let resolvedLanguage: 'en' | 'af'
-
+    
+    // FIXME: get the correct sever side method to get headers
     if (urlLang) {
       // 1. URL ALWAYS wins
-      resolvedLanguage = urlLang
+      resolvedLanguage = urlLang || "en"
     } else {
-      // 2. fallback to browser
-      const { getRequestHeaders } = await import('@tanstack/react-start/server')
+      const { acceptLanguage } = await getAcceptLanguage();
 
-      const headers = getRequestHeaders()
-      const acceptLanguage = headers.get('accept-language') ?? 'en'
-
-      const primaryLang = acceptLanguage
+      const primaryLang = acceptLanguage ? acceptLanguage
         .split(',')[0]
         .split('-')[0]
-        .toLowerCase()
+        .toLowerCase(): "en";
 
-      resolvedLanguage = primaryLang === 'af' ? 'af' : 'en'
+      resolvedLanguage = primaryLang == 'af' ? 'af' : 'en'
     }
 
     return {
-      isAuthed: isAuthenticated(),
       lang: resolvedLanguage,
     }
   },
@@ -86,7 +90,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       return state.location;
     },
   })
-  const { isAuthed, lang} = Route.useLoaderData();
+  const { lang} = Route.useLoaderData();
+  const isAuthed  = useMemo(()=> isAuthenticated(),[]);
+  
   
   return (
     <html className="h-full">
