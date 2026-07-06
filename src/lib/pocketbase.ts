@@ -4,7 +4,7 @@ import { environmentManager } from '@tanstack/react-query';
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
-const getSession = (cookieHeader?: string) => {
+export const getPBSession = (cookieHeader?: string) => {
   if (environmentManager.isServer()) {
     return createPB_SSR(cookieHeader);
   } else {
@@ -17,7 +17,7 @@ const getSession = (cookieHeader?: string) => {
  * Client-side helper to check if the current user session exists and is valid.
  */
 export function isAuthenticated(cookieHeader?:string): boolean {
-  const client = getSession(cookieHeader)
+  const client = getPBSession(cookieHeader)
   return client.authStore.isValid;
 }
 
@@ -26,7 +26,7 @@ export function isAuthenticated(cookieHeader?:string): boolean {
  * Replaces the deprecated .model property with the modern .record property.
  */
 export function getCurrentUser() {
-  const client = getSession()
+  const client = getPBSession()
   return client.authStore.record;
 }
 
@@ -34,7 +34,7 @@ export function getCurrentUser() {
  * Log out and clear tokens from both PocketBase memory and browser cookies.
  */
 export function handleLogout() {
-  const client = getSession()
+  const client = getPBSession()
   client.authStore.clear();
   // Clear the cookie by setting an expired date
   document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";

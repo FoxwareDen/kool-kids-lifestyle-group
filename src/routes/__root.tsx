@@ -2,10 +2,7 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
-  useNavigate,
-  useRouter,
   useRouterState,
-  useSearch,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -17,7 +14,6 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
-import { useMemo } from 'react'
 import { isAuthenticated } from '#/lib/pocketbase'
 import { getRequestHeader } from '@tanstack/react-start/server'
 import { createMiddleware, createServerFn } from '@tanstack/react-start'

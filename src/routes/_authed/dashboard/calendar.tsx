@@ -1,9 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router' 
-import { useEffect, useState } from "react";
-import type { SlotPreset, UnitType } from "booking-api-extended";
+import { createFileRoute } from '@tanstack/react-router'
+import { useState } from "react";
+import type { SlotPreset } from "booking-api-extended";
 import type { FeatureCard } from "@/lib/experiences";
 import { fetchFeaturedExperienceCard, fetchExperienceById, resolveTranslatable } from "@/lib/experiences";
-import type { Calendar } from "@/lib/booking";
+import type { Calendar, UnitType } from "@/lib/booking";
+import { fetchUnitTypes, createUnit } from "@/lib/booking";
 import { createServerFn } from '@tanstack/react-start';
 
 const fetchCards = createServerFn()
@@ -11,23 +12,44 @@ const fetchCards = createServerFn()
   .handler(async ({ data: { lang } }) => {
     const result = await fetchFeaturedExperienceCard(lang);
 
-    // 1. If you have an early exit/error condition, convert it here too:
     if (!result) {
       return { success: false, error: "No result found", data: null };
     }
 
-    // 2. Map the main branches safely
     if (result.isSuccess()) {
-      return { 
-        success: true, 
-        data: result.value, 
-        error: null 
+      return {
+        success: true,
+        data: result.value,
+        error: null
       };
     } else {
-      return { 
-        success: false, 
-        data: null, 
-        error: result.error 
+      return {
+        success: false,
+        data: null,
+        error: result.error
+      };
+    }
+  })
+
+const fetchUnits = createServerFn()
+  .handler(async () => {
+    const result = await fetchUnitTypes();
+
+    if (!result) {
+      return { success: false, error: "No result found", data: null };
+    }
+
+    if (result.isSuccess()) {
+      return {
+        success: true,
+        data: result.value,
+        error: null
+      };
+    } else {
+      return {
+        success: false,
+        data: null,
+        error: result.error
       };
     }
   })
@@ -36,37 +58,45 @@ export const Route = createFileRoute('/_authed/dashboard/calendar')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loader: async ({location}) => {
-    const slug = location.pathname.replace(/^\/|\/$/g, '')
-    
+  loader: async ({ location }) => {
     // Parse ?lang= from the URL
     const params = new URLSearchParams(location.search)
     const lang = params.get('lang') as 'en' | 'af' | null
 
-    const result = await fetchCards({data: { lang: lang || 'en' }});
+    const [cardsResult, unitsResult] = await Promise.all([
+      fetchCards({ data: { lang: lang || 'en' } }),
+      fetchUnits(),
+    ]);
 
-    if (!result.success) {
-      throw new Error(result.error || "Failed to fetch experience cards");
+    if (!cardsResult.success) {
+      throw new Error(cardsResult.error || "Failed to fetch experience cards");
+    }
+    if (!unitsResult.success) {
+      throw new Error(unitsResult.error || "Failed to fetch unit types");
     }
 
-    return {cards:result.data||[], lang};
+    return {
+      cards: cardsResult.data || [],
+      units: unitsResult.data || [],
+      lang,
+    };
   },
   component: RouteComponent,
 })
 
 // TODO: wire this up once you have a save/create endpoint for calendars
 // import { createCalendar } from "@/lib/booking";
- 
+
 // ---- Step type ----
 type Step = "preset" | "experience" | "calendar";
- 
+
 // ---- Default presets (swap for a fetch if these live server-side) ----
 const DEFAULT_PRESETS: SlotPreset[] = [
   { id: "40min", label: "40-minute session", durationMinutes: 40 },
   { id: "half-day", label: "Half day", durationMinutes: 240 },
   { id: "day", label: "Full day", durationMinutes: 480 },
 ];
- 
+
 const DAYS = [
   { value: 0, label: "Sun" },
   { value: 1, label: "Mon" },
@@ -79,24 +109,30 @@ const DAYS = [
 
 
 function RouteComponent() {
-  const { cards, lang} = Route.useLoaderData();
+  const { cards, units, lang } = Route.useLoaderData();
   const [step, setStep] = useState<Step>("preset");
- 
+
   // ----- preset state -----
   const [presets, setPresets] = useState<SlotPreset[]>(DEFAULT_PRESETS);
   const [selectedPreset, setSelectedPreset] = useState<SlotPreset | null>(null);
   const [customPreset, setCustomPreset] = useState({ id: "", label: "", durationMinutes: 60 });
- 
+
   // ----- experience card state -----
   const [cardsLoading, setCardsLoading] = useState(false);
   const [cardsError, setCardsError] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<FeatureCard | null>(null);
- 
+
   // ----- hydrated experience state -----
   const [hydratedExperience, setHydratedExperience] = useState<any>(null);
   const [experienceLoading, setExperienceLoading] = useState(false);
   const [experienceError, setExperienceError] = useState<string | null>(null);
- 
+
+  // ----- unit type state -----
+  const [availableUnits, setAvailableUnits] = useState<UnitType[]>(units);
+  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0 });
+  const [creatingUnit, setCreatingUnit] = useState(false);
+  const [createUnitError, setCreateUnitError] = useState<string | null>(null);
+
   // ----- calendar form state -----
   const [calendarForm, setCalendarForm] = useState<Omit<Calendar, "experiences">>({
     start_date: "",
@@ -105,17 +141,38 @@ function RouteComponent() {
     end_time: "17:00",
     days_of_week: [1, 2, 3, 4, 5],
     buffer_minutes: 15,
-    units: [],
+    units: [], // array of unit type ids
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  
+
+  // all-day slots: for bookings like a full event, inn stay, or campground
+  // slot where a specific start/end time doesn't apply
+  const [isAllDay, setIsAllDay] = useState(false);
+
+  // buffer time entered by the user, with a unit selector so an inn can say
+  // "1 day cleanup" instead of typing minutes. Converted to minutes on save.
+  const [bufferUnit, setBufferUnit] = useState<"minutes" | "hours" | "days">("minutes");
+  const [bufferAmount, setBufferAmount] = useState(15);
+
+  const BUFFER_UNIT_TO_MINUTES: Record<typeof bufferUnit, number> = {
+    minutes: 1,
+    hours: 60,
+    days: 60 * 24,
+  };
+
+  function updateBuffer(amount: number, unit: typeof bufferUnit) {
+    setBufferAmount(amount);
+    setBufferUnit(unit);
+    updateField("buffer_minutes", amount * BUFFER_UNIT_TO_MINUTES[unit]);
+  }
+
   // ---- handlers ----
- 
+
   function handleSelectPreset(preset: SlotPreset) {
     setSelectedPreset(preset);
   }
- 
+
   function handleAddCustomPreset() {
     if (!customPreset.id || !customPreset.label || !customPreset.durationMinutes) return;
     const newPreset: SlotPreset = { ...customPreset };
@@ -123,18 +180,18 @@ function RouteComponent() {
     setSelectedPreset(newPreset);
     setCustomPreset({ id: "", label: "", durationMinutes: 60 });
   }
- 
+
   function handleConfirmPreset() {
     if (!selectedPreset) return;
     setStep("experience");
   }
- 
+
   async function handleSelectCard(card: FeatureCard) {
     setSelectedCard(card);
     setExperienceLoading(true);
     setExperienceError(null);
     setHydratedExperience(null);
- 
+
     const result = await fetchExperienceById(card.id);
     if (result.error) {
       setExperienceError(result.error);
@@ -144,7 +201,7 @@ function RouteComponent() {
     }
     setExperienceLoading(false);
   }
- 
+
   function toggleDay(day: number) {
     setCalendarForm((prev) => {
       const has = prev.days_of_week.includes(day);
@@ -156,22 +213,60 @@ function RouteComponent() {
       };
     });
   }
- 
+
   function updateField<K extends keyof typeof calendarForm>(key: K, value: (typeof calendarForm)[K]) {
     setCalendarForm((prev) => ({ ...prev, [key]: value }));
   }
- 
+
+  function toggleUnit(unitId: string) {
+    setCalendarForm((prev) => {
+      const has = prev.units.includes(unitId);
+      return {
+        ...prev,
+        units: has
+          ? prev.units.filter((id) => id !== unitId)
+          : [...prev.units, unitId],
+      };
+    });
+  }
+
+  async function handleCreateUnit() {
+    if (!newUnit.label || !newUnit.capacity) return;
+    setCreatingUnit(true);
+    setCreateUnitError(null);
+
+    const result = await createUnit(newUnit.label, newUnit.capacity, newUnit.value);
+    if (result.error) {
+      setCreateUnitError(String(result.error));
+    } else {
+      const created: UnitType = {
+        id: result.value!,
+        label: newUnit.label,
+        capacity: newUnit.capacity,
+        value: newUnit.value,
+      } as UnitType;
+      setAvailableUnits((prev) => [...prev, created]);
+      setCalendarForm((prev) => ({ ...prev, units: [...prev.units, created.id] }));
+      setNewUnit({ label: "", capacity: 1, value: 0 });
+    }
+    setCreatingUnit(false);
+  }
+
   async function handleSubmitCalendar() {
     if (!selectedCard) return;
- 
+
     const calendar: Calendar = {
       ...calendarForm,
+      // all-day slots still need valid start/end times in the schema,
+      // so we store the full-day span rather than adding a new field
+      start_time: isAllDay ? "00:00" : calendarForm.start_time,
+      end_time: isAllDay ? "23:59" : calendarForm.end_time,
       experiences: selectedCard.id,
     };
- 
+
     setSaving(true);
     setSaveError(null);
- 
+
     try {
       // TODO: replace with your real save call, e.g.:
       // const result = await createCalendar(calendar);
@@ -183,7 +278,7 @@ function RouteComponent() {
       setSaving(false);
     }
   }
- 
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
       <h1 className="text-3xl font-bold text-gray-900 mb-8 pb-4 border-b border-gray-200">
@@ -300,7 +395,7 @@ function RouteComponent() {
                   className="w-full h-32 object-cover rounded-md mb-2"
                 />
                 <p className="text-sm font-medium text-gray-800 truncate">
-                  {resolveTranslatable(card.title, lang||"en") ?? card.id}
+                  {resolveTranslatable(card.title, lang || "en") ?? card.id}
                 </p>
                 {selectedCard?.id === card.id && (
                   <span className="text-xs text-blue-600 font-medium">(selected)</span>
@@ -325,7 +420,7 @@ function RouteComponent() {
         <section className="p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             3. Set up the calendar for "
-            {resolveTranslatable(hydratedExperience.title, lang||"en") ??
+            {resolveTranslatable(hydratedExperience.title, lang || "en") ??
               selectedCard?.id}
             "
           </h2>
@@ -352,25 +447,41 @@ function RouteComponent() {
               </label>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Start time
+            <div>
+              <label className="inline-flex items-center mb-3">
                 <input
-                  type="time"
-                  value={calendarForm.start_time}
-                  onChange={(e) => updateField("start_time", e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  type="checkbox"
+                  checked={isAllDay}
+                  onChange={(e) => setIsAllDay(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
+                <span className="ml-2 text-sm font-medium text-gray-700">
+                  All-day slot (event, inn stay, campsite — no specific hours)
+                </span>
               </label>
-              <label className="block text-sm font-medium text-gray-700">
-                End time
-                <input
-                  type="time"
-                  value={calendarForm.end_time}
-                  onChange={(e) => updateField("end_time", e.target.value)}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </label>
+
+              {!isAllDay && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Start time
+                    <input
+                      type="time"
+                      value={calendarForm.start_time}
+                      onChange={(e) => updateField("start_time", e.target.value)}
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    End time
+                    <input
+                      type="time"
+                      value={calendarForm.end_time}
+                      onChange={(e) => updateField("end_time", e.target.value)}
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             <div>
@@ -390,65 +501,131 @@ function RouteComponent() {
               </div>
             </div>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Buffer minutes
-              <input
-                type="number"
-                value={calendarForm.buffer_minutes ?? 0}
-                onChange={(e) => updateField("buffer_minutes", Number(e.target.value))}
-                className="mt-1 w-full sm:w-40 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </label>
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-1">
+                Buffer between bookings
+              </p>
+              <p className="text-xs text-gray-500 mb-2">
+                Time blocked off before the next booking can start — e.g. cleanup for a room, or a gap between events.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  value={bufferAmount}
+                  onChange={(e) => updateBuffer(Number(e.target.value), bufferUnit)}
+                  className="w-28 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <select
+                  value={bufferUnit}
+                  onChange={(e) => updateBuffer(bufferAmount, e.target.value as typeof bufferUnit)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="minutes">Minutes</option>
+                  <option value="hours">Hours</option>
+                  <option value="days">Days</option>
+                </select>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                = {calendarForm.buffer_minutes ?? 0} minutes total
+              </p>
+            </div>
 
-            {/* Units editor - minimal, expand as needed */}
+            {/* Unit types - now a relation, selected from the UnitType collection */}
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">Unit types</p>
-              {(calendarForm.units ?? []).map((unit, i) => (
-                <div key={i} className="flex flex-wrap gap-3 mb-3 items-end">
-                  <input
-                    placeholder="id"
-                    value={unit.id}
-                    onChange={(e) => {
-                      const units = [...(calendarForm.units ?? [])];
-                      units[i] = { ...unit, id: e.target.value };
-                      updateField("units", units);
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-32"
-                  />
-                  <input
-                    placeholder="label"
-                    value={unit.label}
-                    onChange={(e) => {
-                      const units = [...(calendarForm.units ?? [])];
-                      units[i] = { ...unit, label: e.target.value };
-                      updateField("units", units);
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40"
-                  />
-                  <input
-                    type="number"
-                    placeholder="capacity"
-                    value={unit.capacity}
-                    onChange={(e) => {
-                      const units = [...(calendarForm.units ?? [])];
-                      units[i] = { ...unit, capacity: Number(e.target.value) };
-                      updateField("units", units);
-                    }}
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-28"
-                  />
+
+              {availableUnits.length === 0 && (
+                <p className="text-sm text-gray-500 italic mb-3">
+                  No unit types yet — create one below.
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {availableUnits.map((unit) => {
+                  const selected = calendarForm.units.includes(unit.id);
+                  return (
+                    <button
+                      key={unit.id}
+                      type="button"
+                      onClick={() => toggleUnit(unit.id)}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        selected
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {unit.label} (cap {unit.capacity}){selected ? " ✓" : ""}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="p-4 bg-white rounded-md border border-gray-200">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">
+                  Create a new unit type
+                </h3>
+                <div className="flex flex-col items-start gap-2">
+                  <div className='flex w-full gap-2 items-end'>
+                    <label className="grow text-sm font-medium text-gray-700">
+                      Label
+                      <input
+                        placeholder="e.g. Standard Room"
+                        value={newUnit.label}
+                        onChange={(e) => setNewUnit((p) => ({ ...p, label: e.target.value }))}
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+                      />
+                    </label>
+                    <button
+                      onClick={handleCreateUnit}
+                      disabled={creatingUnit}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        creatingUnit
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }`}
+                    >
+                      {creatingUnit ? "Creating..." : "+ Add unit type"}
+                    </button>
+                  </div>
+                  <div className='flex w-full gap-2'>
+                    <label className="grow text-sm font-medium text-gray-700">
+                      Capacity
+                      <input
+                        type="number"
+                        placeholder="e.g. 2"
+                        value={newUnit.capacity}
+                        onChange={(e) =>
+                          setNewUnit((p) => ({ ...p, capacity: Number(e.target.value) }))
+                        }
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </label>
+                    <label className="grow text-sm font-medium text-gray-700">
+                      Price
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="e.g. 99.99"
+                        value={newUnit.value}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          // allow free typing (including partial input like "12." or "")
+                          // but only commit a valid float to state
+                          const parsed = parseFloat(raw);
+                          setNewUnit((p) => ({ ...p, value: isNaN(parsed) ? 0 : parsed }));
+                        }}
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </label>
+                  </div>
                 </div>
-              ))}
-              <button
-                onClick={() =>
-                  updateField("units", [
-                    ...(calendarForm.units ?? []),
-                    { id: "", label: "", capacity: 1 } as UnitType,
-                  ])
-                }
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition-colors"
-              >
-                + Add unit type
-              </button>
+                {createUnitError && (
+                  <p className="text-red-600 bg-red-50 p-3 rounded-md mt-3 text-sm">
+                    {createUnitError}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="pt-4 border-t border-gray-200">
