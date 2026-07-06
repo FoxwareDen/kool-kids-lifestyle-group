@@ -109,7 +109,7 @@ function RouteComponent() {
   className="pointer-events-none absolute inset-0"
   style={{
     background: 'var(--brand-navy)',
-    clipPath: 'polygon(0 0, 45% 0, 0 30%)',
+    clipPath: 'polygon(0 0, 55% 0, 0 20%)',
   }}
   aria-hidden="true"
 />
@@ -121,7 +121,7 @@ function RouteComponent() {
             </span>
           </a>
  
-          <h1 className="display-title text-3xl font-semibold leading-tight text-balance mt-24" style={{ color: 'var(--sea-ink-soft)' }}>
+          <h1 className="display-title text-3xl font-semibold leading-tight text-balance mt-24 rounded-lg z-50" style={{ color: 'var(--sea-ink-soft)' }}>
             Log in to your Admin account
           </h1>
  
