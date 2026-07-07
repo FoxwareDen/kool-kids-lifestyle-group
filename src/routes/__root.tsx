@@ -2,10 +2,7 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
-  useNavigate,
-  useRouter,
   useRouterState,
-  useSearch,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -17,12 +14,35 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { SiteFooter } from '#/components/footer/SiteFooter'
 import { SiteHeader } from '#/components/hero/SiteHeader'
-import { useEffect } from 'react'
 import { isAuthenticated } from '#/lib/pocketbase'
+import { getRequestHeader } from '@tanstack/react-start/server'
+import { createMiddleware, createServerFn } from '@tanstack/react-start'
+
+
+export const getSessionMiddleware = createMiddleware().server(({next})=>{
+  const cookieHeader = getRequestHeader("Cookie");
+  const isAuthed = isAuthenticated(cookieHeader);  
+  return next({
+    context: {
+      isAuthed,
+      language: getRequestHeader("Accept-Language"),
+      cookieString: cookieHeader,
+    }
+  })
+});
 
 interface MyRouterContext {
   queryClient: QueryClient
 }
+
+const getSessionData = createServerFn()
+  .middleware([getSessionMiddleware])
+  .handler(async ({context}) =>{
+    return {
+      isAuthed: context.isAuthed,
+      language: context.language
+    }
+  })
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -33,28 +53,24 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     const urlLang = params.get('lang') as 'en' | 'af' | null
 
     let resolvedLanguage: 'en' | 'af'
+    
+    const { language, isAuthed } = await getSessionData();
 
     if (urlLang) {
       // 1. URL ALWAYS wins
-      resolvedLanguage = urlLang
+      resolvedLanguage = urlLang || "en"
     } else {
-      // 2. fallback to browser
-      const { getRequestHeaders } = await import('@tanstack/react-start/server')
-
-      const headers = getRequestHeaders()
-      const acceptLanguage = headers.get('accept-language') ?? 'en'
-
-      const primaryLang = acceptLanguage
+      const primaryLang = language ? language
         .split(',')[0]
         .split('-')[0]
-        .toLowerCase()
+        .toLowerCase(): "en";
 
-      resolvedLanguage = primaryLang === 'af' ? 'af' : 'en'
+      resolvedLanguage = primaryLang == 'af' ? 'af' : 'en'
     }
 
     return {
-      isAuthed: isAuthenticated(),
       lang: resolvedLanguage,
+      isAuthed: isAuthed,
     }
   },
   head: () => ({
@@ -86,7 +102,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       return state.location;
     },
   })
-  const { isAuthed, lang} = Route.useLoaderData();
+  const { lang, isAuthed} = Route.useLoaderData();  
   
   return (
     <html className="h-full">
