@@ -110,8 +110,8 @@ const DAYS = [
 
 
 function RouteComponent() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location = useLocation({});
+  const navigate = useNavigate({ from: "/dashboard/create-calendar" });
 
   const { cards, units, lang, calId} = Route.useLoaderData();
   const [step, setStep] = useState<Step>("experience");
