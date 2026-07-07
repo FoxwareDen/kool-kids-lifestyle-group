@@ -1,8 +1,9 @@
-import { fetchCalendarSchedules, type UnitType, deleteCalendarSchedule } from '#/lib/booking'
+import { fetchCalendarSchedules, type UnitType, deleteCalendarSchedule, fetchUnitTypes, deleteUnitType } from '#/lib/booking'
 import { resolveTranslatable } from '#/lib/experiences';
 import { getSessionMiddleware } from '#/routes/__root';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start';
+import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 const getAuth = createServerFn().middleware([getSessionMiddleware]).handler(async ({context})=>{
@@ -19,10 +20,13 @@ export const Route = createFileRoute('/_authed/dashboard/calendars')({
     const auth = await getAuth()
 
     const schedules = await fetchCalendarSchedules(auth.cookieString);
+    const units = await fetchUnitTypes(auth.cookieString);
     
     if (!schedules.success) throw new Error("Failed to fetch schedules")
 
-    return { lang, schedules: schedules.value }
+    if (!units.success) throw new Error("Failed to fetch unit types")
+
+    return { lang, schedules: schedules.value, units: units.value}
   },  
   component: RouteComponent,
 })
@@ -41,10 +45,13 @@ function formatDate(dateString: string): string {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function RouteComponent() {
-  const { lang, schedules } = Route.useLoaderData();
+  const { lang, schedules, units } = Route.useLoaderData();
   const router = useRouter();
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+
+  const [isDeletingUnit, setIsDeletingUnit] = useState<boolean>(false);
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -58,6 +65,18 @@ function RouteComponent() {
       setShowDeleteConfirm(null);
     }
   };
+
+  const handleDeleteUnit = async (id: string) => {
+    try {
+      setIsDeletingUnit(true);
+      await deleteUnitType(id);
+      await router.invalidate();      
+    } catch (error) {
+      console.error('Failed to delete:', error);
+    }finally {
+      setIsDeletingUnit(false);
+    }
+  }
 
   if (!schedules || schedules.length === 0) {
     return (
@@ -95,7 +114,6 @@ function RouteComponent() {
       <div className="space-y-6">
         {schedules.map((schedule) => {
           const experience: any[] = schedule.experiences
-          const units: any[] = schedule.units
           
           const isDeleting = deletingId === schedule.id;
 
@@ -238,15 +256,15 @@ function RouteComponent() {
                   </div>
                 ))}
 
-                {units.length > 0 && (
+                {schedule.units.length > 0 && (
                   <>
                     <hr className="border-gray-200" />
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Unit Types ({units.length})
+                        Unit Types ({schedule.units.length})
                       </h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {units.map((unit) => (
+                        {schedule.units.map((unit: UnitType) => (
                           <div key={unit.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                             <div className="flex items-center justify-between">
                               <div>
@@ -265,9 +283,37 @@ function RouteComponent() {
                 )}
               </div>
 
+              
+
               {/* Footer */}
               <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 text-sm text-gray-500">
-                {/* Updated: {formatDate(schedule.updated)} */}
+                <div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      All Unit Types
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {(units ? units: []).map((unit) => (
+                        <div key={unit.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <div className="flex justify-between">
+                            <div>
+                              <h4 className="font-medium text-gray-900">{unit.label}</h4>
+                              <div className="flex gap-3 mt-1 text-sm text-gray-600">
+                                <span>Capacity: {unit.capacity}</span>
+                                <span>${unit.value}</span>
+                              </div>
+                            </div>
+                            <div className='flex h-full align-top'>
+                              <button onClick={()=>handleDeleteUnit(unit.id)}>
+                                <Trash2 className="w-4 h-4 text-red-600 hover:text-red-800" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )
