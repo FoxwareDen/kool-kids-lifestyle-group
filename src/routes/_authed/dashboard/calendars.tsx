@@ -1,18 +1,9 @@
-import { fetchCalendarSchedules, type UnitType } from '#/lib/booking'
+import { fetchCalendarSchedules, type UnitType, deleteCalendarSchedule } from '#/lib/booking'
+import { resolveTranslatable } from '#/lib/experiences';
 import { getSessionMiddleware } from '#/routes/__root';
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start';
-
-interface Experience {
-  id: string;
-  title: string;
-  description: string;
-  coverImage: string;
-  status: string;
-  category: string;
-  enabledLanguages: string[];
-}
-
+import { useState } from 'react';
 
 const getAuth = createServerFn().middleware([getSessionMiddleware]).handler(async ({context})=>{
   if(!context.isAuthed) throw new Error("Not authenticated")
@@ -36,48 +27,6 @@ export const Route = createFileRoute('/_authed/dashboard/calendars')({
   component: RouteComponent,
 })
 
-
-// Static data (for now)
-const STATIC_CALENDARS = [
-  {
-    id: "8i8431z8drd7472",
-    title: "Redrock calendar",
-    start_date: "2026-07-01 00:00:00.000Z",
-    end_date: "2026-09-30 00:00:00.000Z",
-    start_time: "00:00",
-    end_time: "23:59",
-    days_of_week: [0, 1, 2, 3, 4, 5, 6],
-    buffer_minutes: 300,
-    experiences: ["qu6ei9n74072hio"],
-    units: ["1r33970z25ejmdy"],
-    created: "2026-07-07 02:56:15.371Z",
-    updated: "2026-07-07 04:06:16.439Z",
-    collectionId: "pbc_721883598",
-    collectionName: "CalendarSchedules"
-  }
-];
-
-const STATIC_EXPERIENCES: Record<string, Experience> = {
-  "qu6ei9n74072hio": {
-    id: "qu6ei9n74072hio",
-    title: "Welcome to the Red Rocket",
-    description: "Appalachia is the name given to a geographic expanse which covers the pre-War state of West Virginia and parts of other states, including Virginia and Ohio.",
-    coverImage: "6c0s442prh1l28y",
-    status: "Published",
-    category: "featured,bar,fallout",
-    enabledLanguages: ["en"]
-  }
-};
-
-const STATIC_UNITS: Record<string, UnitType> = {
-  "1r33970z25ejmdy": {
-    id: "1r33970z25ejmdy",
-    label: "1 Bedroom",
-    capacity: 2,
-    value: 200
-  }
-};
-
 // Helper to format date
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -92,11 +41,23 @@ function formatDate(dateString: string): string {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function RouteComponent() {
-  // const { lang, schedules } = Route.useLoaderData()
+  const { lang, schedules } = Route.useLoaderData();
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-  const schedules = STATIC_CALENDARS;
-  const experiencesMap = STATIC_EXPERIENCES;
-  const unitsMap = STATIC_UNITS;
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await deleteCalendarSchedule(id);
+      await router.invalidate();
+    } catch (error) {
+      console.error('Failed to delete:', error);
+    } finally {
+      setDeletingId(null);
+      setShowDeleteConfirm(null);
+    }
+  };
 
   if (!schedules || schedules.length === 0) {
     return (
@@ -133,15 +94,18 @@ function RouteComponent() {
 
       <div className="space-y-6">
         {schedules.map((schedule) => {
-          // Get related experience (first one for now)
-          const experienceId = schedule.experiences?.[0];
-          const experience = experienceId ? experiencesMap[experienceId] : null;
+          const experience: any[] = schedule.experiences
+          const units: any[] = schedule.units
           
-          // Get related units
-          const units = schedule.units?.map(id => unitsMap[id]).filter(Boolean) || [];
+          const isDeleting = deletingId === schedule.id;
 
           return (
-            <div key={schedule.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <div 
+              key={schedule.id} 
+              className={`bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow ${
+                isDeleting ? 'opacity-50 pointer-events-none' : ''
+              }`}
+            >
               {/* Header */}
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                 <div className="flex justify-between items-start">
@@ -153,20 +117,53 @@ function RouteComponent() {
                       Created: {formatDate(schedule.created)}
                     </p>
                   </div>
-                  <Link
-                    to="/dashboard/create-calendar"
-                    search={{
-                      lang: 'en',
-                      calId: schedule.id
-                    }}
-                    // state={{ calendar: schedule }}
-                    {...({ state: { calendar: schedule } } as any)}
-                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
-                  >
-                    Edit
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link
+                      to="/dashboard/create-calendar"
+                      search={{
+                        lang: 'en',
+                        calId: schedule.id
+                      }}
+                      {...({ state: { calendar: schedule } } as any)}
+                      className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => setShowDeleteConfirm(schedule.id)}
+                      disabled={isDeleting}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Delete Confirmation Dialog */}
+              {showDeleteConfirm === schedule.id && (
+                <div className="px-6 py-4 bg-red-50 border-b border-red-200">
+                  <p className="text-sm text-red-800 mb-3">
+                    Are you sure you want to delete "{schedule.title}"? This action cannot be undone.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDelete(schedule.id)}
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Confirm Delete'}
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(null)}
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-gray-200 text-gray-800 text-sm rounded-md hover:bg-gray-300 disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Body */}
               <div className="px-6 py-4 space-y-4">
@@ -204,8 +201,8 @@ function RouteComponent() {
                   <p className="text-gray-900">{schedule.buffer_minutes} minutes</p>
                 </div>
 
-                {experience && (
-                  <>
+                {experience.map((exp) => (
+                  <div key={exp.id}>
                     <hr className="border-gray-200" />
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -214,32 +211,32 @@ function RouteComponent() {
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div className="flex items-start gap-4">
                           <div className="w-20 h-20 bg-gray-300 rounded-lg flex-shrink-0 overflow-hidden">
-                            {experience.coverImage && (
+                            {exp.coverImage && (
                               <img 
-                                src={experience.coverImage} 
-                                alt={experience.title}
+                                src={exp.coverImage} 
+                                alt={exp.title}
                                 className="w-full h-full object-cover"
                               />
                             )}
                           </div>
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">
-                              {experience.title}
+                              {resolveTranslatable(exp.title, lang)}
                             </h4>
                             <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                              {experience.description}
+                              {resolveTranslatable(exp.title, lang)}
                             </p>
-                            {experience.status && (
+                            {exp.status && (
                               <span className="mt-2 inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
-                                {experience.status}
+                                {exp.status}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
+                  </div>
+                ))}
 
                 {units.length > 0 && (
                   <>

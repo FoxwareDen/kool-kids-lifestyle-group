@@ -116,11 +116,6 @@ function RouteComponent() {
   const { cards, units, lang, calId} = Route.useLoaderData();
   const [step, setStep] = useState<Step>("experience");
 
-  // // ----- preset state -----
-  // const [presets, setPresets] = useState<SlotPreset[]>(DEFAULT_PRESETS);
-  // const [selectedPreset, setSelectedPreset] = useState<SlotPreset | null>(null);
-  // const [customPreset, setCustomPreset] = useState({ id: "", label: "", durationMinutes: 60 });
-
   // ----- experience card state -----
   const [cardsLoading, setCardsLoading] = useState(false);
   const [cardsError, setCardsError] = useState<string | null>(null);
@@ -336,86 +331,7 @@ function RouteComponent() {
         Booking Dashboard
       </h1>
 
-      {/* ---------------- STEP 1: PRESET ---------------- 
-      <section className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          1. Choose or create a slot preset
-        </h2>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {presets.map((preset) => (
-            <button
-              key={preset.id}
-              onClick={() => handleSelectPreset(preset)}
-              disabled={step !== "preset"}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                step !== "preset"
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : selectedPreset?.id === preset.id
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-              }`}
-            >
-              {preset.label} ({preset.durationMinutes}min)
-              {selectedPreset?.id === preset.id ? " ✓" : ""}
-            </button>
-          ))}
-        </div>
-
-        {step === "preset" && (
-          <div className="mt-4 p-4 bg-white rounded-md border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Or create a custom preset
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              <input
-                placeholder="id (e.g. 90min)"
-                value={customPreset.id}
-                onChange={(e) => setCustomPreset((p) => ({ ...p, id: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <input
-                placeholder="label (e.g. 90-minute session)"
-                value={customPreset.label}
-                onChange={(e) => setCustomPreset((p) => ({ ...p, label: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent flex-1 min-w-[200px]"
-              />
-              <input
-                type="number"
-                placeholder="duration (minutes)"
-                value={customPreset.durationMinutes}
-                onChange={(e) =>
-                  setCustomPreset((p) => ({ ...p, durationMinutes: Number(e.target.value) }))
-                }
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40"
-              />
-              <button
-                onClick={handleAddCustomPreset}
-                className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
-              >
-                Add preset
-              </button>
-            </div>
-          </div>
-        )}
-
-        {step === "preset" && (
-          <button
-            onClick={handleConfirmPreset}
-            disabled={!selectedPreset}
-            className={`mt-4 px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-              !selectedPreset
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            Continue with "{selectedPreset?.label ?? "..."}"
-          </button>
-        )}
-      </section>
-      */}
-
-      {/* ---------------- STEP 2: EXPERIENCE CARDS ---------------- */}
+      {/* ---------------- STEP 1: EXPERIENCE CARDS ---------------- */}
       {(step === "experience" || step === "calendar") && (
         <section className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -467,7 +383,7 @@ function RouteComponent() {
         </section>
       )}
 
-      {/* ---------------- STEP 3: CALENDAR FORM ---------------- */}
+      {/* ---------------- STEP 2: CALENDAR FORM ---------------- */}
       {step === "calendar" && hydratedExperience && (
         <section className="p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
