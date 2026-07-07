@@ -1,11 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from "react";
+import { createFileRoute, useLocation, useNavigate } from '@tanstack/react-router'
+import { useEffect, useState } from "react";
 import type { SlotPreset } from "booking-api-extended";
 import type { FeatureCard } from "@/lib/experiences";
 import { fetchFeaturedExperienceCard, fetchExperienceById, resolveTranslatable } from "@/lib/experiences";
 import type { Calendar, UnitType } from "@/lib/booking";
-import { fetchUnitTypes, createUnit } from "@/lib/booking";
+import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule } from "@/lib/booking";
 import { createServerFn } from '@tanstack/react-start';
+import { formatDateForInput } from '#/lib/utils';
 
 const fetchCards = createServerFn()
   .inputValidator((input: { lang: 'en' | 'af' }) => input)
@@ -54,14 +55,13 @@ const fetchUnits = createServerFn()
     }
   })
 
-export const Route = createFileRoute('/_authed/dashboard/calendar')({
+export const Route = createFileRoute('/_authed/dashboard/create-calendar')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
+    calId: (search.calId as string | undefined) ?? undefined,
   }),
-  loader: async ({ location }) => {
-    // Parse ?lang= from the URL
-    const params = new URLSearchParams(location.search)
-    const lang = params.get('lang') as 'en' | 'af' | null
+  loaderDeps: ({ search: {lang, calId} }) => ({lang, calId}),
+  loader: async ({ deps: {calId, lang} }) => {
 
     const [cardsResult, unitsResult] = await Promise.all([
       fetchCards({ data: { lang: lang || 'en' } }),
@@ -79,6 +79,7 @@ export const Route = createFileRoute('/_authed/dashboard/calendar')({
       cards: cardsResult.data || [],
       units: unitsResult.data || [],
       lang,
+      calId,
     };
   },
   component: RouteComponent,
@@ -88,7 +89,7 @@ export const Route = createFileRoute('/_authed/dashboard/calendar')({
 // import { createCalendar } from "@/lib/booking";
 
 // ---- Step type ----
-type Step = "preset" | "experience" | "calendar";
+type Step = "experience" | "calendar" // "preset" | 
 
 // ---- Default presets (swap for a fetch if these live server-side) ----
 const DEFAULT_PRESETS: SlotPreset[] = [
@@ -109,13 +110,16 @@ const DAYS = [
 
 
 function RouteComponent() {
-  const { cards, units, lang } = Route.useLoaderData();
-  const [step, setStep] = useState<Step>("preset");
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // ----- preset state -----
-  const [presets, setPresets] = useState<SlotPreset[]>(DEFAULT_PRESETS);
-  const [selectedPreset, setSelectedPreset] = useState<SlotPreset | null>(null);
-  const [customPreset, setCustomPreset] = useState({ id: "", label: "", durationMinutes: 60 });
+  const { cards, units, lang, calId} = Route.useLoaderData();
+  const [step, setStep] = useState<Step>("experience");
+
+  // // ----- preset state -----
+  // const [presets, setPresets] = useState<SlotPreset[]>(DEFAULT_PRESETS);
+  // const [selectedPreset, setSelectedPreset] = useState<SlotPreset | null>(null);
+  // const [customPreset, setCustomPreset] = useState({ id: "", label: "", durationMinutes: 60 });
 
   // ----- experience card state -----
   const [cardsLoading, setCardsLoading] = useState(false);
@@ -129,12 +133,13 @@ function RouteComponent() {
 
   // ----- unit type state -----
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>(units);
-  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0 });
+  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0.0 });
   const [creatingUnit, setCreatingUnit] = useState(false);
   const [createUnitError, setCreateUnitError] = useState<string | null>(null);
 
   // ----- calendar form state -----
   const [calendarForm, setCalendarForm] = useState<Omit<Calendar, "experiences">>({
+    title:"",
     start_date: "",
     end_date: "",
     start_time: "09:00",
@@ -144,6 +149,7 @@ function RouteComponent() {
     units: [], // array of unit type ids
   });
   const [saving, setSaving] = useState(false);
+  const [isLoaderReady, setIsLoaderReady] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // all-day slots: for bookings like a full event, inn stay, or campground
@@ -155,6 +161,63 @@ function RouteComponent() {
   const [bufferUnit, setBufferUnit] = useState<"minutes" | "hours" | "days">("minutes");
   const [bufferAmount, setBufferAmount] = useState(15);
 
+  useEffect(() => {
+    if (cards.length > 0 && units.length > 0) {
+      setIsLoaderReady(true);
+    }
+  }, [cards, units]);
+
+
+  // loaded data if state has been passed useLocation
+  useEffect(() => {
+    if (calId && isLoaderReady) {
+
+      (async () =>{
+        // TODO: add the data to
+        const data = (location.state as unknown as { calendar: Calendar })?.calendar
+  
+        const card = cards.find((c) => c.id === data?.experiences[0]);
+    
+        if (card) {    
+          setSelectedCard(card);
+          setExperienceLoading(true);
+          setExperienceError(null);
+          setHydratedExperience(null);
+
+          const result = await fetchExperienceById(card.id);
+
+          if (result.error) {
+            setExperienceError(result.error);
+          } else {
+            setHydratedExperience(result.value);
+          }
+          setExperienceLoading(false);
+
+          setStep("calendar");
+        }
+
+        const bufferMinutes = data?.buffer_minutes ?? 15;
+        setBufferAmount(bufferMinutes); // Set this to 300
+        setBufferUnit("minutes"); // Keep it as minutes
+
+        setCalendarForm((prev) => ({
+          ...prev,
+          title: data?.title ?? prev.title,
+          start_date: formatDateForInput(data.start_date??""),
+          end_date: formatDateForInput(data.end_date??""),
+          start_time: data?.start_time ?? prev.start_time,
+          end_time: data?.end_time ?? prev.end_time,
+          days_of_week: data?.days_of_week ?? prev.days_of_week,
+          buffer_minutes: data?.buffer_minutes ?? prev.buffer_minutes,
+          units: data?.units ?? prev.units,
+          experiences: [card?.id ?? ""], // just the first experience for now
+        }))
+      })()
+
+
+    }
+  }, [calId,isLoaderReady])
+
   const BUFFER_UNIT_TO_MINUTES: Record<typeof bufferUnit, number> = {
     minutes: 1,
     hours: 60,
@@ -165,25 +228,6 @@ function RouteComponent() {
     setBufferAmount(amount);
     setBufferUnit(unit);
     updateField("buffer_minutes", amount * BUFFER_UNIT_TO_MINUTES[unit]);
-  }
-
-  // ---- handlers ----
-
-  function handleSelectPreset(preset: SlotPreset) {
-    setSelectedPreset(preset);
-  }
-
-  function handleAddCustomPreset() {
-    if (!customPreset.id || !customPreset.label || !customPreset.durationMinutes) return;
-    const newPreset: SlotPreset = { ...customPreset };
-    setPresets((prev) => [...prev, newPreset]);
-    setSelectedPreset(newPreset);
-    setCustomPreset({ id: "", label: "", durationMinutes: 60 });
-  }
-
-  function handleConfirmPreset() {
-    if (!selectedPreset) return;
-    setStep("experience");
   }
 
   async function handleSelectCard(card: FeatureCard) {
@@ -261,17 +305,24 @@ function RouteComponent() {
       // so we store the full-day span rather than adding a new field
       start_time: isAllDay ? "00:00" : calendarForm.start_time,
       end_time: isAllDay ? "23:59" : calendarForm.end_time,
-      experiences: selectedCard.id,
+      experiences: [selectedCard.id],
     };
 
     setSaving(true);
     setSaveError(null);
 
     try {
-      // TODO: replace with your real save call, e.g.:
-      // const result = await createCalendar(calendar);
-      // if (result.error) throw new Error(result.error);
-      console.log("Calendar to save:", calendar);
+      if (calId === undefined) {
+        const result = await createCalendarSchedule(calendar);
+
+        if (!result.success) throw new Error(result.error || "Failed to save calendar");
+      }else {
+        const result = await updateCalendarSchedule(calId, calendar);
+
+        if (!result.success) throw new Error(result.error || "Failed to update calendar");
+      }
+
+      navigate({ to: '/dashboard/calendars', search: { lang: lang || 'en' } });
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "Failed to save calendar");
     } finally {
@@ -285,7 +336,7 @@ function RouteComponent() {
         Booking Dashboard
       </h1>
 
-      {/* ---------------- STEP 1: PRESET ---------------- */}
+      {/* ---------------- STEP 1: PRESET ---------------- 
       <section className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           1. Choose or create a slot preset
@@ -362,12 +413,13 @@ function RouteComponent() {
           </button>
         )}
       </section>
+      */}
 
       {/* ---------------- STEP 2: EXPERIENCE CARDS ---------------- */}
       {(step === "experience" || step === "calendar") && (
         <section className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            2. Choose an experience to link
+            1. Choose an experience to link
           </h2>
 
           {cardsLoading && (
@@ -419,13 +471,24 @@ function RouteComponent() {
       {step === "calendar" && hydratedExperience && (
         <section className="p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
-            3. Set up the calendar for "
+            2. Set up the calendar for "
             {resolveTranslatable(hydratedExperience.title, lang || "en") ??
               selectedCard?.id}
             "
           </h2>
 
           <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Title
+                <input
+                  type="text"
+                  value={calendarForm.title}
+                  onChange={(e) => updateField("title", e.target.value)}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </label>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-sm font-medium text-gray-700">
                 Start date
@@ -613,7 +676,7 @@ function RouteComponent() {
                           // allow free typing (including partial input like "12." or "")
                           // but only commit a valid float to state
                           const parsed = parseFloat(raw);
-                          setNewUnit((p) => ({ ...p, value: isNaN(parsed) ? 0 : parsed }));
+                          setNewUnit((p) => ({ ...p, value: isNaN(parsed) ? 0.0 : parsed }));
                         }}
                         className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
@@ -638,7 +701,7 @@ function RouteComponent() {
                     : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
               >
-                {saving ? "Saving..." : "Create calendar"}
+                {saving ? "Saving..." : calId !== undefined ? "Update" : "Create calendar"}
               </button>
               {saveError && (
                 <p className="text-red-600 bg-red-50 p-3 rounded-md mt-4">

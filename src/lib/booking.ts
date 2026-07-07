@@ -1,52 +1,25 @@
-import type { SlotPreset, UnitType as U, Calendar as C, Booking as B } from "booking-api-extended";
-import { fetchExperienceById, type HydratedBookingPage } from "./experiences";
-import { createResult, getPBSession, Result } from "./pocketbase";
-
-//  SlotPreset {
-//   id: string;
-//   label: string;
-//   durationMinutes: number;
-// }
+import type { UnitType as U, Calendar as C } from "booking-api-extended";
+import { createResult, getPBSession, Result, type MetaData } from "./pocketbase";
 
 export type UnitType = U & {
     value: number
 }
-// {
-//   id: string;
-//   label: string;
-//   capacity: number;
-// }
 
-//  Booking {
-//   id: number;
-//   status: "pending" | "completed" | "rescheduled" | "cancelled";
-//   date: string;              // "YYYY-MM-DD"
-//   start_time: string;        // "HH:mm"
-//   end_time: string;          // "HH:mm"
-//   updated_at: string | null;
-//   duration: number;          // minutes
-//   unit_type: string;
-//   slot_preset_id: string;
-// }
+export type UnitTypeResponse = UnitType & MetaData;
 
 export type Calendar = Omit<C, "user_id" | "units"> & {
-//  C
-//   start_date: string;
-//   end_date?: string;
-//   start_time: string;        // "HH:mm"
-//   end_time: string;          // "HH:mm"
-//   days_of_week: number[];    // 0 = Sunday … 6 = Saturday
-//   buffer_minutes?: number;
-//   user_id?: string;
+    title: string;
     units: string[];
-    experiences: string,
+    experiences: string[];
 }
 
-export async function createUnit(label:string, capacity: number, value:number, cookieHeader?:string): Promise<Result<string,String>> {
+export type CalendarResponse = Calendar & MetaData;
+
+export async function createUnit(label: string, capacity: number, value: number, cookieHeader?: string): Promise<Result<string, String>> {
     const client = getPBSession(cookieHeader);
 
     try {
-        const result = await client.collection("UnitType").create({
+        const result = await client.collection("UnitType").create<UnitType>({
             label,
             capacity,
             value
@@ -58,11 +31,11 @@ export async function createUnit(label:string, capacity: number, value:number, c
     }
 }
 
-export async function fetchUnitTypes(cookieHeader?: string): Promise<Result<UnitType[], String>> {
+export async function fetchUnitTypes(cookieHeader?: string): Promise<Result<UnitTypeResponse[], String>> {
     const client = getPBSession(cookieHeader);
 
     try {
-        const records = await client.collection("UnitType").getFullList<UnitType>({
+        const records = await client.collection("UnitType").getFullList<UnitTypeResponse>({
             sort: "label",
         });
         return createResult(records, null);
@@ -72,10 +45,88 @@ export async function fetchUnitTypes(cookieHeader?: string): Promise<Result<Unit
     }
 }
 
-export async function bobTheBob(finder: String) {
-    try {
+export async function createCalendarSchedule(data: Calendar, cookieHeader?: string) {
+    const client = getPBSession(cookieHeader);
 
+    try {
+        const result = await client.collection("CalendarSchedules").create<CalendarResponse>({
+            start_date: data.start_date,
+            end_date: data.end_date,
+            start_time: data.start_time,
+            end_time: data.end_time,
+            days_of_week: data.days_of_week,
+            buffer_minutes: data.buffer_minutes, 
+            units: data.units,                   
+            experiences: data.experiences,
+            title: data.title,
+        });
+
+        return createResult(result, null);
     } catch (error) {
-        
+        console.error(error);
+        return createResult(null, "Failed to create calendar schedule");
+    }
+}
+
+/**
+ * Fetches all calendar schedules sorted by start date.
+ */
+export async function fetchCalendarSchedules(cookieHeader?: string) {
+    const client = getPBSession(cookieHeader);
+    
+    try {
+        const result = await client.collection("CalendarSchedules").getFullList<CalendarResponse>({
+            sort: "start_date"
+        })
+
+        return createResult(result, null);
+    } catch (error) {
+        return createResult(null, "Failed to fetch calendar schedules");
+    }
+}
+
+/**
+ * Fetches calendar schedules filtered by experience IDs.
+ **/
+export async function fetchCalendarScheduleByExperiencesIds(filter: string | string[], cookieHeader?: string) {
+    const client = getPBSession(cookieHeader);
+
+    try {
+        // If an array of IDs is supplied, join them safely or ensure 
+        // string queries evaluate properly depending on your filtration logic
+        const filterQuery = Array.isArray(filter) 
+            ? filter.map(id => `experiences ~ "${id}"`).join(" || ")
+            : `experiences ~ "${filter}"`;
+
+        const result = await client.collection("CalendarSchedules").getFullList<CalendarResponse>({
+            filter: filterQuery,
+            sort: "start_date"
+        })
+
+        return createResult(result, null);
+    } catch (error) {
+        return createResult(null, "Failed to fetch calendar schedules");        
+    }
+}
+
+export async function updateCalendarSchedule(id:string, data: Calendar, cookieHeader?: string) {
+    const client = getPBSession(cookieHeader);
+
+    try {
+        const result = await client.collection("CalendarSchedules").update<CalendarResponse>(id, {
+            start_date: data.start_date,
+            end_date: data.end_date,
+            start_time: data.start_time,
+            end_time: data.end_time,
+            days_of_week: data.days_of_week,
+            buffer_minutes: data.buffer_minutes,
+            units: data.units,
+            experiences: data.experiences,
+            title: data.title,
+        });
+
+        return createResult(result, null);
+    } catch (error) {
+        return createResult(null, "Failed to update calendar schedule");
     }
 }

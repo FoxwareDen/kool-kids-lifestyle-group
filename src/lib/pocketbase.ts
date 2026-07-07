@@ -145,6 +145,12 @@ export async function handleGoogleLogin() {
 }
 
 // ============= Types =============
+export type MetaData = {
+  id: string;
+  collectionId: string;
+  collectionName: string;
+  created: string;
+}
 export interface Asset {
     alt: string,
     collectionId: string,

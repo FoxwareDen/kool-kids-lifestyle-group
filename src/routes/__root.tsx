@@ -25,7 +25,8 @@ export const getSessionMiddleware = createMiddleware().server(({next})=>{
   return next({
     context: {
       isAuthed,
-      language: getRequestHeader("Accept-Language") 
+      language: getRequestHeader("Accept-Language"),
+      cookieString: cookieHeader,
     }
   })
 });
