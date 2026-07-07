@@ -150,6 +150,7 @@ export type MetaData = {
   collectionId: string;
   collectionName: string;
   created: string;
+  updated: string;
 }
 export interface Asset {
     alt: string,

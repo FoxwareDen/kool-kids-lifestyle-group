@@ -1,5 +1,5 @@
 import type { UnitType as U, Calendar as C } from "booking-api-extended";
-import { createResult, getPBSession, Result, type MetaData } from "./pocketbase";
+import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
 
 export type UnitType = U & {
     value: number
@@ -45,6 +45,17 @@ export async function fetchUnitTypes(cookieHeader?: string): Promise<Result<Unit
     }
 }
 
+export async function deleteUnitType(id: string, cookieHeader?: string): Promise<Result<null, String>> {
+    const client = getPBSession(cookieHeader);
+    try {
+        await client.collection("UnitType").delete(id);
+        return createResult(null, null);
+    } catch (error) {
+        console.error(error);
+        return createResult(null, "Failed to delete unit type");
+    }
+}
+
 export async function createCalendarSchedule(data: Calendar, cookieHeader?: string) {
     const client = getPBSession(cookieHeader);
 
@@ -75,8 +86,41 @@ export async function fetchCalendarSchedules(cookieHeader?: string) {
     const client = getPBSession(cookieHeader);
     
     try {
-        const result = await client.collection("CalendarSchedules").getFullList<CalendarResponse>({
-            sort: "start_date"
+        const result = (await client.collection("CalendarSchedules").getFullList({
+            sort: "start_date",
+            expand: "units, experiences, experiences.coverImage"
+        })).map((record) => {
+            return {
+                buffer_minutes: record.buffer_minutes,
+                collectionId: record.collectionId,
+                collectionName: record.collectionName,
+                created: record.created,
+                days_of_week: record.days_of_week,
+                end_date: record.end_date,
+                end_time: record.end_time,
+                id: record.id,
+                start_date: record.start_date,
+                start_time: record.start_time,
+                title: record.title,
+                updated: record.updated,
+                units: record.expand?.units || [],
+                experiences: record.expand?.experiences.map((obj)=>{
+                    const image = obj.expand["coverImage"];
+                    return {
+                        id: obj.id,
+                        category: obj.category,
+                        defaultLanguage: obj.defaultLanguage,
+                        enabledLanguages: obj.enabledLanguages,
+                        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+                        description: obj.description
+                            ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+                            : undefined,
+                        createdAt: obj.createdAt,
+                        updatedAt: obj.updatedAt,
+                        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+                    }
+                }) || [],
+            }
         })
 
         return createResult(result, null);
@@ -98,9 +142,42 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
             ? filter.map(id => `experiences ~ "${id}"`).join(" || ")
             : `experiences ~ "${filter}"`;
 
-        const result = await client.collection("CalendarSchedules").getFullList<CalendarResponse>({
+        const result = (await client.collection("CalendarSchedules").getFullList({
             filter: filterQuery,
-            sort: "start_date"
+            sort: "start_date",
+            expand: "units, experiences, experiences.coverImage"
+        })).map((record) => {
+            return {
+                buffer_minutes: record.buffer_minutes,
+                collectionId: record.collectionId,
+                collectionName: record.collectionName,
+                created: record.created,
+                days_of_week: record.days_of_week,
+                end_date: record.end_date,
+                end_time: record.end_time,
+                id: record.id,
+                start_date: record.start_date,
+                start_time: record.start_time,
+                title: record.title,
+                updated: record.updated,
+                units: record.expand?.units || [],
+                experiences: record.expand?.experiences.map((obj)=>{
+                    const image = obj.expand["coverImage"];
+                    return {
+                        id: obj.id,
+                        category: obj.category,
+                        defaultLanguage: obj.defaultLanguage,
+                        enabledLanguages: obj.enabledLanguages,
+                        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+                        description: obj.description
+                            ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+                            : undefined,
+                        createdAt: obj.createdAt,
+                        updatedAt: obj.updatedAt,
+                        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+                    }
+                }) || [],
+            }
         })
 
         return createResult(result, null);
@@ -128,5 +205,16 @@ export async function updateCalendarSchedule(id:string, data: Calendar, cookieHe
         return createResult(result, null);
     } catch (error) {
         return createResult(null, "Failed to update calendar schedule");
+    }
+}
+
+export async function deleteCalendarSchedule(id: string, cookieHeader?: string) {
+    const client = getPBSession(cookieHeader);
+
+    try {
+        const result = await client.collection("CalendarSchedules").delete(id);
+        return createResult(result, null);
+    } catch (error) {
+        return createResult(null, "Failed to delete calendar schedule");        
     }
 }

@@ -1,8 +1,6 @@
 import type { PageBlock, BookingPage, Language } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
 
-
-
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
   const cls =  { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
