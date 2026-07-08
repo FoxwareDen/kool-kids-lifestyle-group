@@ -12,7 +12,7 @@ import type {
 } from '#/lib/experiences'
 import { resolveTranslatable, createEmptyBlock, createBookingPage, parseCategories, serializeCategories } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useCallback, type ChangeEvent } from 'react'
+import { useState, useCallback, useEffect, useMemo, type ChangeEvent, type ReactNode } from 'react'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 
 export const Route = createFileRoute('/_authed/dashboard/experience')({
@@ -28,7 +28,99 @@ function setTranslated<T>(field: Translatable<T>, lang: Language, value: T): Tra
   return { ...field, translations: { ...field.translations, [lang]: value } }
 }
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+/**
+ * Turns a File into an object URL and revokes the previous one whenever the
+ * file changes or the component unmounts. Centralizes the blob-URL lifecycle
+ * so editors don't leak a new URL on every keystroke-triggered re-render.
+ */
+function useObjectUrl(file: File | null | undefined): string | null {
+  const [url, setUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!file) {
+      setUrl(null)
+      return
+    }
+    const objectUrl = URL.createObjectURL(file)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [file])
+
+  return url
+}
+
+/**
+ * Owns block CRUD + stable identity for React keys. `createEmptyBlock`'s
+ * `index` is a data-model concept (serialized order) and is not safe to reuse
+ * as a render key, since deleting a block can make a later-added block's
+ * index collide with a surviving block's index. We track a separate,
+ * never-reused client-side id per block for `key` purposes only.
+ */
+function useBlocks() {
+  const [entries, setEntries] = useState<{ id: string; block: PageBlock }[]>([])
+
+  const addBlock = useCallback((type: PageBlock['type']) => {
+    setEntries((prev) => [...prev, { id: crypto.randomUUID(), block: createEmptyBlock(type, prev.length) }])
+  }, [])
+
+  const updateBlock = useCallback((id: string, updated: PageBlock) => {
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, block: updated } : e)))
+  }, [])
+
+  const deleteBlock = useCallback((id: string) => {
+    setEntries((prev) => prev.filter((e) => e.id !== id))
+  }, [])
+
+  const blocks = useMemo(() => entries.map((e) => e.block), [entries])
+
+  /** Blocks re-indexed by current position, ready to submit. */
+  const serialize = useCallback((): PageBlock[] => entries.map((e, i) => ({ ...e.block, index: i })), [entries])
+
+  return { entries, blocks, addBlock, updateBlock, deleteBlock, serialize }
+}
+
+/**
+ * Owns the comma-separated `category` string on `pageData` plus the chip
+ * add/remove/parse logic, so the route component doesn't need to know how
+ * categories are encoded.
+ */
+function useCategories(
+  pageData: SkeletonPageData,
+  setPageData: React.Dispatch<React.SetStateAction<SkeletonPageData>>,
+) {
+  const [input, setInput] = useState('')
+  const categories = parseCategories(pageData.category)
+
+  const add = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== 'Enter') return
+      e.preventDefault()
+      const val = input.trim()
+      if (!val) return
+      setPageData((prev) => {
+        const existing = parseCategories(prev.category)
+        if (existing.includes(val)) return prev
+        return { ...prev, category: serializeCategories([...existing, val]) }
+      })
+      setInput('')
+    },
+    [input, setPageData],
+  )
+
+  const remove = useCallback(
+    (val: string) => {
+      setPageData((prev) => ({
+        ...prev,
+        category: serializeCategories(parseCategories(prev.category).filter((c) => c !== val)),
+      }))
+    },
+    [setPageData],
+  )
+
+  return { categories, input, setInput, add, remove }
+}
+
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className="flex flex-col gap-1.5">
     <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">{label}</label>
     {children}
@@ -73,7 +165,7 @@ const ParagraphBlockEditor = ({ block, lang, onChange }: { block: ParagraphBlock
 )
 
 const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void }) => {
-  const previewUrl = block.file ? URL.createObjectURL(block.file) : null
+  const previewUrl = useObjectUrl(block.file)
   return (
     <div className="flex flex-col gap-3">
       <Field label="Image">
@@ -114,7 +206,7 @@ const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: 
 }
 
 const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => {
-  const previewUrl = block.file ? URL.createObjectURL(block.file) : null
+  const previewUrl = useObjectUrl(block.file)
   return (
     <div className="flex flex-col gap-3">
       <Field label="Video">
@@ -249,7 +341,6 @@ const BlockEditor = ({
 
 function RouteComponent() {
   const [lang, setLang] = useState<Language>('en')
-  const [categoryInput, setCategoryInput] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -261,14 +352,11 @@ function RouteComponent() {
     title: { default: '' },
     description: { default: '' },
   })
-  const [blocks, setBlocks] = useState<PageBlock[]>([])
   const [selection, setSelection] = useState<Record<number, string[]>>({})
 
-  // `pageData.category` is stored as a single comma-separated string (that's
-  // the actual PocketBase field type). `categories` is just that string
-  // parsed out for rendering as chips below — always derived, never a
-  // separate source of truth.
-  const categories = parseCategories(pageData.category)
+  const { entries, blocks, addBlock, updateBlock, deleteBlock, serialize } = useBlocks()
+  const categories = useCategories(pageData, setPageData)
+  const coverPreviewUrl = useObjectUrl(pageData.coverImage)
 
   const handleMetaChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -286,38 +374,6 @@ function RouteComponent() {
     return resolveTranslatable(field, lang)
   }
 
-  const addCategory = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return
-    e.preventDefault()
-    const val = categoryInput.trim()
-    if (!val) return
-    setPageData((prev) => {
-      const existing = parseCategories(prev.category)
-      if (existing.includes(val)) return prev
-      return { ...prev, category: serializeCategories([...existing, val]) }
-    })
-    setCategoryInput('')
-  }
-
-  const removeCategory = (val: string) => {
-    setPageData((prev) => ({
-      ...prev,
-      category: serializeCategories(parseCategories(prev.category).filter((c) => c !== val)),
-    }))
-  }
-
-  const addBlock = (type: PageBlock['type']) => {
-    setBlocks((prev) => [...prev, createEmptyBlock(type, prev.length)])
-  }
-
-  const updateBlock = (index: number, updated: PageBlock) => {
-    setBlocks((prev) => prev.map((b, i) => (i === index ? updated : b)))
-  }
-
-  const deleteBlock = (index: number) => {
-    setBlocks((prev) => prev.filter((_, i) => i !== index))
-  }
-
   const handleSubmit = async () => {
     setSubmitError(null)
 
@@ -332,8 +388,6 @@ function RouteComponent() {
 
     setSubmitting(true)
 
-    const blocksWithIndex: PageBlock[] = blocks.map((b, i) => ({ ...b, index: i }))
-
     const result = await createBookingPage({
       slug: pageData.title.default.toLowerCase().replace(/\s+/g, '-'),
       title: pageData.title,
@@ -342,7 +396,7 @@ function RouteComponent() {
       category: pageData.category,
       defaultLanguage: pageData.defaultLanguage,
       enabledLanguages: pageData.enabledLanguages,
-      blocks: blocksWithIndex,
+      blocks: serialize(),
     })
 
     setSubmitting(false)
@@ -405,9 +459,9 @@ function RouteComponent() {
                 setPageData((prev) => ({ ...prev, coverImage: file }))
               }}
             />
-            {pageData.coverImage && (
+            {coverPreviewUrl && (
               <img
-                src={URL.createObjectURL(pageData.coverImage)}
+                src={coverPreviewUrl}
                 alt="Cover preview"
                 className="mt-1 rounded-md max-h-36 object-cover w-full"
               />
@@ -417,14 +471,14 @@ function RouteComponent() {
           <Field label="Categories">
             <input
               className={inputCls}
-              value={categoryInput}
-              onChange={(e) => setCategoryInput(e.target.value)}
-              onKeyDown={addCategory}
+              value={categories.input}
+              onChange={(e) => categories.setInput(e.target.value)}
+              onKeyDown={categories.add}
               placeholder="Type a category and press Enter…"
             />
-            {categories.length > 0 && (
+            {categories.categories.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-1">
-                {categories.map((c) => (
+                {categories.categories.map((c) => (
                   <span
                     key={c}
                     className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-orange)]/10 py-0.5 pl-2.5 pr-1.5 text-xs font-semibold text-[var(--brand-navy)]"
@@ -432,7 +486,7 @@ function RouteComponent() {
                     {c}
                     <button
                       type="button"
-                      onClick={() => removeCategory(c)}
+                      onClick={() => categories.remove(c)}
                       className="leading-none text-[var(--brand-navy)]/40 hover:text-[var(--brand-orange)]"
                     >
                       ✕
@@ -470,13 +524,13 @@ function RouteComponent() {
         <div className="flex flex-col gap-2">
           <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Blocks</span>
 
-          {blocks.map((block, i) => (
+          {entries.map(({ id, block }) => (
             <BlockEditor
-              key={block.index}
+              key={id}
               block={block}
               lang={lang}
-              onChange={(updated) => updateBlock(i, updated)}
-              onDelete={() => deleteBlock(i)}
+              onChange={(updated) => updateBlock(id, updated)}
+              onDelete={() => deleteBlock(id)}
             />
           ))}
 

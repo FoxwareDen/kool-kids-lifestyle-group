@@ -25,6 +25,7 @@ import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
 import { Route as AuthedDashboardExperienceRouteImport } from './routes/_authed/dashboard/experience'
+import { Route as AuthedDashboardCreatePostsRouteImport } from './routes/_authed/dashboard/create-posts'
 import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
 import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 
@@ -108,6 +109,12 @@ const AuthedDashboardExperienceRoute =
     path: '/experience',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardCreatePostsRoute =
+  AuthedDashboardCreatePostsRouteImport.update({
+    id: '/create-posts',
+    path: '/create-posts',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 const AuthedDashboardCreateCalendarRoute =
   AuthedDashboardCreateCalendarRouteImport.update({
     id: '/create-calendar',
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/experiences/': typeof ExperiencesIndexRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
   '/dashboard/experience': typeof AuthedDashboardExperienceRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
 }
@@ -155,6 +163,7 @@ export interface FileRoutesByTo {
   '/experiences': typeof ExperiencesIndexRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
   '/dashboard/experience': typeof AuthedDashboardExperienceRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
 }
@@ -176,6 +185,7 @@ export interface FileRoutesById {
   '/experiences/': typeof ExperiencesIndexRoute
   '/_authed/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/_authed/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/_authed/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
   '/_authed/dashboard/experience': typeof AuthedDashboardExperienceRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
 }
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/experiences/'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
+    | '/dashboard/create-posts'
     | '/dashboard/experience'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
+    | '/dashboard/create-posts'
     | '/dashboard/experience'
     | '/dashboard'
   id:
@@ -235,6 +247,7 @@ export interface FileRouteTypes {
     | '/experiences/'
     | '/_authed/dashboard/calendars'
     | '/_authed/dashboard/create-calendar'
+    | '/_authed/dashboard/create-posts'
     | '/_authed/dashboard/experience'
     | '/_authed/dashboard/'
   fileRoutesById: FileRoutesById
@@ -369,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardExperienceRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/create-posts': {
+      id: '/_authed/dashboard/create-posts'
+      path: '/create-posts'
+      fullPath: '/dashboard/create-posts'
+      preLoaderRoute: typeof AuthedDashboardCreatePostsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
     '/_authed/dashboard/create-calendar': {
       id: '/_authed/dashboard/create-calendar'
       path: '/create-calendar'
@@ -389,6 +409,7 @@ declare module '@tanstack/react-router' {
 interface AuthedDashboardRouteChildren {
   AuthedDashboardCalendarsRoute: typeof AuthedDashboardCalendarsRoute
   AuthedDashboardCreateCalendarRoute: typeof AuthedDashboardCreateCalendarRoute
+  AuthedDashboardCreatePostsRoute: typeof AuthedDashboardCreatePostsRoute
   AuthedDashboardExperienceRoute: typeof AuthedDashboardExperienceRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
 }
@@ -396,6 +417,7 @@ interface AuthedDashboardRouteChildren {
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardCalendarsRoute: AuthedDashboardCalendarsRoute,
   AuthedDashboardCreateCalendarRoute: AuthedDashboardCreateCalendarRoute,
+  AuthedDashboardCreatePostsRoute: AuthedDashboardCreatePostsRoute,
   AuthedDashboardExperienceRoute: AuthedDashboardExperienceRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
 }

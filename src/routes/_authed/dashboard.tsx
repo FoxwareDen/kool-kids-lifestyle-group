@@ -46,8 +46,8 @@ function DashboardComponent() {
           ))}
         </nav>
       </aside>
-      <main id='main' className='flex-1 p-6 overflow-auto'>
-        <div className='page-wrap'>
+      <main id='main' className='flex-1 overflow-auto'>
+        <div className='h-full'>
           <Outlet />
         </div>
       </main>
