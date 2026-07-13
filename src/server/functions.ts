@@ -3,19 +3,6 @@ import { getSessionMiddleware } from "#/routes/__root";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const PaymentInitializationData = z.object({
-  email: z.email("Invalid email address"),
-
-  amount: z.number().positive("Amount must be greater than 0"),
-
-  fullName: z.string().regex(/ /, "Must contain a space"),
-
-  phone: z
-    .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format")
-    .optional()
-});
-
 export const initializePaymentSeverFn = createServerFn()
     .middleware([getSessionMiddleware])
     .inputValidator((data: { email: string, amount: number, fullName: string, phone?: string }) => data)
@@ -50,3 +37,16 @@ export const initializePaymentSeverFn = createServerFn()
             return createResult(null, error instanceof Error ? error.message : String(error));
         }
     })
+
+const PaymentInitializationData = z.object({
+  email: z.email("Invalid email address"),
+
+  amount: z.number().positive("Amount must be greater than 0"),
+
+  fullName: z.string().regex(/ /, "Must contain a space"),
+
+  phone: z
+    .string()
+    .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format")
+    .optional()
+});
