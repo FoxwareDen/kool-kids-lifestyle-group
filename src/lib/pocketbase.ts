@@ -228,17 +228,10 @@ export class Result<T,E> {
     this.error = error;
     this.success = this.error === null;
   }
-  
-  isSuccess() {
-    // @ts-ignore
-    return this.error === null;
-  }
 }
 
 // Simplify the return type to just Result<T, E>
-export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> & {
-  isSuccess: () => boolean
-} {
+export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> {
   return new Result<T, E>(value, error); // Use 'as' here so TS knows the prototype injection is safe
 }
 
