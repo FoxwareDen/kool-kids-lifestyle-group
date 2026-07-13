@@ -12,6 +12,10 @@ export const Route = createFileRoute('/_authed/dashboard')({
 
 const ROUTES: {label: string, to: string}[] = [
   {
+    label: "Home",
+    to: '/'
+  },
+  {
     label: "Wiki",
     to: "/dashboard/"
   },
