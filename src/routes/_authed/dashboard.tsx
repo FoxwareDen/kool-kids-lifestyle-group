@@ -20,7 +20,7 @@ function DashboardComponent() {
   const sectionTitle = getActiveNavLabel(pathname)
 
   return (
-    <div className="flex h-dvh w-full bg-[var(--bg-base)]">
+    <div className="flex h-dvh w-full bg-[var(--dash-canvas)]">
       <DashboardSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardTopbar sectionTitle={sectionTitle} />
