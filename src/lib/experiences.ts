@@ -49,27 +49,11 @@ export type FlatMedia = {
   caption?: string;
 };
 
-export type SelectableOption = {
-  id: string;
-  label: Translatable;
-  description?: Translatable;
-  priceModifier?: number;
-};
-
-export type SelectableBlock = {
-  index: number;
-  type: "selectable";
-  prompt: Translatable;
-  options: SelectableOption[];
-  required: boolean;
-};
-
 export type PageBlock =
   | HeaderBlock
   | ParagraphBlock
   | Omit<ImageBlock, "id">
-  | Omit<VideoBlock, "id">
-  | SelectableBlock;
+  | Omit<VideoBlock, "id">;
 
 // ============================================================
 // BOOKING PAGE
@@ -95,7 +79,7 @@ export type BookingPage = {
   updatedAt: Date;
 };
 
-type FlatPageBlock = HeaderBlock | ParagraphBlock | SelectableBlock | Omit<FlatMedia, "id">;
+type FlatPageBlock = HeaderBlock | ParagraphBlock | Omit<FlatMedia, "id">;
 
 export type FlatBookingPage = {
   id: string;
@@ -358,7 +342,5 @@ export function createEmptyBlock(type: PageBlock["type"], index: number): PageBl
       return { ...base, type, file: null as unknown as File, alt: { default: "" } };
     case "video":
       return { ...base, type, file: null as unknown as File };
-    case "selectable":
-      return { ...base, type, prompt: { default: "" }, options: [], required: true };
   }
 }
