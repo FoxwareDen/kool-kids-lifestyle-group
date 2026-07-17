@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { ChevronDown, Menu, Calendar, X, ArrowRight } from 'lucide-react'
-import { useExperienceCategories } from '#/hooks/useExperiences'
+import { useState, useEffect, useMemo } from 'react'
+import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
+import { Link } from '@tanstack/react-router';
+import type { Language } from '#/lib/experiences';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -34,16 +35,29 @@ function WhatsAppIcon({ className }: { className?: string }) {
  * The navigation items rendered in the desktop and mobile menus.
  * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
  */
-const NAV_ITEMS = [
-  { label: 'HOME', href: '/' },
-  { label: 'ABOUT PRIESKA', href: '/about-prieska' },
-  { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true },
-  { label: 'HERITAGE', href: '/heritage' },
-  { label: 'GALLERY', href: '/gallery' },
-  { label: 'EVENTS', href: '/events' },
-  { label: 'BLOG', href: '/blogs' },
-  { label: 'CONTACT', href: '/contact' },
-]
+const NAV_ITEMS: Record<Language, any> = {
+  en: [{ label: 'HOME', href: '/', authed: false },
+  { label: "DashBoard", href: "/dashboard" , authed: true},
+  { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
+  { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
+  { label: 'HERITAGE', href: '/heritage', authed: false },
+  { label: 'GALLERY', href: '/gallery', authed: false },
+  { label: 'EVENTS', href: '/events', authed: false },
+  { label: 'BLOG', href: '/blogs', authed: false },
+  { label: 'CONTACT', href: '/contact', authed: false },
+  ],
+  af: [
+    { label: 'TUIS', href: '/', authed: false },
+    { label: "Proneel", href: "/dashboard" , authed: true}, // Alternatively: "Dashboard" is also widely used in SA tech
+    { label: 'OOR PRIESKA', href: '/about-prieska', authed: false },
+    { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
+    { label: 'ERFENIS', href: '/heritage', authed: false },
+    { label: 'GALERY', href: '/gallery', authed: false },
+    { label: 'GEBEURE', href: '/events', authed: false },
+    { label: 'BLOG', href: '/blogs', authed: false },
+    { label: 'KONTAK', href: '/contact', authed: false },
+  ]
+}
 
 /**
  * Build the experiences index URL filtered to a single category.
@@ -74,17 +88,17 @@ function categoryLabel(category: string): string {
  *
  * @returns {JSX.Element} The rendered header element.
  */
-export function SiteHeader() {
+export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [mobileExpOpen, setMobileExpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { categories, isLoading: categoriesLoading } = useExperienceCategories()
 
-useEffect(() => {
-  const onScroll = () => setScrolled(window.scrollY > 80)
-  window.addEventListener('scroll', onScroll, { passive: true })
-  return () => window.removeEventListener('scroll', onScroll)
-}, [])
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
@@ -104,56 +118,32 @@ useEffect(() => {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {NAV_ITEMS.map((item) =>
-            item.hasDropdown ? (
-              <div key={item.label} className="group relative">
-                <a
-                  href={item.href}
-                  className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)] group-hover:!text-[var(--brand-orange)]"
-                  aria-haspopup="true"
-                >
-                  {item.label}
-                  <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
-                </a>
-
-                {/* Dropdown panel */}
-                <div className="invisible absolute left-1/2 top-full z-40 w-60 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                  <div className="overflow-hidden border border-white/10 bg-[var(--brand-navy)] shadow-2xl shadow-black/40">
-                    <a
-                      href="/experiences"
-                      className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-white/5 hover:!text-[var(--brand-orange)]"
+          {NAV_ITEMS[lang].map((item, index) => {
+            return item.authed ? (
+              
+                isAuthed ? (
+                    <Link
+                      key={item.label + index}
+                      to={item.href}
+                      search={(prev)=> prev}
+                      className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
                     >
-                      All Experiences
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
-                    {categories.length === 0 ? (
-                      <span className="block px-4 py-3 text-xs text-white/50">
-                        {categoriesLoading ? 'Loading categories…' : 'No categories yet'}
-                      </span>
-                    ) : (
-                      categories.map((cat) => (
-                        <a
-                          key={cat}
-                          href={categoryHref(cat)}
-                          className="block px-4 py-2.5 text-sm font-medium !text-white/80 no-underline transition-colors hover:bg-white/5 hover:!text-[var(--brand-orange)]"
-                        >
-                          {categoryLabel(cat)}
-                        </a>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
+                      {item.label}
+                      {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+                    </Link>
+                ) : null
             ) : (
-              <a
-                key={item.label}
-                href={item.href}
-                className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
-              >
-                {item.label}
-              </a>
-            ),
-          )}
+              <Link
+              key={item.label + index}
+              to={item.href}
+              search={(prev)=> prev}
+              className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+            >
+              {item.label}
+              {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+            </Link>
+            );
+          })}
         </nav>
 
         {/* Actions */}
@@ -171,7 +161,7 @@ useEffect(() => {
             className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             <Calendar className="h-4 w-4" />
-            BOOK NOW
+            {lang == "af" ? "BESPREEK NOU": "BOOK NOW"}
           </a>
 
           <button
@@ -193,61 +183,17 @@ useEffect(() => {
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) =>
-              item.hasDropdown ? (
-                <li key={item.label}>
-                  <div className="flex items-center justify-between rounded-md pr-1 transition-colors hover:bg-white/10">
-                    <a
-                      href={item.href}
-                      className="flex-1 rounded-md px-3 py-2.5 text-sm font-semibold !text-white/85 no-underline"
-                    >
-                      {item.label}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setMobileExpOpen((v) => !v)}
-                      aria-label="Toggle experience categories"
-                      aria-expanded={mobileExpOpen}
-                      className="flex h-9 w-9 items-center justify-center rounded-md text-white"
-                    >
-                      <ChevronDown
-                        className={`h-4 w-4 transition-transform ${mobileExpOpen ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-                  </div>
-
-                  {mobileExpOpen && (
-                    <ul className="mb-1 ml-3 flex flex-col gap-0.5 border-l border-white/10 pl-3">
-                      {categories.length === 0 ? (
-                        <li className="px-3 py-2 text-xs text-white/50">
-                          {categoriesLoading ? 'Loading categories…' : 'No categories yet'}
-                        </li>
-                      ) : (
-                        categories.map((cat) => (
-                          <li key={cat}>
-                            <a
-                              href={categoryHref(cat)}
-                              className="block rounded-md px-3 py-2 text-sm font-medium !text-white/75 no-underline transition-colors hover:bg-white/10 hover:!text-[var(--brand-orange)]"
-                            >
-                              {categoryLabel(cat)}
-                            </a>
-                          </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </li>
-              ) : (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold !text-white/85 no-underline transition-colors hover:bg-white/10"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ),
-            )}
+            {NAV_ITEMS[lang].map((item, index) => (
+              <li key={item.label + index}>
+                <a
+                  href={item.href}
+                  className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
+                >
+                  {item.label}
+                  {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
       )}

@@ -1,3 +1,5 @@
+// TODO:NO CMS MANAGING
+
 import { createFileRoute } from '@tanstack/react-router'
 import { GalleryHero } from '#/components/gallery/GalleryHero'
 import { GalleryShowcase } from '#/components/gallery/GalleryShowcase'

@@ -1,3 +1,5 @@
+// TODO:NO CMS MANAGING
+
 import { ArrowRight } from 'lucide-react'
 import { SectionHeading } from './SectionHeading'
 import { GalleryItem } from './GalleryItem'

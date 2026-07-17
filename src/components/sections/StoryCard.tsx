@@ -25,7 +25,6 @@ import { IconBadge } from './IconBadge'
 export function StoryCard({
   image,
   imageAlt,
-  icon,
   title,
   description,
   href = '#',
@@ -33,7 +32,6 @@ export function StoryCard({
 }: {
   image: string
   imageAlt: string
-  icon: LucideIcon
   title: string
   description: string
   href?: string
@@ -57,7 +55,6 @@ export function StoryCard({
           alt={imageAlt}
           className="h-50 w-full object-cover"
         />
-        <IconBadge icon={icon} className="absolute left-4 top-4" />
       </div>
 
       {/* Body */}
@@ -70,7 +67,7 @@ export function StoryCard({
         </p>
 
         <a
-          href={href}
+          href={"/heritage"}
           className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline hover:!text-[var(--brand-orange-deep)]"
         >
           {ctaLabel}

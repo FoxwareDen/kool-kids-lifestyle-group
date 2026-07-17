@@ -1,3 +1,5 @@
+// TODO:NO CMS MANAGING
+
 import { createFileRoute } from '@tanstack/react-router'
 import { HeritageHero } from '#/components/heritage/HeritageHero'
 import { HeritageIntro } from '#/components/heritage/HeritageIntro'
@@ -5,7 +7,6 @@ import { HeritageTimeline } from '#/components/heritage/HeritageTimeline'
 import { HeritageSites } from '#/components/heritage/HeritageSites'
 import { CulturalTraditions } from '#/components/heritage/CulturalTraditions'
 import { HeritageCta } from '#/components/heritage/HeritageCta'
-import { SiteFooter } from '#/components/footer/SiteFooter'
 
 /**
  * The "Heritage" page route. Composes the page-level sections in order: hero,

@@ -2,7 +2,8 @@
 // BLOCK TYPES
 // ============================================================
 
-import { createResult, pb, Result, uploadAsset, type Asset } from "./pocketbase";
+import { environmentManager } from "@tanstack/react-query";
+import { buildImageUrl, createPB_SSR, createResult, pb, Result, uploadAsset, type Asset } from "./pocketbase";
 
 export type Language = "en" | "af";
 
@@ -199,6 +200,125 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
     }, null);
   } catch (error) {
     return createResult<HydratedBookingPage, string>(null, `${error}`);
+  }
+}
+
+export type FeatureCard = Omit<FlatBookingPage, "expand" | "blocks" | "slug" | "coverImage"> & {
+  coverImage: string;
+  lang: Language;
+}
+
+export async function fetchFeaturedExperienceCard(lang: Language="en", cookieHeader?: string): Promise<Result<FeatureCard[], string>>{
+  let client;
+
+  if (environmentManager.isServer()) {
+    client = createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    const { pb } = await import("@/lib/pocketbase");
+    client = pb;
+  }
+
+  try {
+    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
+      filter:  `(category = "featured" || category ~ "featured," || category ~ ",featured") && status = "Published"`,
+      expand: 'coverImage'
+    })
+
+    const t: FeatureCard[] = records.map((obj)=>{
+      // @ts-ignore
+      const image = obj.expand["coverImage"];      
+      return {
+        id: obj.id,
+        category: obj.category,
+        defaultLanguage: obj.defaultLanguage,
+        enabledLanguages: obj.enabledLanguages,
+        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+        description: obj.description
+          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+          : undefined,
+        createdAt: obj.createdAt,
+        updatedAt: obj.updatedAt,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+        lang,
+      }
+    })
+
+    return createResult(t, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "failed to retrieve data")
+  }
+}
+
+export async function fetchExperiences(cookieHeader?: string): Promise<Result<HydratedBookingPage[], string>> {
+  let client;
+
+  if (environmentManager.isServer()) {
+    client = createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    const { pb } = await import("@/lib/pocketbase");
+    client = pb;
+  }
+
+  try {
+    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
+      filter:  `status = "Published"`,
+      expand: 'coverImage'
+    });
+
+    const t: HydratedBookingPage[] = records.map((obj)=>{
+      // @ts-ignore
+      const image = obj.expand["coverImage"];      
+      return {
+        ...obj,
+        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
+        description: obj.description
+          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
+      }
+    });
+
+    return createResult(t, null);    
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "failed to get experiences")        
+  }
+}
+
+export async function fetchExperienceById(id:string, cookieHeader?:string) {
+  let client;
+
+  if (environmentManager.isServer()) {
+    client = createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    const { pb } = await import("@/lib/pocketbase");
+    client = pb;
+  }
+
+  try {
+    const record: FlatBookingPage | null = await client.collection("Experiences").getOne(id, {
+      expand: "coverImage"
+    });
+    if (!record) return createResult(null, "Failed to get experiences")
+
+    // @ts-ignore
+    const image = record.expand["coverImage"];
+
+    return createResult<HydratedBookingPage, string>({
+        ...record,
+        title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
+        description: record.description
+          ? (typeof record.description === "string" ? JSON.parse(record.description) : record.description)
+          : undefined,
+        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
+      }, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to get experiences");
   }
 }
 

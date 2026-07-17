@@ -1,50 +1,30 @@
+// HAS CMS MANAGING
+
 import { HeroSection } from '#/components/hero/HeroSection';
-import { StoriesSection } from '#/components/sections/StoriesSection';
+import { StoriesSection, type StoriesSectionProps } from '#/components/sections/StoriesSection';
 import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchFeaturedExperienceCard, fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { fetchPageDataSSR, type Content, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { fetchFeaturedExperienceCard } from '#/lib/experiences';
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
   // @ts-ignore
-  .handler(async ({ data: { slug, language } }) => {
-    
-    // If language was explicitly passed, use it — otherwise detect from headers
-    const resolvedLanguage: 'en' | 'af' = language ?? await (async () => {
-      const { getRequestHeaders } = await import('@tanstack/react-start/server')
-
-      const headers = getRequestHeaders()
-      const acceptLanguage = headers.get('accept-language') ?? 'en'
-
-      const languages = acceptLanguage
-        .split(',')
-        .map(part => {
-          const [lang, q] = part.trim().split(';q=')
-          return { lang: lang.trim(), q: q ? parseFloat(q) : 1.0 }
-        })
-        .sort((a, b) => b.q - a.q)
-
-      const primaryLang = languages[0].lang.split('-')[0].toLowerCase()
-      return primaryLang === 'af' ? 'af' : 'en'
-    })()
-
-    return fetchPageDataSSR(slug, resolvedLanguage)
+  .handler(async ({ data: { slug, language }, context }) => {
+    return fetchPageDataSSR(slug,language)
   })
 
 export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loader: async ({ location }) => {
+  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loader: async ({ location, deps: { lang }}) => {
     const slug = location.pathname.replace(/^\/|\/$/g, '')
-    
-    // Parse ?lang= from the URL
-    const params = new URLSearchParams(location.search)
-    const lang = params.get('lang') as 'en' | 'af' | null
 
     // @ts-ignore
     const pageData: PageData | null = await getPageData({
@@ -53,7 +33,7 @@ export const Route = createFileRoute('/')({
 
     if (!pageData) throw notFound()
 
-    const experience = await fetchFeaturedExperienceCard("en")    
+    const experience = await fetchFeaturedExperienceCard(lang)    
 
     return { pageData, featuredList: experience.value, lang}
   },
@@ -63,15 +43,14 @@ export const Route = createFileRoute('/')({
   errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
 
   component: function () {
-    const { pageData, featuredList, lang } = Route.useLoaderData()
-
+    const { pageData, featuredList, lang } = Route.useLoaderData()    
 
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
-        <StoriesSection />
+        <StoriesSection data={pageData.components["stories_section"]!} />
         <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}} lang={lang} />
-        <PlanYourVisitSection />
+        <PlanYourVisitSection lang={lang}/>
         <GallerySection />
         <PreFooterSection />
       </main>

@@ -1,15 +1,24 @@
 import PocketBase from 'pocketbase';
-import type { BookingPage, FlatBookingPage, HydratedBookingPage, Language } from './experiences';
+import { environmentManager } from '@tanstack/react-query';
 
 // ============= Client (singleton) =============
 export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 
+export const getPBSession = (cookieHeader?: string) => {
+  if (environmentManager.isServer()) {
+    return createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    return pb
+  }
+}
 
 /**
  * Client-side helper to check if the current user session exists and is valid.
  */
-export function isAuthenticated(): boolean {
-  return pb.authStore.isValid;
+export function isAuthenticated(cookieHeader?:string): boolean {
+  const client = getPBSession(cookieHeader)
+  return client.authStore.isValid;
 }
 
 /**
@@ -17,14 +26,16 @@ export function isAuthenticated(): boolean {
  * Replaces the deprecated .model property with the modern .record property.
  */
 export function getCurrentUser() {
-  return pb.authStore.record;
+  const client = getPBSession()
+  return client.authStore.record;
 }
 
 /**
  * Log out and clear tokens from both PocketBase memory and browser cookies.
  */
 export function handleLogout() {
-  pb.authStore.clear();
+  const client = getPBSession()
+  client.authStore.clear();
   // Clear the cookie by setting an expired date
   document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
 }
@@ -134,6 +145,13 @@ export async function handleGoogleLogin() {
 }
 
 // ============= Types =============
+export type MetaData = {
+  id: string;
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+}
 export interface Asset {
     alt: string,
     collectionId: string,
@@ -312,182 +330,5 @@ export async function fetchPageDataSSR(
   } catch (error: any) {
     if (error?.status === 404) return null;
     throw error;
-  }
-}
-
-export type FeatureCard = Omit<FlatBookingPage, "expand" | "blocks" | "slug" | "coverImage"> & {
-  coverImage: string;
-  lang: Language;
-}
-
-export async function fetchFeaturedExperienceCard(lang: Language="en", cookieHeader?: string): Promise<Result<FeatureCard[], string>>{
-  const client = createPB_SSR(cookieHeader);
-
-  try {
-    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
-      filter:  `(category = "featured" || category ~ "featured," || category ~ ",featured") && status = "Published"`,
-      expand: 'coverImage'
-    })
-
-    const t: FeatureCard[] = records.map((obj)=>{
-      // @ts-ignore
-      const image = obj.expand["coverImage"];      
-      return {
-        id: obj.id,
-        category: obj.category,
-        defaultLanguage: obj.defaultLanguage,
-        enabledLanguages: obj.enabledLanguages,
-        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
-        description: obj.description
-          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
-          : undefined,
-        createdAt: obj.createdAt,
-        updatedAt: obj.updatedAt,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
-        lang,
-      }
-    })
-
-    return createResult(t, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "failed to retrieve data")
-  }
-}
-
-export async function fetchExperiences(cookieHeader?: string): Promise<Result<HydratedBookingPage[], string>> {
-  const client = createPB_SSR(cookieHeader);
-
-  try {
-    const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({
-      filter:  `status = "Published"`,
-      expand: 'coverImage'
-    });
-
-    const t: HydratedBookingPage[] = records.map((obj)=>{
-      // @ts-ignore
-      const image = obj.expand["coverImage"];      
-      return {
-        ...obj,
-        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
-        description: obj.description
-          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
-          : undefined,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
-      }
-    });
-
-    return createResult(t, null);    
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "failed to get experiences")        
-  }
-}
-
-/**
- * Client-side variant of {@link fetchExperiences}. Uses the browser PocketBase
- * singleton (VITE_CMS_URI) so it can run from React components / loaders that
- * execute on the client. Returns published experiences with hydrated cover
- * image URLs.
- */
-export async function fetchExperiencesClient(): Promise<Result<HydratedBookingPage[], string>> {
-  try {
-    const records: FlatBookingPage[] = await pb.collection("Experiences").getFullList({
-      filter: `status = "Published"`,
-      expand: 'coverImage',
-    });
-
-    const t: HydratedBookingPage[] = records.map((obj) => {
-      // @ts-ignore - expand is injected by PocketBase
-      const image = obj.expand["coverImage"];
-      return {
-        ...obj,
-        title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
-        description: obj.description
-          ? (typeof obj.description === "string" ? JSON.parse(obj.description) : obj.description)
-          : undefined,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
-      };
-    });
-
-    return createResult(t, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "failed to get experiences");
-  }
-}
-
-/**
- * Client-side helper that resolves a stored asset id (as found on flat media
- * blocks) into a fully qualified file URL. Returns null if the asset can't be
- * resolved.
- */
-export async function resolveAssetUrlClient(assetId: string): Promise<string | null> {
-  try {
-    const record = await pb.collection("assets").getOne(assetId);
-    return buildImageUrl(record.collectionId, record.id, record.file);
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-/**
- * Client-side variant of {@link fetchExperienceById}. Loads a single published
- * experience by id using the browser PocketBase singleton, hydrating the cover
- * image and parsing translatable JSON fields.
- */
-export async function fetchExperienceByIdClient(
-  id: string,
-): Promise<Result<HydratedBookingPage, string>> {
-  try {
-    const record: FlatBookingPage | null = await pb.collection("Experiences").getOne(id, {
-      expand: "coverImage",
-    });
-    if (!record) return createResult(null, "Experience not found");
-
-    // @ts-ignore - expand is injected by PocketBase
-    const image = record.expand["coverImage"];
-
-    return createResult<HydratedBookingPage, string>(
-      {
-        ...record,
-        title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
-        description: record.description
-          ? (typeof record.description === "string" ? JSON.parse(record.description) : record.description)
-          : undefined,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
-      },
-      null,
-    );
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to get experience");
-  }
-}
-
-export async function fetchExperienceById(id:string, cookieHeader?:string) {
-  const client = createPB_SSR(cookieHeader);
-
-  try {
-    const record: FlatBookingPage | null = await client.collection("Experiences").getOne(id, {
-      expand: "coverImage"
-    });
-    if (!record) return createResult(null, "Failed to get experiences")
-
-    // @ts-ignore
-    const image = record.expand["coverImage"];
-
-    return createResult<HydratedBookingPage, string>({
-        ...record,
-        title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
-        description: record.description
-          ? (typeof record.description === "string" ? JSON.parse(record.description) : record.description)
-          : undefined,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file)
-      }, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to get experiences");
   }
 }
