@@ -42,8 +42,8 @@ const NAV_ITEMS: Record<Language, any> = {
   { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
   { label: 'HERITAGE', href: '/heritage', authed: false },
   { label: 'GALLERY', href: '/gallery', authed: false },
-  { label: 'EVENTS', href: '#', authed: false },
-  { label: 'BLOG', href: '#', authed: false },
+  { label: 'EVENTS', href: '/events', authed: false },
+  { label: 'BLOG', href: '/blogs', authed: false },
   { label: 'CONTACT', href: '/contact', authed: false },
   ],
   af: [
@@ -53,8 +53,8 @@ const NAV_ITEMS: Record<Language, any> = {
     { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
     { label: 'ERFENIS', href: '/heritage', authed: false },
     { label: 'GALERY', href: '/gallery', authed: false },
-    { label: 'GEBEURE', href: '#', authed: false },
-    { label: 'BLOG', href: '#', authed: false },
+    { label: 'GEBEURE', href: '/events', authed: false },
+    { label: 'BLOG', href: '/blogs', authed: false },
     { label: 'KONTAK', href: '/contact', authed: false },
   ]
 }
