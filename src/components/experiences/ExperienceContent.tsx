@@ -22,6 +22,7 @@ function FlatMediaBlock({
   const { data: url, isLoading } = useQuery({
     queryKey: ['asset', block.asset_id],
     queryFn: () => resolveAssetUrlClient(block.asset_id),
+    queryFn: () => ()=>"",
     staleTime: 10 * 60 * 1000,
   })
 

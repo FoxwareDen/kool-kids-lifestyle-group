@@ -1,6 +1,12 @@
 import { fetchExperiences, type Language } from '#/lib/experiences'
+import { CategoryFilter } from '#/components/experiences/CategoryFilter';
+import { ExperienceListCard } from '#/components/experiences/ExperienceListCard';
+import { ExperiencesHero } from '#/components/experiences/ExperiencesHero';
+import { useExperiences } from '#/hooks/useExperiences';
+import { deriveCategories, experienceHasCategory, fetchExperiences, type Language } from '#/lib/experiences'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
+import { Compass, Loader2 } from 'lucide-react';
 
 const getPageData = createServerFn()
   // .inputValidator((input: {language?: "en" | "af"})=> input)

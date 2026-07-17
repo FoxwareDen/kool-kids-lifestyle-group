@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
 import { Link } from '@tanstack/react-router';
 import type { Language } from '#/lib/experiences';
+import { useExperienceCategories } from '#/hooks/useExperiences';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
