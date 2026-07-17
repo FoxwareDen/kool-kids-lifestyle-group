@@ -112,11 +112,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       {/* Added suppressHydrationWarning here to ignore browser extensions modifying attributes */}
       <body suppressHydrationWarning>
         {
-          pathname.split("\/").includes("dashboard") ||  pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} lang={lang} />
+          pathname.split("\/").includes("dashboard") || pathname.split("\/").includes("login") ? null : <SiteHeader isAuthed={isAuthed} lang={lang} />
         }
         {children}
         {
-          pathname.split("\/").includes("login") ? null : <SiteFooter lang={lang} />
+          pathname.split("\/").includes("dashboard") || pathname.split("\/").includes("login") ? null : <SiteFooter lang={lang} />
         }
         <TanStackDevtools
           config={{

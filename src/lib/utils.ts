@@ -5,6 +5,7 @@ import * as Icons from "lucide-react";
 import type { LucideIcon } from 'lucide-react'
 
 import { twMerge } from 'tailwind-merge'
+import type { Language, Translatable } from './experiences';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -24,3 +25,9 @@ export function formatDateForInput(dateString: string): string {
   const date = new Date(dateString);
   return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
 }
+
+export function setTranslated<T>(field: Translatable<T>, lang: Language, value: T): Translatable<T> {
+  if (lang === 'en') return { ...field, default: value }
+  return { ...field, translations: { ...field.translations, [lang]: value } }
+}
+ 
