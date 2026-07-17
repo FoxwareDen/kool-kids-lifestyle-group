@@ -60,6 +60,27 @@ const NAV_ITEMS: Record<Language, any> = {
 }
 
 /**
+ * Build the experiences index URL filtered to a single category.
+ * @param {string} category - The raw category label.
+ * @returns {string} A link to the experiences index pre-filtered by category.
+ */
+function categoryHref(category: string): string {
+  return `/experiences?category=${encodeURIComponent(category)}`
+}
+
+/**
+ * Title-case a raw category string for display, e.g. "heritage" -> "Heritage".
+ * @param {string} category - The raw category label.
+ * @returns {string} The display label.
+ */
+function categoryLabel(category: string): string {
+  return category
+    .split(/[\s-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+/**
  * The fixed, transparent site header that overlays the hero section.
  * Contains the brand logo, primary navigation, a WhatsApp contact icon
  * and the "Book Now" call to action. Collapses into a hamburger menu
@@ -69,7 +90,9 @@ const NAV_ITEMS: Record<Language, any> = {
  */
 export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileExpOpen, setMobileExpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { categories, isLoading: categoriesLoading } = useExperienceCategories()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)

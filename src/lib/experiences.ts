@@ -347,6 +347,35 @@ export function serializeCategories(categories: string[]): string {
     .join(",");
 }
 
+// Internal flag categories that should never be surfaced to visitors (e.g.
+// "featured" is used to promote experiences on the home page, not a real
+// browsable category).
+const HIDDEN_CATEGORIES = new Set(["featured"]);
+
+/**
+ * Build the unique, visitor-facing list of categories from a set of
+ * experiences. Each experience's comma-joined `category` string is parsed and
+ * the results de-duplicated (case-insensitively) with internal flag categories
+ * removed. Returns categories sorted alphabetically.
+ */
+export function deriveCategories(experiences: { category: string }[]): string[] {
+  const seen = new Map<string, string>();
+  for (const exp of experiences) {
+    for (const cat of parseCategories(exp.category)) {
+      const key = cat.toLowerCase();
+      if (HIDDEN_CATEGORIES.has(key)) continue;
+      if (!seen.has(key)) seen.set(key, cat);
+    }
+  }
+  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
+}
+
+/** Whether an experience belongs to a given category (case-insensitive). */
+export function experienceHasCategory(experience: { category: string }, category: string): boolean {
+  const target = category.toLowerCase();
+  return parseCategories(experience.category).some((c) => c.toLowerCase() === target);
+}
+
 export function createEmptyBlock(type: PageBlock["type"], index: number): PageBlock {
   const base = { index };
   switch (type) {
