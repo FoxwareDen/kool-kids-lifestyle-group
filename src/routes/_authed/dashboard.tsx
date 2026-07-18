@@ -8,23 +8,50 @@ export const Route = createFileRoute('/_authed/dashboard')({
   component: DashboardComponent,
 })
 
-/**
- * Shell layout for every `/dashboard/*` route.
- *
- * Provides the persistent sidebar + top bar and renders the active page in the
- * scrollable main region. The current section title is derived from the URL so
- * the top bar stays accurate as the user navigates.
- */
+const ROUTES: {label: string, to: string}[] = [
+  {
+    label: "Home",
+    to: '/'
+  },
+  {
+    label: "Wiki",
+    to: "/dashboard/"
+  },
+  {
+    label: "Create Experiences",
+    to: "/dashboard/experience",
+  }, 
+  {
+    label: "Schedules",
+    to: "/dashboard/calendars",
+  }, 
+  {
+    label: "Create Schedule",
+    to: "/dashboard/create-calendar"
+  }
+]
+
 function DashboardComponent() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const sectionTitle = getActiveNavLabel(pathname)
 
   return (
-    <div className="flex h-dvh w-full bg-[var(--dash-canvas)]">
-      <DashboardSidebar />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <DashboardTopbar sectionTitle={sectionTitle} />
-        <main id="main" className="flex-1 overflow-auto">
+    <div className='flex h-dvh w-full bg-[var(--bg-base)]'>
+      <aside className={`flex flex-col bg-[var(--surface-strong)] border-r border-[var(--line)] min-w-52 p-4`}>
+        <nav className='flex flex-col gap-2'>
+          {ROUTES.map(route => (
+            <Link 
+              key={route.to}
+              to={route.to}
+              className="nav-link px-3 py-2 rounded-md hover:bg-[var(--link-bg-hover)] transition-all"
+            >
+              {route.label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <main id='main' className='flex-1 overflow-auto'>
+        <div className='h-full'>
           <Outlet />
         </main>
       </div>
