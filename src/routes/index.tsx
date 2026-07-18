@@ -1,55 +1,59 @@
-import { fetchPageData } from '#/lib/pocketbase';
-import { createFileRoute } from '@tanstack/react-router'
-// import { createServerFn } from '@tanstack/react-start'
-import { useEffect } from 'react';
+// HAS CMS MANAGING
 
-// 1. It is inputValidator, and it must return the value
-// export const getPageData = createServerFn()
-//   .inputValidator((slug: string) => {
-//     return slug
-//   })
-//   .handler(async ({ data: slug }) => {
+import { HeroSection } from '#/components/hero/HeroSection';
+import { StoriesSection, type StoriesSectionProps } from '#/components/sections/StoriesSection';
+import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
+import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
+import { GallerySection } from '#/components/sections/GallerySection';
+import { PreFooterSection } from '#/components/footer/PreFooterSection';
+import { fetchPageDataSSR, type Content, type PageData } from '#/lib/pocketbase';
+import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { fetchFeaturedExperienceCard } from '#/lib/experiences';
 
-//     console.log("slug: " + slug)
-//     // Put your actual DB/CMS call here
-//     const result = await fetchPageData(slug, "en");
-    
-//     return {
-//       title: slug === "" ? "Welcome Home" : `Page: ${slug}`,
-//       content: `Loaded server data for slug: "${slug}"`,
-//       test: result
-//     }
-//   })
+export const getPageData = createServerFn()
+  .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
+  // @ts-ignore
+  .handler(async ({ data: { slug, language }, context }) => {
+    return fetchPageDataSSR(slug,language)
+  })
 
-// 2. Setup the route context
 export const Route = createFileRoute('/')({
-  // loader: async ({ location }) => {
-  //   // Clean up slash formatting so "/" becomes "" and "/about" becomes "about"
-  //   const slug = location.pathname.replace(/^\/|\/$/g, '')
-    
-  //   // Pass the payload as { data: value }
-  //   const pageData = await getPageData({ data: slug })
-    
-  //   return { pageData }
-  // },
-  component: Home,
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loader: async ({ location, deps: { lang }}) => {
+    const slug = location.pathname.replace(/^\/|\/$/g, '')
+
+    // @ts-ignore
+    const pageData: PageData | null = await getPageData({
+      data: { slug, language: lang ?? undefined },
+    })
+
+    if (!pageData) throw notFound()
+
+    const experience = await fetchFeaturedExperienceCard(lang)    
+
+    return { pageData, featuredList: experience.value, lang}
+  },
+
+  notFoundComponent: () => <div>Page not found</div>,
+
+  errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
+
+  component: function () {
+    const { pageData, featuredList, lang } = Route.useLoaderData()    
+
+    return (
+      <main>
+        <HeroSection data={pageData.components['hero']} />
+        <StoriesSection data={pageData.components["stories_section"]!} />
+        <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}} lang={lang} />
+        <PlanYourVisitSection lang={lang}/>
+        <GallerySection />
+        <PreFooterSection />
+      </main>
+    )
+  },
 })
-
-function Home() {
-  // const { pageData } = Route.useLoaderData()
-
-  useEffect(()=>{
-    (async () => {
-      console.log("running fetch request...");      
-      const test = await fetchPageData("", "en");
-
-      console.log(test);      
-    })()
-  },[])
-
-  return (
-    <div className="p-8">
-      {/* <h1 className="text-4xl font-bold">{pageData.title}</h1> */}
-    </div>
-  )
-}

@@ -9,38 +9,335 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as HeritageRouteImport } from './routes/heritage'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
+import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
+import { Route as ExperiencesIdRouteImport } from './routes/experiences/$id'
+import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
+import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
+import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
+import { Route as AuthedDashboardCreatePostsRouteImport } from './routes/_authed/dashboard/create-posts'
+import { Route as AuthedDashboardCreatePostRouteImport } from './routes/_authed/dashboard/create-post'
+import { Route as AuthedDashboardCreateExperienceRouteImport } from './routes/_authed/dashboard/create-experience'
+import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
+import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeritageRoute = HeritageRouteImport.update({
+  id: '/heritage',
+  path: '/heritage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutPrieskaRoute = AboutPrieskaRouteImport.update({
+  id: '/about-prieska',
+  path: '/about-prieska',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
+  id: '/experiences/',
+  path: '/experiences/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogsIndexRoute = BlogsIndexRouteImport.update({
+  id: '/blogs/',
+  path: '/blogs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
+  id: '/experiences/$id',
+  path: '/experiences/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogsBlogIdRoute = BlogsBlogIdRouteImport.update({
+  id: '/blogs/$blogId',
+  path: '/blogs/$blogId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedDashboardExperiencesRoute =
+  AuthedDashboardExperiencesRouteImport.update({
+    id: '/experiences',
+    path: '/experiences',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCreatePostsRoute =
+  AuthedDashboardCreatePostsRouteImport.update({
+    id: '/create-posts',
+    path: '/create-posts',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCreatePostRoute =
+  AuthedDashboardCreatePostRouteImport.update({
+    id: '/create-post',
+    path: '/create-post',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCreateExperienceRoute =
+  AuthedDashboardCreateExperienceRouteImport.update({
+    id: '/create-experience',
+    path: '/create-experience',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCreateCalendarRoute =
+  AuthedDashboardCreateCalendarRouteImport.update({
+    id: '/create-calendar',
+    path: '/create-calendar',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCalendarsRoute =
+  AuthedDashboardCalendarsRouteImport.update({
+    id: '/calendars',
+    path: '/calendars',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
+  '/heritage': typeof HeritageRoute
+  '/login': typeof LoginRoute
+  '/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs/': typeof BlogsIndexRoute
+  '/events/': typeof EventsIndexRoute
+  '/experiences/': typeof ExperiencesIndexRoute
+  '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
+  '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
+  '/heritage': typeof HeritageRoute
+  '/login': typeof LoginRoute
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs': typeof BlogsIndexRoute
+  '/events': typeof EventsIndexRoute
+  '/experiences': typeof ExperiencesIndexRoute
+  '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
+  '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/about-prieska': typeof AboutPrieskaRoute
+  '/contact': typeof ContactRoute
+  '/gallery': typeof GalleryRoute
+  '/heritage': typeof HeritageRoute
+  '/login': typeof LoginRoute
+  '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
+  '/blogs/$blogId': typeof BlogsBlogIdRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/experiences/$id': typeof ExperiencesIdRoute
+  '/blogs/': typeof BlogsIndexRoute
+  '/events/': typeof EventsIndexRoute
+  '/experiences/': typeof ExperiencesIndexRoute
+  '/_authed/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
+  '/_authed/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
+  '/_authed/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/_authed/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/_authed/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
+  '/_authed/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about-prieska'
+    | '/contact'
+    | '/gallery'
+    | '/heritage'
+    | '/login'
+    | '/dashboard'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
+    | '/experiences/$id'
+    | '/blogs/'
+    | '/events/'
+    | '/experiences/'
+    | '/dashboard/calendars'
+    | '/dashboard/create-calendar'
+    | '/dashboard/create-experience'
+    | '/dashboard/create-post'
+    | '/dashboard/create-posts'
+    | '/dashboard/experiences'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about-prieska'
+    | '/contact'
+    | '/gallery'
+    | '/heritage'
+    | '/login'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
+    | '/experiences/$id'
+    | '/blogs'
+    | '/events'
+    | '/experiences'
+    | '/dashboard/calendars'
+    | '/dashboard/create-calendar'
+    | '/dashboard/create-experience'
+    | '/dashboard/create-post'
+    | '/dashboard/create-posts'
+    | '/dashboard/experiences'
+    | '/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/about-prieska'
+    | '/contact'
+    | '/gallery'
+    | '/heritage'
+    | '/login'
+    | '/_authed/dashboard'
+    | '/blogs/$blogId'
+    | '/events/$eventId'
+    | '/experiences/$id'
+    | '/blogs/'
+    | '/events/'
+    | '/experiences/'
+    | '/_authed/dashboard/calendars'
+    | '/_authed/dashboard/create-calendar'
+    | '/_authed/dashboard/create-experience'
+    | '/_authed/dashboard/create-post'
+    | '/_authed/dashboard/create-posts'
+    | '/_authed/dashboard/experiences'
+    | '/_authed/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthedRoute: typeof AuthedRouteWithChildren
+  AboutPrieskaRoute: typeof AboutPrieskaRoute
+  ContactRoute: typeof ContactRoute
+  GalleryRoute: typeof GalleryRoute
+  HeritageRoute: typeof HeritageRoute
+  LoginRoute: typeof LoginRoute
+  BlogsBlogIdRoute: typeof BlogsBlogIdRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
+  ExperiencesIdRoute: typeof ExperiencesIdRoute
+  BlogsIndexRoute: typeof BlogsIndexRoute
+  EventsIndexRoute: typeof EventsIndexRoute
+  ExperiencesIndexRoute: typeof ExperiencesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/heritage': {
+      id: '/heritage'
+      path: '/heritage'
+      fullPath: '/heritage'
+      preLoaderRoute: typeof HeritageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-prieska': {
+      id: '/about-prieska'
+      path: '/about-prieska'
+      fullPath: '/about-prieska'
+      preLoaderRoute: typeof AboutPrieskaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +345,156 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiences/': {
+      id: '/experiences/'
+      path: '/experiences'
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof ExperiencesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blogs/': {
+      id: '/blogs/'
+      path: '/blogs'
+      fullPath: '/blogs/'
+      preLoaderRoute: typeof BlogsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences/$id': {
+      id: '/experiences/$id'
+      path: '/experiences/$id'
+      fullPath: '/experiences/$id'
+      preLoaderRoute: typeof ExperiencesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blogs/$blogId': {
+      id: '/blogs/$blogId'
+      path: '/blogs/$blogId'
+      fullPath: '/blogs/$blogId'
+      preLoaderRoute: typeof BlogsBlogIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/dashboard': {
+      id: '/_authed/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthedDashboardRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/dashboard/': {
+      id: '/_authed/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthedDashboardIndexRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/experiences': {
+      id: '/_authed/dashboard/experiences'
+      path: '/experiences'
+      fullPath: '/dashboard/experiences'
+      preLoaderRoute: typeof AuthedDashboardExperiencesRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-posts': {
+      id: '/_authed/dashboard/create-posts'
+      path: '/create-posts'
+      fullPath: '/dashboard/create-posts'
+      preLoaderRoute: typeof AuthedDashboardCreatePostsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-post': {
+      id: '/_authed/dashboard/create-post'
+      path: '/create-post'
+      fullPath: '/dashboard/create-post'
+      preLoaderRoute: typeof AuthedDashboardCreatePostRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-experience': {
+      id: '/_authed/dashboard/create-experience'
+      path: '/create-experience'
+      fullPath: '/dashboard/create-experience'
+      preLoaderRoute: typeof AuthedDashboardCreateExperienceRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-calendar': {
+      id: '/_authed/dashboard/create-calendar'
+      path: '/create-calendar'
+      fullPath: '/dashboard/create-calendar'
+      preLoaderRoute: typeof AuthedDashboardCreateCalendarRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/calendars': {
+      id: '/_authed/dashboard/calendars'
+      path: '/calendars'
+      fullPath: '/dashboard/calendars'
+      preLoaderRoute: typeof AuthedDashboardCalendarsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
   }
 }
 
+interface AuthedDashboardRouteChildren {
+  AuthedDashboardCalendarsRoute: typeof AuthedDashboardCalendarsRoute
+  AuthedDashboardCreateCalendarRoute: typeof AuthedDashboardCreateCalendarRoute
+  AuthedDashboardCreateExperienceRoute: typeof AuthedDashboardCreateExperienceRoute
+  AuthedDashboardCreatePostRoute: typeof AuthedDashboardCreatePostRoute
+  AuthedDashboardCreatePostsRoute: typeof AuthedDashboardCreatePostsRoute
+  AuthedDashboardExperiencesRoute: typeof AuthedDashboardExperiencesRoute
+  AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
+}
+
+const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
+  AuthedDashboardCalendarsRoute: AuthedDashboardCalendarsRoute,
+  AuthedDashboardCreateCalendarRoute: AuthedDashboardCreateCalendarRoute,
+  AuthedDashboardCreateExperienceRoute: AuthedDashboardCreateExperienceRoute,
+  AuthedDashboardCreatePostRoute: AuthedDashboardCreatePostRoute,
+  AuthedDashboardCreatePostsRoute: AuthedDashboardCreatePostsRoute,
+  AuthedDashboardExperiencesRoute: AuthedDashboardExperiencesRoute,
+  AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
+}
+
+const AuthedDashboardRouteWithChildren = AuthedDashboardRoute._addFileChildren(
+  AuthedDashboardRouteChildren,
+)
+
+interface AuthedRouteChildren {
+  AuthedDashboardRoute: typeof AuthedDashboardRouteWithChildren
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedDashboardRoute: AuthedDashboardRouteWithChildren,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  AboutPrieskaRoute: AboutPrieskaRoute,
+  ContactRoute: ContactRoute,
+  GalleryRoute: GalleryRoute,
+  HeritageRoute: HeritageRoute,
+  LoginRoute: LoginRoute,
+  BlogsBlogIdRoute: BlogsBlogIdRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
+  ExperiencesIdRoute: ExperiencesIdRoute,
+  BlogsIndexRoute: BlogsIndexRoute,
+  EventsIndexRoute: EventsIndexRoute,
+  ExperiencesIndexRoute: ExperiencesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
