@@ -4,6 +4,8 @@ import {
   FilePlus2,
   CalendarDays,
   CalendarPlus,
+  HomeIcon,
+  Newspaper,
 } from 'lucide-react'
 
 /**
@@ -36,6 +38,13 @@ export type DashboardNavItem = {
  */
 export const DASHBOARD_NAV: DashboardNavItem[] = [
   {
+    label: 'Home',
+    description: 'Back to user side',
+    to: '/',
+    icon: HomeIcon,
+    exact: true,
+  },
+  {
     label: 'Dashboard',
     description: 'Overview and how-to guides',
     to: '/dashboard/',
@@ -43,24 +52,30 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
     exact: true,
   },
   {
+    label: 'Schedules',
+    description: 'Overview of the existing schedules',
+    to: '/dashboard/calendars',
+    icon: CalendarDays,
+    exact: true,
+  },
+  {
+    label: 'Create Schedule',
+    description: 'Create Schedule for experiences',
+    to: '/dashboard/calendars',
+    icon: CalendarPlus,
+    exact: true,
+  },
+  {
+    label: 'Create Posts',
+    description: 'Publish a new Blog or Event page',
+    to: '/create-post',
+    icon: Newspaper,
+  },
+  {
     label: 'Create Experience',
     description: 'Publish a new experience page',
     to: '/dashboard/experience',
     icon: FilePlus2,
-  },
-  {
-    label: 'Schedules',
-    description: 'View and manage booking schedules',
-    to: '/dashboard/calendars',
-    icon: CalendarDays,
-    search: { lang: 'en' },
-  },
-  {
-    label: 'Create Schedule',
-    description: 'Link an experience to dates and prices',
-    to: '/dashboard/create-calendar',
-    icon: CalendarPlus,
-    search: { lang: 'en', calId: undefined },
   },
 ]
 

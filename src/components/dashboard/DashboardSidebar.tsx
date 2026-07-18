@@ -20,7 +20,7 @@ export function DashboardSidebar() {
           src={logo}
           alt="Kool Kids Lifestyle Group"
           className="size-9 rounded-sm object-contain"
-        />
+        />-
         <div className="leading-tight">
           <p className="text-sm font-bold text-[var(--sea-ink)]">Kool Kids</p>
           <p className="text-xs text-[var(--sea-ink-soft)]">Admin workspace</p>

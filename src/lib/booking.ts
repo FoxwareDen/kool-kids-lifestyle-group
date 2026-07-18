@@ -90,21 +90,8 @@ export async function fetchCalendarSchedules(cookieHeader?: string) {
             sort: "start_date",
             expand: "units, experiences, experiences.coverImage"
         })).map((record) => {
-            return {
-                buffer_minutes: record.buffer_minutes,
-                collectionId: record.collectionId,
-                collectionName: record.collectionName,
-                created: record.created,
-                days_of_week: record.days_of_week,
-                end_date: record.end_date,
-                end_time: record.end_time,
-                id: record.id,
-                start_date: record.start_date,
-                start_time: record.start_time,
-                title: record.title,
-                updated: record.updated,
-                units: record.expand?.units || [],
-                experiences: record.expand?.experiences.map((obj)=>{
+            const experiences = record.expand?.experiences ? (
+                record.expand?.experiences.map((obj)=>{
                     const image = obj.expand["coverImage"];
                     return {
                         id: obj.id,
@@ -119,12 +106,31 @@ export async function fetchCalendarSchedules(cookieHeader?: string) {
                         updatedAt: obj.updatedAt,
                         coverImage: buildImageUrl(image.collectionId, image.id, image.file),
                     }
-                }) || [],
+                })
+            ): [];
+            const units = record.expand?.units? record.expand?.units : [];
+            
+            return {
+                buffer_minutes: record.buffer_minutes,
+                collectionId: record.collectionId,
+                collectionName: record.collectionName,
+                created: record.created,
+                days_of_week: record.days_of_week,
+                end_date: record.end_date,
+                end_time: record.end_time,
+                id: record.id,
+                start_date: record.start_date,
+                start_time: record.start_time,
+                title: record.title,
+                updated: record.updated,
+                units,
+                experiences,
             }
         })
 
         return createResult(result, null);
     } catch (error) {
+        console.error(error)
         return createResult(null, "Failed to fetch calendar schedules");
     }
 }
