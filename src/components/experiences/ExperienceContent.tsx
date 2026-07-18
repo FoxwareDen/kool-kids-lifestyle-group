@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { resolveTranslatable, type FlatBookingPage, type Language } from '#/lib/experiences'
-import { resolveAssetUrlClient } from '#/lib/pocketbase'
 
 // The blocks on a hydrated experience are "flat": media blocks reference an
 // asset by id (resolved lazily on the client) rather than carrying a File.
@@ -21,8 +20,7 @@ function FlatMediaBlock({
 }) {
   const { data: url, isLoading } = useQuery({
     queryKey: ['asset', block.asset_id],
-    queryFn: () => resolveAssetUrlClient(block.asset_id),
-    queryFn: () => ()=>"",
+    queryFn: () => ()=>"",//TODO: fix the crack smoking AI code
     staleTime: 10 * 60 * 1000,
   })
 
@@ -112,31 +110,31 @@ export function ExperienceContent({
                 {resolveTranslatable(block.text, lang)}
               </p>
             )
-          case 'selectable':
-            return (
-              <div key={block.index} className="flex flex-col gap-3">
-                <span className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
-                  {resolveTranslatable(block.prompt, lang)}
-                </span>
-                <div className="flex flex-row flex-wrap gap-3">
-                  {block.options.map((opt) => (
-                    <div
-                      key={opt.id}
-                      className="flex min-w-32 flex-1 flex-col gap-1 rounded-xl border border-[var(--brand-navy)]/15 bg-white p-3.5"
-                    >
-                      <span className="text-sm font-semibold text-[var(--brand-navy)]">
-                        {resolveTranslatable(opt.label, lang)}
-                      </span>
-                      {opt.description && (
-                        <span className="text-xs leading-relaxed text-[var(--brand-navy)]/55">
-                          {resolveTranslatable(opt.description, lang)}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
+          // case 'selectable':
+          //   return (
+          //     <div key={block.index} className="flex flex-col gap-3">
+          //       <span className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
+          //         {resolveTranslatable(block.prompt, lang)}
+          //       </span>
+          //       <div className="flex flex-row flex-wrap gap-3">
+          //         {block.options.map((opt) => (
+          //           <div
+          //             key={opt.id}
+          //             className="flex min-w-32 flex-1 flex-col gap-1 rounded-xl border border-[var(--brand-navy)]/15 bg-white p-3.5"
+          //           >
+          //             <span className="text-sm font-semibold text-[var(--brand-navy)]">
+          //               {resolveTranslatable(opt.label, lang)}
+          //             </span>
+          //             {opt.description && (
+          //               <span className="text-xs leading-relaxed text-[var(--brand-navy)]/55">
+          //                 {resolveTranslatable(opt.description, lang)}
+          //               </span>
+          //             )}
+          //           </div>
+          //         ))}
+          //       </div>
+          //     </div>
+          //   )
           default:
             return null
         }

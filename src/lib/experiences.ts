@@ -115,6 +115,7 @@ export type HydratedBookingPage = {
 export type CreateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 export type UpdateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 
+// TODO: optimize one day batch media req together
 export async function createBookingPage(input: CreateBookingPageInput): Promise<Result<HydratedBookingPage, string>> {
   try {
     const fCover = await uploadAsset(input.coverImage, {

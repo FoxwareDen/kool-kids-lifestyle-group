@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchExperiencesClient } from '#/lib/pocketbase'
-import { deriveCategories, type HydratedBookingPage } from '#/lib/experiences'
 import { deriveCategories, fetchExperiences, type HydratedBookingPage } from '#/lib/experiences'
 
 /**
@@ -14,7 +12,6 @@ export function useExperiences() {
   const query = useQuery({
     queryKey: ['experiences', 'published'],
     queryFn: async (): Promise<HydratedBookingPage[]> => {
-      const result = await fetchExperiencesClient()
       const result = await fetchExperiences()
       if (!result.success || !result.value) return []
       return result.value

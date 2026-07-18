@@ -1,4 +1,3 @@
-import { fetchExperiences, type Language } from '#/lib/experiences'
 import { CategoryFilter } from '#/components/experiences/CategoryFilter';
 import { ExperienceListCard } from '#/components/experiences/ExperienceListCard';
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero';
