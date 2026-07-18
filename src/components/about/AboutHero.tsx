@@ -1,5 +1,4 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 import { buildImageUrl, type Asset } from '#/lib/pocketbase'
 
 interface AboutHero {
@@ -19,7 +18,6 @@ interface AboutHero {
 /**
  * The page hero for the "About Prieska" route. Displays a full-width Karoo
  * background image behind navy readability overlays, the shared
- * {@link SiteHeader}, a breadcrumb trail, an orange eyebrow, a serif headline
  * and a script-styled subtitle. Mirrors the visual language of the home hero
  * but in a shorter, secondary-page format.
  *

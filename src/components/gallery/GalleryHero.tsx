@@ -1,9 +1,7 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * The page hero for the "Gallery" route. Displays a full-width Karoo landscape
- * behind navy readability overlays, the shared {@link SiteHeader}, a breadcrumb
  * trail, an orange eyebrow, a serif headline and a script-styled subtitle.
  * Mirrors the visual language of the Heritage and About heroes so secondary
  * pages stay consistent.

@@ -307,6 +307,47 @@ export async function fetchExperienceById(id:string, cookieHeader?:string) {
   }
 }
 
+// export async function updateExperienceById(id: string, input: CreateBookingPageInput, cookieHeader?: string) {
+//   let client;
+
+//   if (environmentManager.isServer()) {
+//     client = createPB_SSR(cookieHeader);
+//   } else {
+//     // Dynamic import on the client side
+//     const { pb } = await import("@/lib/pocketbase");
+//     client = pb;
+//   }
+
+//   try {
+//     // const record = await client.collection("Experiences").update(id, {
+//       //TODO:
+//     // })
+//   } catch (error) {
+    
+//   }
+// }
+
+export async function deleteExperienceById(id:string, cookieHeader?: string) {
+  let client;
+
+  if (environmentManager.isServer()) {
+    client = createPB_SSR(cookieHeader);
+  } else {
+    // Dynamic import on the client side
+    const { pb } = await import("@/lib/pocketbase");
+    client = pb;
+  }
+
+  try {
+    const res: boolean= await client.collection("Experiences").delete(id);
+    
+    return createResult(res, null)
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to delete record: " + id)
+  }
+}
+
 // ============================================================
 // UTILITIES
 // ============================================================

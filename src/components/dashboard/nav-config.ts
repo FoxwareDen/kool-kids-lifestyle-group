@@ -6,6 +6,7 @@ import {
   CalendarPlus,
   HomeIcon,
   Newspaper,
+  ViewIcon,
 } from 'lucide-react'
 
 /**
@@ -61,21 +62,27 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
   {
     label: 'Create Schedule',
     description: 'Create Schedule for experiences',
-    to: '/dashboard/calendars',
+    to: '/dashboard/create-calendar',
     icon: CalendarPlus,
     exact: true,
   },
   {
     label: 'Create Posts',
     description: 'Publish a new Blog or Event page',
-    to: '/create-post',
+    to: '/dashboard/create-post',
     icon: Newspaper,
   },
   {
     label: 'Create Experience',
     description: 'Publish a new experience page',
-    to: '/dashboard/experience',
+    to: '/dashboard/create-experience',
     icon: FilePlus2,
+  },
+  {
+    label: 'Experiences',
+    description: 'Publish a new experience page',
+    to: '/dashboard/experiences',
+    icon: ViewIcon,
   },
 ]
 

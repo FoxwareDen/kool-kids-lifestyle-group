@@ -1,5 +1,4 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * Props for the {@link TimelineHero} component.
@@ -14,7 +13,6 @@ import { SiteHeader } from '#/components/hero/SiteHeader'
 /**
  * The shared page hero for the blogs/events timeline routes. Mirrors the
  * visual language of the other secondary-page heroes (full-bleed image, navy
- * overlays, the fixed {@link SiteHeader}, a breadcrumb, eyebrow, serif headline
  * and script subtitle) while accepting per-route labelling via props.
  *
  * @param {TimelineHeroProps} props - Component props.
@@ -46,8 +44,6 @@ export function TimelineHero({
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)]/95 via-[var(--brand-navy)]/55 to-[var(--brand-navy)]/25" />
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)]/85 via-transparent to-[var(--brand-navy)]/40" />
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
-
-      <SiteHeader />
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">

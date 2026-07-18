@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Mouse } from 'lucide-react'
-import { SiteHeader } from './SiteHeader'
 import { HeroButton } from './HeroButton'
 import { HeroSlides } from './HeroSlides'
 import { buildImageUrl, type Asset } from '#/lib/pocketbase'
@@ -41,7 +40,6 @@ interface HeroSectionProps{
 
 /**
  * The full-viewport hero section for the 360 Experiences site. Combines an
- * auto-advancing background image carousel, an overlaid {@link SiteHeader},
  * headline copy, two {@link HeroButton} CTAs, {@link HeroSlides} indicators
  * and a scroll hint. Replicates the Northern Cape tourism hero design.
  *

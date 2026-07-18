@@ -40,7 +40,7 @@ const NAV_ITEMS: Record<Language, any> = {
   en: [{ label: 'HOME', href: '/', authed: false },
   { label: "DashBoard", href: "/dashboard" , authed: true},
   { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
+  { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true, authed: false },
   { label: 'HERITAGE', href: '/heritage', authed: false },
   { label: 'GALLERY', href: '/gallery', authed: false },
   { label: 'EVENTS', href: '/events', authed: false },

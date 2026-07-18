@@ -1,5 +1,4 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * Props for {@link ExperiencesHero}.
@@ -15,7 +14,6 @@ import { SiteHeader } from '#/components/hero/SiteHeader'
 /**
  * Shared hero banner for the experiences index and detail pages. Mirrors the
  * visual language of the heritage/about heroes: full-bleed image, navy
- * readability overlays, the shared {@link SiteHeader} and a breadcrumb trail.
  *
  * @param {ExperiencesHeroProps} props - Component props.
  * @returns {JSX.Element} The rendered hero section.
@@ -46,8 +44,6 @@ export function ExperiencesHero({
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)]/95 via-[var(--brand-navy)]/60 to-[var(--brand-navy)]/30" />
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)]/90 via-transparent to-[var(--brand-navy)]/40" />
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
-
-      <SiteHeader />
 
       <div className="relative z-10 mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-5">
