@@ -1,12 +1,10 @@
 // app/routes/_authed/dashboard.tsx
-import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useRouterState } from '@tanstack/react-router'
+import { DashboardSidebar } from '#/components/dashboard/DashboardSidebar'
+import { DashboardTopbar } from '#/components/dashboard/DashboardTopbar'
+import { getActiveNavLabel } from '#/components/dashboard/nav-config'
 
 export const Route = createFileRoute('/_authed/dashboard')({
-  // Get user data on the server
-  loader: async () => {
-    // const user = await getCurrentUserFn()
-    // return { user }
-  },
   component: DashboardComponent,
 })
 
@@ -34,6 +32,8 @@ const ROUTES: {label: string, to: string}[] = [
 ]
 
 function DashboardComponent() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const sectionTitle = getActiveNavLabel(pathname)
 
   return (
     <div className='flex h-dvh w-full bg-[var(--bg-base)]'>
@@ -53,8 +53,8 @@ function DashboardComponent() {
       <main id='main' className='flex-1 overflow-auto'>
         <div className='h-full'>
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

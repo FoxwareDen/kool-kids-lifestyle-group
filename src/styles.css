@@ -24,6 +24,10 @@
   --inset-glint: rgba(255, 255, 255, 0.82);
   --kicker: rgba(47, 106, 74, 0.9);
   --bg-base: #e7f3ec;
+  /* Neutral admin canvas — deliberately non-mint so the dashboard reads clean
+     and functional while the marketing site keeps its coastal --bg-base. */
+  --dash-canvas: #f4f5f4;
+  --dash-panel-muted: #eef0ee;
   --header-bg: rgba(251, 255, 248, 0.84);
   --chip-bg: rgba(255, 255, 255, 0.8);
   --chip-line: rgba(47, 106, 74, 0.18);
@@ -80,6 +84,8 @@
   --inset-glint: rgba(194, 247, 238, 0.14);
   --kicker: #b8efe5;
   --bg-base: #0a1418;
+  --dash-canvas: #0b161a;
+  --dash-panel-muted: #101d22;
   --header-bg: rgba(10, 20, 24, 0.8);
   --chip-bg: rgba(13, 28, 32, 0.9);
   --chip-line: rgba(141, 229, 219, 0.24);

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
 import { Link } from '@tanstack/react-router';
 import type { Language } from '#/lib/experiences';
+import { useExperienceCategories } from '#/hooks/useExperiences';
 
 /**
  * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
@@ -42,8 +43,8 @@ const NAV_ITEMS: Record<Language, any> = {
   { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
   { label: 'HERITAGE', href: '/heritage', authed: false },
   { label: 'GALLERY', href: '/gallery', authed: false },
-  { label: 'EVENTS', href: '#', authed: false },
-  { label: 'BLOG', href: '#', authed: false },
+  { label: 'EVENTS', href: '/events', authed: false },
+  { label: 'BLOG', href: '/blogs', authed: false },
   { label: 'CONTACT', href: '/contact', authed: false },
   ],
   af: [
@@ -53,10 +54,31 @@ const NAV_ITEMS: Record<Language, any> = {
     { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
     { label: 'ERFENIS', href: '/heritage', authed: false },
     { label: 'GALERY', href: '/gallery', authed: false },
-    { label: 'GEBEURE', href: '#', authed: false },
-    { label: 'BLOG', href: '#', authed: false },
+    { label: 'GEBEURE', href: '/events', authed: false },
+    { label: 'BLOG', href: '/blogs', authed: false },
     { label: 'KONTAK', href: '/contact', authed: false },
   ]
+}
+
+/**
+ * Build the experiences index URL filtered to a single category.
+ * @param {string} category - The raw category label.
+ * @returns {string} A link to the experiences index pre-filtered by category.
+ */
+function categoryHref(category: string): string {
+  return `/experiences?category=${encodeURIComponent(category)}`
+}
+
+/**
+ * Title-case a raw category string for display, e.g. "heritage" -> "Heritage".
+ * @param {string} category - The raw category label.
+ * @returns {string} The display label.
+ */
+function categoryLabel(category: string): string {
+  return category
+    .split(/[\s-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
 }
 
 /**
@@ -69,7 +91,9 @@ const NAV_ITEMS: Record<Language, any> = {
  */
 export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileExpOpen, setMobileExpOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { categories, isLoading: categoriesLoading } = useExperienceCategories()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)

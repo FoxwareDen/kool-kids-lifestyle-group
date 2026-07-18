@@ -49,27 +49,11 @@ export type FlatMedia = {
   caption?: string;
 };
 
-export type SelectableOption = {
-  id: string;
-  label: Translatable;
-  description?: Translatable;
-  priceModifier?: number;
-};
-
-export type SelectableBlock = {
-  index: number;
-  type: "selectable";
-  prompt: Translatable;
-  options: SelectableOption[];
-  required: boolean;
-};
-
 export type PageBlock =
   | HeaderBlock
   | ParagraphBlock
   | Omit<ImageBlock, "id">
-  | Omit<VideoBlock, "id">
-  | SelectableBlock;
+  | Omit<VideoBlock, "id">;
 
 // ============================================================
 // BOOKING PAGE
@@ -95,7 +79,7 @@ export type BookingPage = {
   updatedAt: Date;
 };
 
-type FlatPageBlock = HeaderBlock | ParagraphBlock | SelectableBlock | Omit<FlatMedia, "id">;
+type FlatPageBlock = HeaderBlock | ParagraphBlock | Omit<FlatMedia, "id">;
 
 export type FlatBookingPage = {
   id: string;
@@ -131,6 +115,7 @@ export type HydratedBookingPage = {
 export type CreateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 export type UpdateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "updatedAt">;
 
+// TODO: optimize one day batch media req together
 export async function createBookingPage(input: CreateBookingPageInput): Promise<Result<HydratedBookingPage, string>> {
   try {
     const fCover = await uploadAsset(input.coverImage, {
@@ -347,6 +332,35 @@ export function serializeCategories(categories: string[]): string {
     .join(",");
 }
 
+// Internal flag categories that should never be surfaced to visitors (e.g.
+// "featured" is used to promote experiences on the home page, not a real
+// browsable category).
+const HIDDEN_CATEGORIES = new Set(["featured"]);
+
+/**
+ * Build the unique, visitor-facing list of categories from a set of
+ * experiences. Each experience's comma-joined `category` string is parsed and
+ * the results de-duplicated (case-insensitively) with internal flag categories
+ * removed. Returns categories sorted alphabetically.
+ */
+export function deriveCategories(experiences: { category: string }[]): string[] {
+  const seen = new Map<string, string>();
+  for (const exp of experiences) {
+    for (const cat of parseCategories(exp.category)) {
+      const key = cat.toLowerCase();
+      if (HIDDEN_CATEGORIES.has(key)) continue;
+      if (!seen.has(key)) seen.set(key, cat);
+    }
+  }
+  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
+}
+
+/** Whether an experience belongs to a given category (case-insensitive). */
+export function experienceHasCategory(experience: { category: string }, category: string): boolean {
+  const target = category.toLowerCase();
+  return parseCategories(experience.category).some((c) => c.toLowerCase() === target);
+}
+
 export function createEmptyBlock(type: PageBlock["type"], index: number): PageBlock {
   const base = { index };
   switch (type) {
@@ -358,7 +372,5 @@ export function createEmptyBlock(type: PageBlock["type"], index: number): PageBl
       return { ...base, type, file: null as unknown as File, alt: { default: "" } };
     case "video":
       return { ...base, type, file: null as unknown as File };
-    case "selectable":
-      return { ...base, type, prompt: { default: "" }, options: [], required: true };
   }
 }
