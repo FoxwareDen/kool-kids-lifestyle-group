@@ -12,11 +12,15 @@ import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
 import { ExperienceContent } from '#/components/experiences/ExperienceContent'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
+import { createServerFn } from '@tanstack/react-start'
+import { fetchCalendarScheduleByExperiencesIds } from '#/lib/booking'
+import { FlatPageRenderer } from '#/components/BookingPageRenderer'
 
 export const Route = createFileRoute('/experiences/$id')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? 'en',
   }),
+  loaderDeps: ({ search: {lang} }) => ({lang}),
   component: RouteComponent,
 })
 
@@ -33,8 +37,8 @@ function categoryLabel(category: string): string {
 }
 
 function RouteComponent() {
+  const { lang } = Route.useLoaderDeps();
   const { id } = Route.useParams()
-  const { lang } = Route.useSearch()
   const [bookingOpen, setBookingOpen] = useState(false)
 
   const {
@@ -45,6 +49,16 @@ function RouteComponent() {
     queryKey: ['experience', id],
     queryFn: async (): Promise<HydratedBookingPage | null> => {
       const result = await fetchExperienceById(id);
+      if (!result.success || !result.value) return null
+      return result.value
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const { data: scheduleData, isLoading: isScheduleDataLoading, isError: isScheduleDataError } = useQuery({
+    queryKey: ["schedules", id],
+    queryFn: async () => {
+      const result = await fetchCalendarScheduleByExperiencesIds(id);
       if (!result.success || !result.value) return null
       return result.value
     },
@@ -79,6 +93,8 @@ function RouteComponent() {
       </main>
     )
   }
+
+  console.log(scheduleData)
 
   const title = resolveTranslatable(data.title, lang)
   const description = data.description ? resolveTranslatable(data.description, lang) : ''
@@ -123,7 +139,7 @@ function RouteComponent() {
 
             {data.blocks?.length > 0 && (
               <div className="border-t border-[var(--brand-navy)]/10 pt-8">
-                <ExperienceContent blocks={data.blocks} lang={lang} />
+                <FlatPageRenderer lang={lang} data={data} />
               </div>
             )}
           </article>
@@ -145,13 +161,25 @@ function RouteComponent() {
                   <CalendarDays className="h-4 w-4 text-[var(--brand-orange)]" />
                   Choose any available date
                 </li>
-                <li className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-[var(--brand-orange)]" />
-                  40 minute guided sessions
-                </li>
-                <li className="flex items-center gap-3">
-                  <Users className="h-4 w-4 text-[var(--brand-orange)]" />
-                  Multiple unit options
+                <li className="flex flex-col items-start gap-3">
+                  <span className='flex items-center gap-3'>
+                    <Users className="h-4 w-4 text-[var(--brand-orange)]" />
+                    Multiple unit options
+                  </span>
+                  <div className='pl-5 w-full'>
+                    <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>Options:</span>
+                    <ul className='pl-5 mt-1 list-disc flex flex-col gap-1'>
+                      {isScheduleDataLoading ? (
+                        <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">Loading options…</li>
+                      ) : scheduleData && scheduleData[0]?.units ? (
+                        scheduleData[0].units.map((unit) => (
+                          <li key={unit.id} className="text-xs">{unit.label}</li>
+                        ))
+                      ) : (
+                        <li className="text-xs text-[var(--brand-navy)]/40 list-none">No options available</li>
+                      )}
+                    </ul>
+                  </div>
                 </li>
                 <li className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-[var(--brand-orange)]" />
