@@ -173,7 +173,7 @@ function RouteComponent() {
 
       {/* Onboarding guides */}
       <section aria-label="How-to guides" className="flex flex-col gap-4">
-        <div>
+        <div id="guides">
           <h2 className="text-lg font-bold text-[var(--sea-ink)]">How-to guides</h2>
           <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">
             Step-by-step instructions for common tasks. Tap a guide to expand it.
