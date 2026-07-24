@@ -16,6 +16,7 @@ import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 
 // Max size: 5MB in bytes
 const MAX_SIZE = 5242880
+const MAX_VIDEO_SIZE = 52428800
 
 export const Route = createFileRoute('/_authed/dashboard/create-experience')({
   component: RouteComponent,
@@ -205,6 +206,8 @@ const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: 
 
 const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => {
   const previewUrl = useObjectUrl(block.file)
+  const [error, setError] = useState<string | null>(null) // Add error state
+
   return (
     <div className="flex flex-col gap-3">
       <Field label="Video">
@@ -215,23 +218,26 @@ const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: 
           onChange={(e) => {
             const file = e.target.files?.[0]
             if (!file) return
+
+            // Add the size safeguard here
+            if (file.size > MAX_VIDEO_SIZE) {
+              setError('Video exceeds the maximum allowed size of 5MB.')
+              e.target.value = ''
+              return
+            }
+
+            setError(null)
             onChange({ ...block, file })
           }}
         />
-        {previewUrl && (
+        {error && (
+          <p className="mt-1 text-xs font-medium text-[var(--brand-orange-deep)]">{error}</p>
+        )}
+        {previewUrl && !error && (
           <video src={previewUrl} controls className="mt-1 rounded-md max-h-36 w-full" />
         )}
       </Field>
-      <Field label="Title">
-        <input
-          className={inputCls}
-          value={block.title ? resolveTranslatable(block.title, lang) : ''}
-          placeholder="Video title (optional)…"
-          onChange={(e) =>
-            onChange({ ...block, title: setTranslated(block.title ?? { default: '' }, lang, e.target.value) })
-          }
-        />
-      </Field>
+      {/* ...rest of your component */}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { LifeBuoy } from 'lucide-react'
 import logo from '#/images/logo-2.png'
 import { DASHBOARD_NAV } from './nav-config'
 import { SidebarNavLink } from './SidebarNavLink'
+import { Link } from '@tanstack/react-router'
 
 /**
  * Left-hand navigation rail for the admin dashboard.
@@ -39,7 +40,7 @@ export function DashboardSidebar() {
 
       {/* Help panel */}
       <div className="border-t border-[var(--line)] p-3">
-        <div className="rounded-sm border border-[var(--line)] bg-[var(--surface)] p-3">
+        <Link to='/dashboard#guides' className="rounded-sm border border-[var(--line)] bg-[var(--surface)] p-3">
           <div className="flex items-center gap-2 text-[var(--sea-ink)]">
             <LifeBuoy className="size-4 text-[var(--brand-orange)]" />
             <p className="text-sm font-semibold">Need a hand?</p>
@@ -47,7 +48,7 @@ export function DashboardSidebar() {
           <p className="mt-1 text-xs leading-relaxed text-[var(--sea-ink-soft)]">
             Open the Dashboard tab for step-by-step guides on every task.
           </p>
-        </div>
+        </Link>
       </div>
     </aside>
   )

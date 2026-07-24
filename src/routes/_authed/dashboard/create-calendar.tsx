@@ -2,7 +2,7 @@ import { createFileRoute, useLocation, useNavigate } from '@tanstack/react-route
 import { useEffect, useState } from "react";
 import type { SlotPreset } from "booking-api-extended";
 import type { FeatureCard } from "@/lib/experiences";
-import { fetchFeaturedExperienceCard, fetchExperienceById, resolveTranslatable } from "@/lib/experiences";
+import { fetchExperienceById, resolveTranslatable, fetchAllExperiencesCard } from "@/lib/experiences";
 import type { Calendar, UnitType } from "@/lib/booking";
 import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule } from "@/lib/booking";
 import { createServerFn } from '@tanstack/react-start';
@@ -13,7 +13,7 @@ import { Button, SectionCard, TextField, controlClass } from '#/components/dashb
 const fetchCards = createServerFn()
   .inputValidator((input: { lang: 'en' | 'af' }) => input)
   .handler(async ({ data: { lang } }) => {
-    const result = await fetchFeaturedExperienceCard(lang);
+    const result = await fetchAllExperiencesCard(lang);
 
     if (!result) {
       return { success: false, error: "No result found", data: null };

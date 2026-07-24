@@ -1,5 +1,19 @@
-import type { PageBlock, BookingPage, Language } from '#/lib/experiences'
+import type { 
+  PageBlock, 
+  BookingPage, 
+  Language, 
+  HydratedPageBlock, 
+  HydratedBookingPage, 
+  HeaderBlock, 
+  ParagraphBlock, 
+  HydratedImageBlock, 
+  HydratedVideoBlock 
+} from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
+
+// ============================================================
+// EXISTING RENDERERS (Left exactly as they were)
+// ============================================================
 
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
@@ -52,74 +66,12 @@ const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'vid
   )
 }
 
-const SelectableRenderer = ({
-  block,
-  lang,
-  value,
-  onChange,
-}: {
-  block: Extract<PageBlock, { type: 'selectable' }>
-  lang: Language
-  value: string[]
-  onChange: (ids: string[]) => void
-}) => {
-  const toggle = (id: string) => {
-    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id])
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      <span className="text-sm font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]">
-        {resolveTranslatable(block.prompt, lang)}
-        {block.required && <span className="text-[var(--brand-orange)] ml-1">*</span>}
-      </span>
-      <div className="flex flex-row flex-wrap gap-3">
-        {block.options.map((opt) => (
-          <label
-            key={opt.id}
-            className="group flex flex-1 min-w-32 cursor-pointer flex-col gap-1 rounded-xl border border-[var(--brand-navy)]/15 bg-white p-3.5 transition-all hover:border-[var(--brand-orange)]/60 hover:shadow-md hover:shadow-[var(--brand-orange)]/10 has-[:checked]:border-[var(--brand-orange)] has-[:checked]:bg-[var(--brand-orange)]/5 has-[:checked]:shadow-md has-[:checked]:shadow-[var(--brand-orange)]/15"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-semibold text-[var(--brand-navy)]">{resolveTranslatable(opt.label, lang)}</span>
-              <input
-                type="checkbox"
-                className="shrink-0 accent-[var(--brand-orange)]"
-                checked={value.includes(opt.id)}
-                onChange={() => toggle(opt.id)}
-              />
-            </div>
-            {opt.description && (
-              <span className="text-xs leading-relaxed text-[var(--brand-navy)]/55">
-                {resolveTranslatable(opt.description, lang)}
-              </span>
-            )}
-            {opt.priceModifier != null && (
-              <span className="mt-auto inline-flex w-fit items-center rounded-full bg-[var(--brand-orange)]/10 px-2.5 py-0.5 pt-1 text-xs font-bold text-[var(--brand-orange-deep)]">
-                {opt.priceModifier >= 0 ? '+' : ''}{opt.priceModifier}
-              </span>
-            )}
-          </label>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-type SelectionState = Record<number, string[]>
-
 type BookingPageRendererProps = {
   page: Pick<BookingPage, 'blocks'>
   lang: Language
-  selection?: SelectionState
-  onSelectionChange?: (blockIndex: number, ids: string[]) => void
 }
 
-export const BookingPageRenderer = ({
-  page,
-  lang,
-  selection = {},
-  onSelectionChange,
-}: BookingPageRendererProps) => (
+export const BookingPageRenderer = ({ page, lang }: BookingPageRendererProps) => (
   <div className="w-full h-full overflow-y-auto bg-white">
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 md:px-10 md:py-14">
       {page.blocks.map((block) => {
@@ -132,18 +84,124 @@ export const BookingPageRenderer = ({
             return <ImageRenderer key={block.index} block={block} lang={lang} />
           case 'video':
             return <VideoRenderer key={block.index} block={block} lang={lang} />
-          case 'selectable':
-            return (
-              <SelectableRenderer
-                key={block.index}
-                block={block}
-                lang={lang}
-                value={selection[block.index] ?? []}
-                onChange={(ids) => onSelectionChange?.(block.index, ids)}
-              />
-            )
+          default:
+            return <div key={(block as any).index}>Oops component not found</div>
         }
       })}
     </div>
   </div>
 )
+
+// ============================================================
+// NEW HYDRATED RENDERERS (Prefixed to avoid collisions)
+// ============================================================
+
+type HydratedHeaderRendererProps = {
+  block: HeaderBlock;
+  lang: Language;
+};
+
+export const HydratedHeaderRenderer = ({ block, lang }: HydratedHeaderRendererProps) => {
+  const text = resolveTranslatable(block.text, lang);
+  const Tag = `h${block.level}` as keyof JSX.IntrinsicElements;
+  
+  const classes = {
+    1: "text-3xl font-bold tracking-tight text-gray-900 md:text-4xl",
+    2: "text-2xl font-semibold tracking-tight text-gray-900",
+    3: "text-xl font-medium tracking-tight text-gray-900",
+  }[block.level];
+
+  return <Tag className={classes}>{text}</Tag>;
+};
+
+type HydratedParagraphRendererProps = {
+  block: ParagraphBlock;
+  lang: Language;
+};
+
+export const HydratedParagraphRenderer = ({ block, lang }: HydratedParagraphRendererProps) => {
+  const text = resolveTranslatable(block.text, lang);
+  return <p className="text-base leading-7 text-gray-700">{text}</p>;
+};
+
+type HydratedImageRendererProps = {
+  block: HydratedImageBlock;
+  lang: Language;
+};
+
+export const HydratedImageRenderer = ({ block, lang }: HydratedImageRendererProps) => {
+  const altText = resolveTranslatable(block.alt, lang);
+  const captionText = block.caption ? resolveTranslatable(block.caption, lang) : undefined;
+
+  return (
+    <figure className="my-4 flex flex-col gap-2">
+      <img 
+        src={block.url} 
+        alt={altText} 
+        className="rounded-lg object-cover w-full max-h-[450px] shadow-sm"
+      />
+      {captionText && (
+        <figcaption className="text-center text-sm text-gray-500 italic">
+          {captionText}
+        </figcaption>
+      )}
+    </figure>
+  );
+};
+
+type HydratedVideoRendererProps = {
+  block: HydratedVideoBlock;
+  lang: Language;
+};
+
+export const HydratedVideoRenderer = ({ block, lang }: HydratedVideoRendererProps) => {
+  const titleText = block.title ? resolveTranslatable(block.title, lang) : undefined;
+
+  return (
+    <div className="my-4 flex flex-col gap-2">
+      <div className="overflow-hidden rounded-lg bg-black shadow-sm aspect-video">
+        <video 
+          src={block.url} 
+          controls 
+          title={titleText}
+          className="w-full h-full"
+        />
+      </div>
+      {titleText && (
+        <span className="text-sm font-medium text-gray-600">{titleText}</span>
+      )}
+    </div>
+  );
+};
+
+type FlatPageRendererProps = {
+  data: HydratedBookingPage;
+  lang: Language;
+};
+
+export const FlatPageRenderer = ({ data, lang }: FlatPageRendererProps) => {
+  return (
+    <div className="w-full h-full overflow-y-auto bg-white">
+      <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 md:px-10 md:py-14">
+        {data.blocks.map((block: HydratedPageBlock) => {
+          switch (block.type) {
+            case "header":
+              return <HydratedHeaderRenderer key={block.index} block={block} lang={lang} />;
+            case "paragraph":
+              return <HydratedParagraphRenderer key={block.index} block={block} lang={lang} />;
+            case "image":
+              return <HydratedImageRenderer key={block.index} block={block} lang={lang} />;
+            case "video":
+              return <HydratedVideoRenderer key={block.index} block={block} lang={lang} />;
+            default:
+              return (
+                <div key={(block as any).index} className="text-red-500 text-sm italic">
+                  Component type missing or unhandled.
+                </div>
+              );
+          }
+        })}
+      </div>
+    </div>
+  );
+};

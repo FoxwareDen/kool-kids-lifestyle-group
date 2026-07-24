@@ -2,7 +2,8 @@ import PocketBase from 'pocketbase';
 import { environmentManager } from '@tanstack/react-query';
 
 // ============= Client (singleton) =============
-export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
+export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);// 💡 ADD THIS LINE TO KILL AUTO-CANCELLATION GLOBALLY
+pb.autoCancellation(false);
 
 export const getPBSession = (cookieHeader?: string) => {
   if (environmentManager.isServer()) {
@@ -250,6 +251,8 @@ export function createResult<T, E>(value: T | null, error: E | null): Result<T, 
  */
 export function createPB_SSR(cookieString?: string): PocketBase {
   const client = new PocketBase(process.env.CMS_URI);
+  // 💡 KILL AUTO-CANCELLATION FOR SSR / SERVER FUNCTION INSTANCES
+  client.autoCancellation(false);
   
   if (cookieString) {
     // Parse our specific pb_auth cookie key out of the headers
