@@ -13,7 +13,7 @@ function DashboardComponent() {
   const sectionTitle = getActiveNavLabel(pathname)
 
   return (
-    <div className='flex h-dvh w-full bg-[var(--bg-base)]'>
+    <div className='flex h-dvh w-full bg-[#F5F5F7]'>
       <DashboardSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardTopbar sectionTitle={sectionTitle} />

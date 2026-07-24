@@ -45,11 +45,11 @@ export function QuickAccessCard({
     <Link
       to={to as string}
       search={search as never}
-      className="group flex flex-col overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--surface-strong)] transition-colors hover:border-[var(--brand-orange)]"
+      className="group flex flex-col overflow-hidden rounded-sm border border-[var(--line)] bg-[#F5F5F7] transition-colors hover:border-[var(--brand-orange)]"
     >
       {/* Colored header block echoes the reference "folder" tiles. */}
-      <div className="flex items-center justify-between bg-[var(--sand)] px-5 py-6">
-        <span className="flex size-11 items-center justify-center rounded-sm bg-[var(--surface-strong)] text-[var(--brand-orange)]">
+      <div className="flex items-center justify-between bg-[#D1D5DB] px-5 py-6">
+        <span className="flex size-11 items-center justify-center rounded-sm bg-[#F5F5F7] text-[var(--brand-orange)]">
           <Icon className="size-5" aria-hidden="true" />
         </span>
         <ArrowRight className="size-5 text-[var(--sea-ink-soft)] transition-transform group-hover:translate-x-1 group-hover:text-[var(--brand-orange)]" />
