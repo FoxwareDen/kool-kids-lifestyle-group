@@ -1,86 +1,43 @@
-import type {
-  PageBlock,
-  BookingPage,
-  Translatable,
-  HeaderBlock,
-  ParagraphBlock,
-  ImageBlock,
-  VideoBlock,
-  Language,
+import type { BookingPage, Translatable, Language, ExperienceStatus } from '#/lib/experiences'
+import {
+  resolveTranslatable,
+  createBookingPage,
+  parseCategories,
+  serializeCategories,
 } from '#/lib/experiences'
-import { resolveTranslatable, createEmptyBlock, createBookingPage, parseCategories, serializeCategories } from '#/lib/experiences'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useCallback, useEffect, useMemo, type ChangeEvent, type ReactNode } from 'react'
+import { useCallback, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { setTranslated } from '#/lib/utils'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
-
-
-// Max size: 5MB in bytes
-const MAX_SIZE = 5242880
-const MAX_VIDEO_SIZE = 52428800
+import {
+  SectionCard,
+  TextField,
+  controlClass,
+  Button,
+  Pill,
+} from '#/components/dashboard/form-controls'
+import {
+  PostFormShell,
+  BlocksSection,
+  BlockEditor,
+  BlockAddButtons,
+  StatusSelect,
+  FormRow,
+  ErrorBanner,
+  useBlocks,
+  useObjectUrl,
+  MAX_IMAGE_SIZE,
+} from '#/components/dashboard/post-form'
 
 export const Route = createFileRoute('/_authed/dashboard/create-experience')({
   component: RouteComponent,
 })
 
-type SkeletonPageData = Omit<BookingPage, 'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug'>
-
-const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video']
-
-function setTranslated<T>(field: Translatable<T>, lang: Language, value: T): Translatable<T> {
-  if (lang === 'en') return { ...field, default: value }
-  return { ...field, translations: { ...field.translations, [lang]: value } }
-}
-
-/**
- * Turns a File into an object URL and revokes the previous one whenever the
- * file changes or the component unmounts. Centralizes the blob-URL lifecycle
- * so editors don't leak a new URL on every keystroke-triggered re-render.
- */
-function useObjectUrl(file: File | null | undefined): string | null {
-  const [url, setUrl] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!file) {
-      setUrl(null)
-      return
-    }
-    const objectUrl = URL.createObjectURL(file)
-    setUrl(objectUrl)
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [file])
-
-  return url
-}
-
-/**
- * Owns block CRUD + stable identity for React keys. `createEmptyBlock`'s
- * `index` is a data-model concept (serialized order) and is not safe to reuse
- * as a render key, since deleting a block can make a later-added block's
- * index collide with a surviving block's index. We track a separate,
- * never-reused client-side id per block for `key` purposes only.
- */
-function useBlocks() {
-  const [entries, setEntries] = useState<{ id: string; block: PageBlock }[]>([])
-
-  const addBlock = useCallback((type: PageBlock['type']) => {
-    setEntries((prev) => [...prev, { id: crypto.randomUUID(), block: createEmptyBlock(type, prev.length) }])
-  }, [])
-
-  const updateBlock = useCallback((id: string, updated: PageBlock) => {
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, block: updated } : e)))
-  }, [])
-
-  const deleteBlock = useCallback((id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id))
-  }, [])
-
-  const blocks = useMemo(() => entries.map((e) => e.block), [entries])
-
-  /** Blocks re-indexed by current position, ready to submit. */
-  const serialize = useCallback((): PageBlock[] => entries.map((e, i) => ({ ...e.block, index: i })), [entries])
-
-  return { entries, blocks, addBlock, updateBlock, deleteBlock, serialize }
-}
+/** The metadata portion of a booking page held in local form state. */
+type SkeletonPageData = Omit<
+  BookingPage,
+  'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug' | 'status'
+>
 
 /**
  * Owns the comma-separated `category` string on `pageData` plus the chip
@@ -95,7 +52,7 @@ function useCategories(
   const categories = parseCategories(pageData.category)
 
   const add = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
+    (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key !== 'Enter') return
       e.preventDefault()
       const val = input.trim()
@@ -123,150 +80,10 @@ function useCategories(
   return { categories, input, setInput, add, remove }
 }
 
-const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">{label}</label>
-    {children}
-  </div>
-)
-
-const inputCls = "w-full rounded-md border border-[var(--brand-navy)]/15 bg-white px-3 py-2 text-sm text-[var(--brand-navy)] outline-none transition-colors placeholder:text-[var(--brand-navy)]/40 focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20"
-
-const HeaderBlockEditor = ({ block, lang, onChange }: { block: HeaderBlock; lang: Language; onChange: (b: HeaderBlock) => void }) => (
-  <div className="flex flex-col gap-3">
-    <Field label="Level">
-      <select
-        className={inputCls}
-        value={block.level}
-        onChange={(e) => onChange({ ...block, level: parseInt(e.target.value, 10) as 1 | 2 | 3 })}
-      >
-        <option value="1">H1</option>
-        <option value="2">H2</option>
-        <option value="3">H3</option>
-      </select>
-    </Field>
-    <Field label="Text">
-      <input
-        className={inputCls}
-        value={resolveTranslatable(block.text, lang)}
-        placeholder="Heading text…"
-        onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })}
-      />
-    </Field>
-  </div>
-)
-
-const ParagraphBlockEditor = ({ block, lang, onChange }: { block: ParagraphBlock; lang: Language; onChange: (b: ParagraphBlock) => void }) => (
-  <Field label="Text">
-    <textarea
-      className={`${inputCls} min-h-20 resize-y`}
-      value={resolveTranslatable(block.text, lang)}
-      placeholder="Paragraph text…"
-      onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })}
-    />
-  </Field>
-)
-
-const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void }) => {
-  const previewUrl = useObjectUrl(block.file)
-  const [error, setError] = useState<string | null>(null) // Local block error tracking
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Field label="Image">
-        <input
-          type="file"
-          accept="image/*"
-          className={inputCls}
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-
-            if (file.size > MAX_SIZE) {
-              setError('Image exceeds the maximum allowed size of 5MB.')
-              e.target.value = '' // Clear input
-              return
-            }
-
-            setError(null)
-            onChange({ ...block, file })
-          }}
-        />
-        {error && (
-          <p className="mt-1 text-xs font-medium text-[var(--brand-orange-deep)]">{error}</p>
-        )}
-        {previewUrl && !error && (
-          <img src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
-        )}
-      </Field>
-      {/* Alt text and Caption remain the same... */}
-    </div>
-  )
-}
-
-const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => {
-  const previewUrl = useObjectUrl(block.file)
-  const [error, setError] = useState<string | null>(null) // Add error state
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Field label="Video">
-        <input
-          type="file"
-          accept="video/*"
-          className={inputCls}
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-
-            // Add the size safeguard here
-            if (file.size > MAX_VIDEO_SIZE) {
-              setError('Video exceeds the maximum allowed size of 5MB.')
-              e.target.value = ''
-              return
-            }
-
-            setError(null)
-            onChange({ ...block, file })
-          }}
-        />
-        {error && (
-          <p className="mt-1 text-xs font-medium text-[var(--brand-orange-deep)]">{error}</p>
-        )}
-        {previewUrl && !error && (
-          <video src={previewUrl} controls className="mt-1 rounded-md max-h-36 w-full" />
-        )}
-      </Field>
-      {/* ...rest of your component */}
-    </div>
-  )
-}
-
-const BlockEditor = ({
-  block, lang, onChange, onDelete,
-}: {
-  block: PageBlock; lang: Language; onChange: (u: PageBlock) => void; onDelete: () => void
-}) => (
-  <div className="flex flex-col gap-3 rounded-lg border border-[var(--brand-navy)]/15 bg-white p-3.5 shadow-sm shadow-[var(--brand-navy)]/5">
-    <div className="flex items-center justify-between border-b border-[var(--brand-navy)]/10 pb-2.5">
-      <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-orange)]">{block.type}</span>
-      <button type="button" onClick={onDelete} className="text-xs text-[var(--brand-navy)]/30 hover:text-[var(--brand-orange)]">✕</button>
-    </div>
-
-    {block.type === 'header'     && <HeaderBlockEditor     block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'paragraph'  && <ParagraphBlockEditor  block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'image'      && <ImageBlockEditor      block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'video'      && <VideoBlockEditor      block={block} lang={lang} onChange={onChange} />}
-    {/* {block.type === 'selectable' && <SelectableBlockEditor block={block} lang={lang} onChange={onChange} />} */}
-  </div>
-)
-
-
-                
-
 function RouteComponent() {
   const navigate = useNavigate()
   const [lang, setLang] = useState<Language>('en')
+  const [status, setStatus] = useState<ExperienceStatus>('Draft')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -284,20 +101,21 @@ function RouteComponent() {
   const categories = useCategories(pageData, setPageData)
   const coverPreviewUrl = useObjectUrl(pageData.coverImage)
 
-  const handleMetaChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    const fieldLang: Language = (e.target.dataset.lang as Language) ?? 'en'
-    if (name !== 'title' && name !== 'description') return
-    setPageData((prev) => ({
-      ...prev,
-      [name]: setTranslated(prev[name] as Translatable, fieldLang, value),
-    }))
-  }, [])
+  const handleMetaChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target
+      if (name !== 'title' && name !== 'description') return
+      setPageData((prev) => ({
+        ...prev,
+        [name]: setTranslated(prev[name] as Translatable, lang, value),
+      }))
+    },
+    [lang],
+  )
 
   const getMetaValue = (key: 'title' | 'description'): string => {
     const field = pageData[key]
-    if (!field) return ''
-    return resolveTranslatable(field, lang)
+    return field ? resolveTranslatable(field, lang) : ''
   }
 
   const handleSubmit = async () => {
@@ -313,7 +131,6 @@ function RouteComponent() {
     }
 
     setSubmitting(true)
-
     const result = await createBookingPage({
       slug: pageData.title.default.toLowerCase().replace(/\s+/g, '-'),
       title: pageData.title,
@@ -323,73 +140,51 @@ function RouteComponent() {
       defaultLanguage: pageData.defaultLanguage,
       enabledLanguages: pageData.enabledLanguages,
       blocks: serialize(),
+      status,
     })
-
     setSubmitting(false)
 
     if (!result.success) {
       setSubmitError(result.error ?? 'Something went wrong.')
     } else {
-      console.log('Created:', result.value)
-      navigate({ to: "/dashboard", search: { lang } })
+      navigate({ to: '/dashboard', search: { lang } })
     }
   }
 
   return (
-    <div className='flex w-full h-full bg-[#f1ede6]'>
-      <div id='left' className='flex-2 flex justify-center min-h-0 border-r border-[var(--brand-navy)]/15 p-6 overflow-y-auto'>
-        <div className='w-11/12 overflow-hidden rounded-2xl border border-[var(--brand-navy)]/10 shadow-2xl shadow-[var(--brand-navy)]/15'>
-          <BookingPageRenderer
-            page={{ blocks }}
-            lang={lang}
-            selection={selection}
-            onSelectionChange={(blockIndex, ids) =>
-              setSelection((prev) => ({ ...prev, [blockIndex]: ids }))
-            }
-          />
-        </div>
-      </div>
+    <PostFormShell
+      title="Create Experience"
+      lang={lang}
+      onLangChange={setLang}
+      preview={
+        <BookingPageRenderer
+          page={{ blocks }}
+          lang={lang}
+          selection={selection}
+          onSelectionChange={(blockIndex, ids) =>
+            setSelection((prev) => ({ ...prev, [blockIndex]: ids }))
+          }
+        />
+      }
+    >
+      <SectionCard title="Details">
+        <div className="flex flex-col gap-4">
+          <StatusSelect value={status} onChange={setStatus} />
 
-      <div id='right' className='flex-1 p-5 flex flex-col gap-4 overflow-y-auto bg-white'>
-
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-            Dashboard
-          </p>
-          <h1 className="display-title mt-1.5 text-2xl font-medium text-[var(--brand-navy)]">
-            Create Experience
-          </h1>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Language</span>
-          <div className="flex gap-4">
-            {(['en', 'af'] as const).map((l) => (
-              <label key={l} className="flex items-center gap-1.5 text-sm text-[var(--brand-navy)]/80 cursor-pointer">
-                <input type="radio" name="lang_group" value={l} checked={lang === l} className="accent-[var(--brand-orange)]" onChange={() => setLang(l)} />
-                {l === 'en' ? 'English' : 'Afrikaans'}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3">
-
-          <Field label="Cover Image">
+          <FormRow label="Cover Image">
             <input
               type="file"
               accept="image/*"
-              className={inputCls}
-              onChange={(e) => {const file = e.target.files?.[0]
+              className={controlClass}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
                 if (!file) return
-
-                if (file.size > MAX_SIZE) {
+                if (file.size > MAX_IMAGE_SIZE) {
                   setSubmitError('Cover image exceeds the maximum allowed size of 5MB.')
-                  e.target.value = '' // Reset input choice
+                  e.target.value = ''
                   return
                 }
-
-                setSubmitError(null) // Clear errors if it passes
+                setSubmitError(null)
                 setPageData((prev) => ({ ...prev, coverImage: file }))
               }}
             />
@@ -397,31 +192,29 @@ function RouteComponent() {
               <img
                 src={coverPreviewUrl}
                 alt="Cover preview"
-                className="mt-1 rounded-md max-h-36 object-cover w-full"
+                className="mt-2 rounded-sm max-h-40 object-cover w-full"
               />
             )}
-          </Field>
+          </FormRow>
 
-          <Field label="Categories">
+          <FormRow label="Categories" hint="Type a category and press Enter">
             <input
-              className={inputCls}
+              className={controlClass}
               value={categories.input}
               onChange={(e) => categories.setInput(e.target.value)}
               onKeyDown={categories.add}
-              placeholder="Type a category and press Enter…"
+              placeholder="e.g. featured, tours…"
             />
             {categories.categories.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1">
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {categories.categories.map((c) => (
-                  <span
-                    key={c}
-                    className="inline-flex items-center gap-1 rounded-full bg-[var(--brand-orange)]/10 py-0.5 pl-2.5 pr-1.5 text-xs font-semibold text-[var(--brand-navy)]"
-                  >
-                    {c}
+                  <span key={c} className="inline-flex items-center gap-1">
+                    <Pill tone="accent">{c}</Pill>
                     <button
                       type="button"
                       onClick={() => categories.remove(c)}
-                      className="leading-none text-[var(--brand-navy)]/40 hover:text-[var(--brand-orange)]"
+                      aria-label={`Remove ${c}`}
+                      className="text-xs leading-none text-[var(--sea-ink-soft)] hover:text-[var(--destructive)]"
                     >
                       ✕
                     </button>
@@ -429,35 +222,30 @@ function RouteComponent() {
                 ))}
               </div>
             )}
-          </Field>
+          </FormRow>
 
-          <Field label="Title">
-            <input
-              name="title"
-              data-lang={lang}
-              className={inputCls}
-              value={getMetaValue('title')}
-              onChange={handleMetaChange}
-              placeholder="Page title"
-            />
-          </Field>
+          <TextField
+            label="Title"
+            name="title"
+            value={getMetaValue('title')}
+            onChange={handleMetaChange}
+            placeholder="Page title"
+          />
 
-          <Field label="Description">
+          <FormRow label="Description">
             <textarea
               name="description"
-              data-lang={lang}
-              className={`${inputCls} min-h-16 resize-y`}
+              className={`${controlClass} min-h-16 resize-y`}
               value={getMetaValue('description')}
               onChange={handleMetaChange}
               placeholder="Short description…"
             />
-          </Field>
-
+          </FormRow>
         </div>
+      </SectionCard>
 
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Blocks</span>
-
+      <SectionCard title="Content">
+        <BlocksSection label="Blocks" addButtons={<BlockAddButtons onAdd={addBlock} />}>
           {entries.map(({ id, block }) => (
             <BlockEditor
               key={id}
@@ -467,35 +255,19 @@ function RouteComponent() {
               onDelete={() => deleteBlock(id)}
             />
           ))}
+        </BlocksSection>
+      </SectionCard>
 
-          <div className="flex gap-1 flex-wrap mt-1">
-            {BLOCK_TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => addBlock(type)}
-                className="rounded-md border border-[var(--brand-navy)]/15 px-2.5 py-1 text-xs font-semibold text-[var(--brand-navy)]/70 transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange)]"
-              >
-                + {type}
-              </button>
-            ))}
-          </div>
-        </div>
+      {submitError && <ErrorBanner message={submitError} />}
 
-        {submitError && (
-          <p className="rounded-md bg-[var(--brand-orange)]/10 px-3 py-2 text-xs font-medium text-[var(--brand-orange-deep)]">{submitError}</p>
-        )}
-
-        <button
-          type="button"
-          disabled={submitting}
-          onClick={handleSubmit}
-          className="mt-auto inline-flex items-center justify-center gap-2 bg-[var(--brand-orange)] px-7 py-3 text-xs font-bold uppercase tracking-widest !text-white shadow-lg shadow-black/10 transition-colors hover:bg-[var(--brand-orange-deep)] disabled:opacity-50"
-        >
-          {submitting ? 'Creating…' : 'Create Experience'}
-        </button>
-
-      </div>
-    </div>
+      <Button
+        type="button"
+        disabled={submitting}
+        onClick={handleSubmit}
+        className="mt-auto w-full py-3 uppercase tracking-widest"
+      >
+        {submitting ? 'Creating…' : 'Create Experience'}
+      </Button>
+    </PostFormShell>
   )
 }

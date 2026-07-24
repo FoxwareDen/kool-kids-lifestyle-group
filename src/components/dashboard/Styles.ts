@@ -1,2 +1,0 @@
-export const inputCls =
-  "w-full rounded-md border border-[var(--brand-navy)]/15 bg-white px-3 py-2 text-sm text-[var(--brand-navy)] outline-none transition-colors placeholder:text-[var(--brand-navy)]/40 focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20"

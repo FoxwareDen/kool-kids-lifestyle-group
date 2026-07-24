@@ -77,6 +77,9 @@ export type HydratedPageBlock = HeaderBlock | ParagraphBlock | HydratedImageBloc
 // BOOKING PAGE
 // ============================================================
 
+/** Publish state stored on the PocketBase `status` field. */
+export type ExperienceStatus = "Draft" | "Published" | "Private";
+
 export type BookingPage = {
   id: string;
   slug: string;
@@ -87,6 +90,7 @@ export type BookingPage = {
   defaultLanguage: Language;
   enabledLanguages: Language[];
   blocks: PageBlock[];
+  status: ExperienceStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -115,6 +119,7 @@ export type HydratedBookingPage = {
   defaultLanguage: Language;
   enabledLanguages: Language[];
   blocks: HydratedPageBlock[]; // Updated to use the true hydrated blocks!
+  status: ExperienceStatus;
   createdAt: Date;
   updatedAt: Date;  
 };
@@ -197,7 +202,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       enabledLanguages: input.enabledLanguages,
       coverImage: fCover.value!.id,
       blocks: flatPack,
-      status: "Published",
+      status: input.status,
     });
 
     return createResult<HydratedBookingPage, string>({
@@ -210,6 +215,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       defaultLanguage: input.defaultLanguage,
       enabledLanguages: input.enabledLanguages,
       blocks: hydrateBlocks(flatPack),
+      status: input.status,
       createdAt: new Date(result.created),
       updatedAt: new Date(result.updated),
     }, null);
