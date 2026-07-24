@@ -321,53 +321,6 @@ export async function createBooking(
   }
 }
 
-export async function fetchBookingsByScheduleId(
-  scheduleId: string,
-  cookieHeader?: string
-): Promise<Result<BookingResponse[], string>> {
-  const client = getPBSession(cookieHeader);
-  const filter = `schedule_id = "${scheduleId}"`;
-  try {
-    const records = await client.collection("Bookings").getFullList<BookingResponse>({
-      filter,
-      sort: "date, start_time",
-    });
-    return createResult(records, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to fetch bookings");
-  }
-}
-
-export async function updateBooking(
-  id: string,
-  data: Partial<Omit<Booking, "id" | "created" | "updated">>,
-  cookieHeader?: string
-): Promise<Result<BookingResponse, string>> {
-  const client = getPBSession(cookieHeader);
-  try {
-    const record = await client.collection("Bookings").update<BookingResponse>(id, data);
-    return createResult(record, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to update booking");
-  }
-}
-
-// Delete a booking
-export async function deleteBooking(
-  id: string,
-  cookieHeader?: string
-): Promise<Result<boolean, string>> {
-  const client = getPBSession(cookieHeader);
-  try {
-    const result = await client.collection("Bookings").delete(id);
-    return createResult(result, null);
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to delete booking");
-  }
-}
 
 export interface Package extends MetaData {
   booking_ids: string[],
@@ -378,23 +331,6 @@ export interface Package extends MetaData {
 export interface BookingResponse extends Omit<Booking, "id">, MetaData {
   expanded: {
     schedule_id?: CalendarResponse
-  }
-}
-
-
-export async function createBooking(
-  data: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">,
-  cookieHeader?: string
-): Promise<Result<BookingResponse, string>> {
-  const client = getPBSession(cookieHeader)
-
-  try {
-    const record = await client.collection("Bookings").create<BookingResponse>(data);
-
-    return createResult(record, null)
-  } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to create client booking");
   }
 }
 
