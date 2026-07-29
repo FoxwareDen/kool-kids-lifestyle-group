@@ -12,7 +12,7 @@ import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
 import { FlatPageRenderer } from '#/components/BookingPageRenderer'
-import { fetchCalendarScheduleByExperiencesIds, type TransformedCalendarSchedule } from '#/lib/booking'
+import { fetchBookingsByScheduleId, fetchCalendarScheduleByExperiencesIds, type Booking, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
 
 export const Route = createFileRoute('/experiences/$id')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -53,21 +53,33 @@ function RouteComponent() {
     staleTime: 5 * 60 * 1000,
   })
   const [scheduleData, setScheduleData] = useState<TransformedCalendarSchedule[] | null>(null);
+  const [existingBookings, setExistingBookings] = useState<BookingResponse[] | null>(null);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [scheduleDataLoading, setScheduleDataLoading] = useState(true);
-  const [scheduleError, setScheduleError] = useState<string | null>(null)
 
   useEffect(() => {
     (async () => {
       try {
         setScheduleDataLoading(true);
 
-        const record = await fetchCalendarScheduleByExperiencesIds(id);
+        const result = await fetchCalendarScheduleByExperiencesIds(id);
 
-        if (!record.success) {
+        if (!result.success) {
           throw new Error("failed to fetch schedule");
         }
 
-        setScheduleData(record.value);
+        if (!result.value) {
+          throw new Error("No schedules found");
+        }
+
+        // @ts-ignore
+        const bookings: BookingResponse[] = (await Promise.all(
+          result.value.map((schedule)=> fetchBookingsByScheduleId(schedule.id))
+        )).filter((booking)=> !booking.value == null || !booking.success).map((booking)=>(booking.value));
+
+        setExistingBookings(bookings)
+
+        setScheduleData(result.value);
       } catch (error) {
         console.error(error)
         setScheduleError("Failed to get schedule data")
@@ -180,7 +192,7 @@ function RouteComponent() {
                   <div className='pl-5 w-full'>
                     <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>Options:</span>
                     <ul className='pl-5 mt-1 list-disc flex flex-col gap-1'>
-                      {isScheduleDataLoading ? (
+                      {scheduleDataLoading ? (
                         <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">Loading options…</li>
                       ) : scheduleData && scheduleData[0]?.units ? (
                         scheduleData[0].units.map((unit) => (
@@ -220,6 +232,7 @@ function RouteComponent() {
         onClose={() => setBookingOpen(false)}
         experienceTitle={title}
         schedules={scheduleData}
+        existingBookings={existingBookings}
         loading={scheduleDataLoading}
         error={scheduleError}
       />

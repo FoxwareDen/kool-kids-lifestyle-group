@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { } from "booking-api-extended";
+import { generateAvailableSlots } from "booking-api-extended";
 import { Calendar, Check, Clock, Users, X } from 'lucide-react'
-import type { TransformedCalendarSchedule } from '#/lib/booking'
+import type { BookingResponse, TransformedCalendarSchedule } from '#/lib/booking'
 
 /**
  * Props for {@link BookingSlotModal}.
@@ -26,6 +26,7 @@ export function BookingSlotModal({
   open,
   onClose,
   experienceTitle,
+  existingBookings,
   schedules,
   loading,
   error
@@ -34,6 +35,7 @@ export function BookingSlotModal({
   onClose: () => void
   experienceTitle: string
   schedules: TransformedCalendarSchedule[] | null
+  existingBookings: BookingResponse[] | null
   loading: boolean
   error: string | null
 }) {
@@ -46,14 +48,15 @@ export function BookingSlotModal({
   // Reset all selections whenever the modal is (re)opened.
   useEffect(() => {
     if (open) {
-      const t = "";
-
+      
       setDateKey(null)
       setSlotStart(null)
       setUnitId(null)
       setConfirmed(false)
     }
   }, [open])
+
+  
 
   // Lock body scroll + close on Escape while open.
   useEffect(() => {
