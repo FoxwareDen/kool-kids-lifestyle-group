@@ -7,20 +7,18 @@ import {
 } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
-import { ExperienceContent } from '#/components/experiences/ExperienceContent'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
-import { createServerFn } from '@tanstack/react-start'
-import { fetchCalendarScheduleByExperiencesIds } from '#/lib/booking'
 import { FlatPageRenderer } from '#/components/BookingPageRenderer'
+import { fetchCalendarScheduleByExperiencesIds, type TransformedCalendarSchedule } from '#/lib/booking'
 
 export const Route = createFileRoute('/experiences/$id')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? 'en',
   }),
-  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
   component: RouteComponent,
 })
 
@@ -54,16 +52,30 @@ function RouteComponent() {
     },
     staleTime: 5 * 60 * 1000,
   })
+  const [scheduleData, setScheduleData] = useState<TransformedCalendarSchedule[] | null>(null);
+  const [scheduleDataLoading, setScheduleDataLoading] = useState(true);
+  const [scheduleError, setScheduleError] = useState<string | null>(null)
 
-  const { data: scheduleData, isLoading: isScheduleDataLoading, isError: isScheduleDataError } = useQuery({
-    queryKey: ["schedules", id],
-    queryFn: async () => {
-      const result = await fetchCalendarScheduleByExperiencesIds(id);
-      if (!result.success || !result.value) return null
-      return result.value
-    },
-    staleTime: 5 * 60 * 1000,
-  })
+  useEffect(() => {
+    (async () => {
+      try {
+        setScheduleDataLoading(true);
+
+        const record = await fetchCalendarScheduleByExperiencesIds(id);
+
+        if (!record.success) {
+          throw new Error("failed to fetch schedule");
+        }
+
+        setScheduleData(record.value);
+      } catch (error) {
+        console.error(error)
+        setScheduleError("Failed to get schedule data")
+      } finally {
+        setScheduleDataLoading(false);
+      }
+    })()
+  }, [id])
 
   if (isLoading) {
     return (
@@ -94,7 +106,6 @@ function RouteComponent() {
     )
   }
 
-  console.log(scheduleData)
 
   const title = resolveTranslatable(data.title, lang)
   const description = data.description ? resolveTranslatable(data.description, lang) : ''
@@ -207,8 +218,10 @@ function RouteComponent() {
       <BookingSlotModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
-        experienceId={data.id}
         experienceTitle={title}
+        schedules={scheduleData}
+        loading={scheduleDataLoading}
+        error={scheduleError}
       />
     </main>
   )

@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { } from "booking-api-extended";
 import { Calendar, Check, Clock, Users, X } from 'lucide-react'
-import {
-  generateSlots,
-  formatDayLabel,
-  slotRemaining,
-  type Slot,
-} from '#/lib/slots'
+import type { TransformedCalendarSchedule } from '#/lib/booking'
 
 /**
  * Props for {@link BookingSlotModal}.
@@ -29,15 +25,18 @@ import {
 export function BookingSlotModal({
   open,
   onClose,
-  experienceId,
   experienceTitle,
+  schedules,
+  loading,
+  error
 }: {
   open: boolean
   onClose: () => void
-  experienceId: string
   experienceTitle: string
+  schedules: TransformedCalendarSchedule[] | null
+  loading: boolean
+  error: string | null
 }) {
-  const days = useMemo(() => generateSlots(experienceId), [experienceId])
 
   const [dateKey, setDateKey] = useState<string | null>(null)
   const [slotStart, setSlotStart] = useState<string | null>(null)
@@ -47,12 +46,14 @@ export function BookingSlotModal({
   // Reset all selections whenever the modal is (re)opened.
   useEffect(() => {
     if (open) {
+      const t = "";
+
       setDateKey(null)
       setSlotStart(null)
       setUnitId(null)
       setConfirmed(false)
     }
-  }, [open, experienceId])
+  }, [open])
 
   // Lock body scroll + close on Escape while open.
   useEffect(() => {
@@ -130,9 +131,8 @@ export function BookingSlotModal({
               Booking requested
             </h3>
             <p className="max-w-sm text-sm leading-relaxed text-[var(--brand-navy)]/65">
-              {`${selectedUnit.unit_label} on ${formatDayLabel(selectedSlot.date).weekday} ${
-                formatDayLabel(selectedSlot.date).day
-              } ${formatDayLabel(selectedSlot.date).month} at ${selectedSlot.start_time}. We'll confirm your slot by email.`}
+              {`${selectedUnit.unit_label} on ${formatDayLabel(selectedSlot.date).weekday} ${formatDayLabel(selectedSlot.date).day
+                } ${formatDayLabel(selectedSlot.date).month} at ${selectedSlot.start_time}. We'll confirm your slot by email.`}
             </p>
             <button
               type="button"
@@ -165,13 +165,12 @@ export function BookingSlotModal({
                         type="button"
                         disabled={closed}
                         onClick={() => handleSelectDate(day.date)}
-                        className={`flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 transition-colors ${
-                          active
-                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white'
-                            : closed
-                              ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5 text-[var(--brand-navy)]/30'
-                              : 'border-[var(--brand-navy)]/15 bg-white text-[var(--brand-navy)] hover:border-[var(--brand-orange)]'
-                        }`}
+                        className={`flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 transition-colors ${active
+                          ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white'
+                          : closed
+                            ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5 text-[var(--brand-navy)]/30'
+                            : 'border-[var(--brand-navy)]/15 bg-white text-[var(--brand-navy)] hover:border-[var(--brand-orange)]'
+                          }`}
                       >
                         <span className="text-[10px] font-bold uppercase tracking-wide">
                           {weekday}
@@ -204,25 +203,22 @@ export function BookingSlotModal({
                           type="button"
                           disabled={soldOut}
                           onClick={() => handleSelectSlot(slot.start_time)}
-                          className={`flex flex-col items-start gap-0.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors ${
-                            active
-                              ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
-                              : soldOut
-                                ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
-                                : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
-                          }`}
+                          className={`flex flex-col items-start gap-0.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors ${active
+                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
+                            : soldOut
+                              ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
+                              : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
+                            }`}
                         >
                           <span
-                            className={`text-sm font-bold ${
-                              soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
-                            }`}
+                            className={`text-sm font-bold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
+                              }`}
                           >
                             {slot.start_time} – {slot.end_time}
                           </span>
                           <span
-                            className={`text-[11px] font-semibold ${
-                              soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-orange-deep)]'
-                            }`}
+                            className={`text-[11px] font-semibold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-orange-deep)]'
+                              }`}
                           >
                             {soldOut ? 'Sold out' : `${remaining} spaces left`}
                           </span>
@@ -252,19 +248,17 @@ export function BookingSlotModal({
                           type="button"
                           disabled={soldOut}
                           onClick={() => setUnitId(unit.unit_type_id)}
-                          className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
-                            active
-                              ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
-                              : soldOut
-                                ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
-                                : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
-                          }`}
+                          className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${active
+                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
+                            : soldOut
+                              ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
+                              : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
+                            }`}
                         >
                           <div className="flex flex-col">
                             <span
-                              className={`text-sm font-semibold ${
-                                soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
-                              }`}
+                              className={`text-sm font-semibold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
+                                }`}
                             >
                               {unit.unit_label}
                             </span>
@@ -273,11 +267,10 @@ export function BookingSlotModal({
                             </span>
                           </div>
                           <span
-                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                              soldOut
-                                ? 'bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]/40'
-                                : 'bg-[var(--brand-orange)]/10 text-[var(--brand-orange-deep)]'
-                            }`}
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${soldOut
+                              ? 'bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]/40'
+                              : 'bg-[var(--brand-orange)]/10 text-[var(--brand-orange-deep)]'
+                              }`}
                           >
                             {soldOut ? 'Sold out' : `${unit.remaining} left`}
                           </span>
@@ -308,11 +301,10 @@ export function BookingSlotModal({
                 type="button"
                 disabled={!selectedUnit}
                 onClick={() => setConfirmed(true)}
-                className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
-                  selectedUnit
-                    ? 'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]'
-                    : 'cursor-not-allowed bg-[var(--brand-navy)]/15 text-[var(--brand-navy)]/40'
-                }`}
+                className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${selectedUnit
+                  ? 'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]'
+                  : 'cursor-not-allowed bg-[var(--brand-navy)]/15 text-[var(--brand-navy)]/40'
+                  }`}
               >
                 Confirm booking
               </button>
