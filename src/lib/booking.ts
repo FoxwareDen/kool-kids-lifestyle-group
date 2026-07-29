@@ -1,5 +1,5 @@
 import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
-import type { UnitType as U, Calendar as C, Booking as B } from "booking-api-extended";
+import { type UnitType as U, type Calendar as C, type Booking as B, type SlotGenerationConfig, type AvailableSlot, generateAvailableSlots } from "booking-api-extended";
 
 export type UnitType = U & {
   value: number;
@@ -11,6 +11,8 @@ export type Calendar = Omit<C, "user_id" | "units"> & {
   title: string;
   units: string[];
   experiences: string[];
+  min_advance_days?: number
+  max_advance_days?: number
 };
 
 export type CalendarResponse = Calendar & MetaData;
@@ -35,7 +37,7 @@ export type TransformedCalendarSchedule = Omit<CalendarResponse, "units" | "expe
 };
 
 // We omit days_of_week here so we can redefine it safely without parent-type collision errors
-interface CalendarScheduleRecord extends Omit<CalendarResponse, "units" | "experiences" | "days_of_week"> {
+export interface CalendarScheduleRecord extends Omit<CalendarResponse, "units" | "experiences" | "days_of_week"> {
   units: string[];
   experiences: string[];
   days_of_week: Array<string | number>;
@@ -382,6 +384,58 @@ export async function deleteBooking(
   }
 }
 
+// ============================== booking helpers ==============================
+export function toUnitType(unit: UnitType): U {
+  return {
+    id: unit.id,
+    label: unit.label,
+    capacity: unit.capacity,
+  } as U
+}
+
+export function toCalendar(schedule: TransformedCalendarSchedule): C {
+  const units: U[] = schedule.units.map(toUnitType);
+
+  return {
+    start_date: schedule.start_date,
+    end_date: schedule.end_date,
+    start_time: schedule.start_time,
+    end_time: schedule.end_time,
+    days_of_week: schedule.days_of_week,
+    buffer_minutes: schedule.buffer_minutes,
+    frequency: "weekly",
+    units,
+  } as C;
+}
+
+export function toBooking(response: BookingResponse): B {
+  return {
+    date: response.date,
+    duration: response.duration,
+    end_time: response.end_time,
+    start_time: response.start_time,
+    slot_preset_id: response.slot_preset_id,
+    status: response.status,
+    unit_type: response.unit_type,
+    updated_at: response.updated_at
+  } as B
+}
+
+export function generateSlots(
+  schedules: TransformedCalendarSchedule[],
+  bookings: BookingResponse[],
+  startDate: string,
+  endDate: string,
+  config: SlotGenerationConfig
+): AvailableSlot[] {
+  const calendars = schedules.map(toCalendar);
+  const mappedBookings = bookings.map(toBooking);
+
+  return generateAvailableSlots(calendars, mappedBookings, startDate, endDate, config);
+}
+
+
+
 export interface Package extends MetaData {
   booking_ids: string[],
   status: "canceled" | "pending" | "complete",
@@ -391,7 +445,7 @@ export interface Package extends MetaData {
 export interface PackageResponse extends Package {
   expanded: {
     booking_ids: Booking[],
-    // TODO: impplement code for Payment collection
+    // TODO: implement code for Payment collection
   }
 }
 

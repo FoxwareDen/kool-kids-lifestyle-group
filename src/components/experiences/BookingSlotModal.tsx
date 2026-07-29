@@ -1,54 +1,78 @@
-import { useEffect, useState } from 'react'
-import { generateAvailableSlots } from "booking-api-extended";
+import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Check, Clock, Users, X } from 'lucide-react'
-import type { BookingResponse, TransformedCalendarSchedule } from '#/lib/booking'
+import { generateSlots, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
+import { formatDayLabel } from '#/lib/slots'
+import type { AvailableSlot } from '#/lib/booking' // adjust import path as needed
 
-/**
- * Props for {@link BookingSlotModal}.
- * @typedef {Object} BookingSlotModalProps
- * @property {boolean} open - Whether the modal is visible.
- * @property {() => void} onClose - Called to dismiss the modal.
- * @property {string} experienceId - Seeds deterministic slot generation.
- * @property {string} experienceTitle - Shown in the modal header.
- */
+interface BookingSlotModalProps {
+  open: boolean
+  onClose: () => void
+  experienceTitle: string
+  calendarSchedule: TransformedCalendarSchedule[] | null
+  existingBookings: BookingResponse[] | null
+  loading: boolean
+  error: string | null
+}
 
-/**
- * A fully client-side booking modal. It generates available slots dynamically
- * (matching the eventual backend contract in `lib/slots`) and walks the visitor
- * through a date -> time -> unit selection flow, surfacing live remaining
- * capacity per unit type. Booking confirmation is a local placeholder until the
- * slots backend is wired up.
- *
- * @param {BookingSlotModalProps} props - Component props.
- * @returns {JSX.Element | null} The rendered modal, or null when closed.
- */
+/** Group slots by date for the day‑picker. */
+type DayGroup = {
+  date: string
+  slots: AvailableSlot[]
+}
+
 export function BookingSlotModal({
   open,
   onClose,
   experienceTitle,
+  calendarSchedule,
   existingBookings,
-  schedules,
-  loading,
-  error
-}: {
-  open: boolean
-  onClose: () => void
-  experienceTitle: string
-  schedules: TransformedCalendarSchedule[] | null
-  existingBookings: BookingResponse[] | null
-  loading: boolean
-  error: string | null
-}) {
+}: BookingSlotModalProps) {
+  // Generate flat slot list and group by date
+  const days = useMemo<DayGroup[]>(() => {
+    if (!calendarSchedule || !existingBookings) return []
+
+    const now = new Date()
+    const thisMonth = now.toISOString().split('T')[0]
+    now.setMonth(now.getMonth() + 1)
+    const nextMonth = now.toISOString().split('T')[0]
+
+    const slots = generateSlots(
+      calendarSchedule,
+      existingBookings,
+      thisMonth,
+      nextMonth,
+      {
+        bufferMinutes: 15,
+        maxAdvanceMonths: 1,
+        minAdvanceDays: 1,
+        preset: {
+          durationMinutes: 600,
+          id: '2',
+          label: 'testing',
+        },
+      }
+    )
+
+    // Group by date
+    const map = new Map<string, AvailableSlot[]>()
+    for (const slot of slots) {
+      if (!map.has(slot.date)) map.set(slot.date, [])
+      map.get(slot.date)!.push(slot)
+    }
+    // Sort dates chronologically
+    return Array.from(map.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, slots]) => ({ date, slots }))
+  }, [calendarSchedule, existingBookings])
 
   const [dateKey, setDateKey] = useState<string | null>(null)
   const [slotStart, setSlotStart] = useState<string | null>(null)
   const [unitId, setUnitId] = useState<string | null>(null)
   const [confirmed, setConfirmed] = useState(false)
 
-  // Reset all selections whenever the modal is (re)opened.
+  // Reset selection when modal opens
   useEffect(() => {
     if (open) {
-      
       setDateKey(null)
       setSlotStart(null)
       setUnitId(null)
@@ -56,9 +80,7 @@ export function BookingSlotModal({
     }
   }, [open])
 
-  
-
-  // Lock body scroll + close on Escape while open.
+  // Escape key & body scroll lock
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -76,11 +98,16 @@ export function BookingSlotModal({
   if (!open) return null
 
   const selectedDay = days.find((d) => d.date === dateKey)
-  const selectedSlot: Slot | undefined = selectedDay?.slots.find(
-    (s) => s.start_time === slotStart,
+  const selectedSlot = selectedDay?.slots.find((s) => s.start_time === slotStart)
+  const selectedUnit = selectedSlot?.unit_availability.find(
+    (u) => u.unit_type_id === unitId
   )
-  const selectedUnit = selectedSlot?.unit_availability.find((u) => u.unit_type_id === unitId)
 
+  // Helper: total remaining capacity across all unit types for a slot
+  const totalRemaining = (slot: AvailableSlot) =>
+    slot.unit_availability.reduce((sum, u) => sum + u.remaining, 0)
+
+  // Handlers
   const handleSelectDate = (key: string) => {
     setDateKey(key)
     setSlotStart(null)
@@ -125,7 +152,7 @@ export function BookingSlotModal({
         </div>
 
         {confirmed && selectedSlot && selectedUnit ? (
-          /* Confirmation view */
+          // Confirmation view
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-orange)]/10">
               <Check className="h-8 w-8 text-[var(--brand-orange)]" />
@@ -134,8 +161,9 @@ export function BookingSlotModal({
               Booking requested
             </h3>
             <p className="max-w-sm text-sm leading-relaxed text-[var(--brand-navy)]/65">
-              {`${selectedUnit.unit_label} on ${formatDayLabel(selectedSlot.date).weekday} ${formatDayLabel(selectedSlot.date).day
-                } ${formatDayLabel(selectedSlot.date).month} at ${selectedSlot.start_time}. We'll confirm your slot by email.`}
+              {`${selectedUnit.unit_label} on ${formatDayLabel(selectedSlot.date).weekday} ${
+                formatDayLabel(selectedSlot.date).day
+              } ${formatDayLabel(selectedSlot.date).month} at ${selectedSlot.start_time}. We'll confirm your slot by email.`}
             </p>
             <button
               type="button"
@@ -149,7 +177,7 @@ export function BookingSlotModal({
           <>
             {/* Body */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
-              {/* Step 1 — Date */}
+              {/* Step 1 – Date */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[var(--brand-orange)]" />
@@ -168,12 +196,13 @@ export function BookingSlotModal({
                         type="button"
                         disabled={closed}
                         onClick={() => handleSelectDate(day.date)}
-                        className={`flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 transition-colors ${active
-                          ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white'
-                          : closed
+                        className={`flex min-w-16 shrink-0 flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 transition-colors ${
+                          active
+                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)] text-white'
+                            : closed
                             ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5 text-[var(--brand-navy)]/30'
                             : 'border-[var(--brand-navy)]/15 bg-white text-[var(--brand-navy)] hover:border-[var(--brand-orange)]'
-                          }`}
+                        }`}
                       >
                         <span className="text-[10px] font-bold uppercase tracking-wide">
                           {weekday}
@@ -186,7 +215,7 @@ export function BookingSlotModal({
                 </div>
               </div>
 
-              {/* Step 2 — Time */}
+              {/* Step 2 – Time */}
               {selectedDay && selectedDay.slots.length > 0 && (
                 <div className="mt-7 flex flex-col gap-3">
                   <div className="flex items-center gap-2">
@@ -197,7 +226,7 @@ export function BookingSlotModal({
                   </div>
                   <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                     {selectedDay.slots.map((slot) => {
-                      const remaining = slotRemaining(slot)
+                      const remaining = totalRemaining(slot)
                       const soldOut = remaining === 0
                       const active = slot.start_time === slotStart
                       return (
@@ -206,22 +235,25 @@ export function BookingSlotModal({
                           type="button"
                           disabled={soldOut}
                           onClick={() => handleSelectSlot(slot.start_time)}
-                          className={`flex flex-col items-start gap-0.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors ${active
-                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
-                            : soldOut
+                          className={`flex flex-col items-start gap-0.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors ${
+                            active
+                              ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
+                              : soldOut
                               ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
                               : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
-                            }`}
+                          }`}
                         >
                           <span
-                            className={`text-sm font-bold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
-                              }`}
+                            className={`text-sm font-bold ${
+                              soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
+                            }`}
                           >
                             {slot.start_time} – {slot.end_time}
                           </span>
                           <span
-                            className={`text-[11px] font-semibold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-orange-deep)]'
-                              }`}
+                            className={`text-[11px] font-semibold ${
+                              soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-orange-deep)]'
+                            }`}
                           >
                             {soldOut ? 'Sold out' : `${remaining} spaces left`}
                           </span>
@@ -232,7 +264,7 @@ export function BookingSlotModal({
                 </div>
               )}
 
-              {/* Step 3 — Unit */}
+              {/* Step 3 – Unit */}
               {selectedSlot && (
                 <div className="mt-7 flex flex-col gap-3">
                   <div className="flex items-center gap-2">
@@ -251,17 +283,19 @@ export function BookingSlotModal({
                           type="button"
                           disabled={soldOut}
                           onClick={() => setUnitId(unit.unit_type_id)}
-                          className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${active
-                            ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
-                            : soldOut
+                          className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                            active
+                              ? 'border-[var(--brand-orange)] bg-[var(--brand-orange)]/5'
+                              : soldOut
                               ? 'cursor-not-allowed border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/5'
                               : 'border-[var(--brand-navy)]/15 bg-white hover:border-[var(--brand-orange)]'
-                            }`}
+                          }`}
                         >
                           <div className="flex flex-col">
                             <span
-                              className={`text-sm font-semibold ${soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
-                                }`}
+                              className={`text-sm font-semibold ${
+                                soldOut ? 'text-[var(--brand-navy)]/30' : 'text-[var(--brand-navy)]'
+                              }`}
                             >
                               {unit.unit_label}
                             </span>
@@ -270,10 +304,11 @@ export function BookingSlotModal({
                             </span>
                           </div>
                           <span
-                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${soldOut
-                              ? 'bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]/40'
-                              : 'bg-[var(--brand-orange)]/10 text-[var(--brand-orange-deep)]'
-                              }`}
+                            className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                              soldOut
+                                ? 'bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]/40'
+                                : 'bg-[var(--brand-orange)]/10 text-[var(--brand-orange-deep)]'
+                            }`}
                           >
                             {soldOut ? 'Sold out' : `${unit.remaining} left`}
                           </span>
@@ -304,10 +339,11 @@ export function BookingSlotModal({
                 type="button"
                 disabled={!selectedUnit}
                 onClick={() => setConfirmed(true)}
-                className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${selectedUnit
-                  ? 'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]'
-                  : 'cursor-not-allowed bg-[var(--brand-navy)]/15 text-[var(--brand-navy)]/40'
-                  }`}
+                className={`inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wide transition-colors ${
+                  selectedUnit
+                    ? 'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]'
+                    : 'cursor-not-allowed bg-[var(--brand-navy)]/15 text-[var(--brand-navy)]/40'
+                }`}
               >
                 Confirm booking
               </button>

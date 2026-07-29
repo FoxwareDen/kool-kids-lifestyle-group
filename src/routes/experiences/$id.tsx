@@ -231,7 +231,7 @@ function RouteComponent() {
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
         experienceTitle={title}
-        schedules={scheduleData}
+        calendarSchedule={scheduleData}
         existingBookings={existingBookings}
         loading={scheduleDataLoading}
         error={scheduleError}
