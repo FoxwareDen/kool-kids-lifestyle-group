@@ -38,13 +38,22 @@ export interface Booking {
   status: "pending" | "completed" | "rescheduled" | "cancelled"
 }
 
-function generateAvailableSlots(
+export interface AvailableRange  {
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+  units: Unit[];
+}
+
+
+export function generateAvailableSlots(
   schedule: Calendar, 
   bookings: Booking[], 
   config: { minAdvanceDays: number }
 ) {
   // Store all available slot objects to return
-  const availableSlots: any[] = [];
+  const availableSlots: AvailableRange[] = [];
   
   // Normalize today's date to midnight so advance-day calculations are consistent
   const today = startOfDay(new Date());
@@ -67,38 +76,65 @@ function generateAvailableSlots(
   // Safely generate an array of Date objects for each day in range (handles DST safely)
   const daysInRange = eachDayOfInterval({ start: actualStart, end: scheduleEnd });
 
-  for (const date of daysInRange) {
-    // Note: getDay() returns 0 for Sunday through 6 for Saturday
-    const dotw = getDay(date);
-
-    // Skip days that aren't enabled in the schedule's active days list
-    if (!schedule.days_of_weeK.includes(dotw)) {
-      continue;
-    }
-
-
-    // filter all bookings with this date
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    const matchedBookings = bookings.filter((b) => b.date === formattedDate && b.status !== 'cancelled');
+  // ONLY FOR DAY BOOKINGS
+  if (schedule.booking_type === "day") {
     
-    
-    if (schedule.booking_type == "day") {
-      // TODO: day segments
+    // Loop unit-by-unit so each unit tracks its own contiguous range independently
+    for (const unit of schedule.units) {
 
-      
+      let activeRange: AvailableRange | null = null;
 
-    }else {
-      // TODO: sots during the day
+      for (const date of daysInRange) {
+        const dotw = getDay(date);
+        const formattedDate = format(date, 'yyyy-MM-dd');
+
+        // Check 1: Is this day enabled in schedule?
+        const isWorkingDay = schedule.days_of_weeK.includes(dotw);
+
+        // Check 2: Has this unit reached capacity on this date?
+        const bookedCount = bookings.filter(
+          (b) => b.date === formattedDate && 
+                 b.status !== 'cancelled' && 
+                 (b.unit_id === unit.id || b.unit_label === unit.label)
+        ).length;
+
+        const isAvailable = isWorkingDay && bookedCount < unit.capacity;
+
+        if (isAvailable) {
+
+          if (!activeRange) {
+            // START A NEW RANGE
+            activeRange = {
+              start_date: formattedDate,
+              end_date: formattedDate,
+              start_time: schedule.start_time,
+              end_time: schedule.end_time,
+              units: [unit],
+            };
+          } else {
+            // STRETCH THE EXISTING RANGE
+            activeRange.end_date = formattedDate;
+          }
+
+        } else {
+          
+          // DAY IS BLOCKED: Close and save active range if one exists
+          if (activeRange) {
+            availableSlots.push(activeRange);
+            activeRange = null;
+          }
+          
+        }
+      }
+
+      // Flush any range that was still open when the loop ended
+      if (activeRange) {
+        availableSlots.push(activeRange);
+      }
     }
+  } else {
+    
   }
 
   return availableSlots;
 }
-
-
-  // TODO: split from actualStart to the scheduleEnd the days allowed ie days of the week selected
-  // TODO: segment the start to end time out of each day
-  // TODO: split that segments into slots ie (end_time - start_time / (curation + buffer_minutes))
-  // TODO: iterate ove the segments check if the segment in crossing any of the bookings and map removing the tailing buffer_minutes to get true slots segments
-  // TODO: remember booking amount is tied into the capacity allowed so ther can be a n number of bookings on each unit n being the capacity
-  // TODO: return the segments thats not crossing bookings
