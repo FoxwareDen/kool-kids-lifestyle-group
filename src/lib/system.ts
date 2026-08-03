@@ -231,11 +231,18 @@ export function generateAvailableSlots(
         const isWorkingDay = schedule.days_of_weeK.includes(dotw);
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
-        const bookedCount = bookings.filter(
-          (b) => b.date === formattedDate && 
-                 b.status !== 'cancelled' && 
-                 (b.unit_id === unit.id || b.unit_label === unit.label)
-        ).length;
+        const bookedCount = bookings.filter((b) => {
+          // Ignore cancelled bookings or bookings for other units
+          if (b.status === "cancelled") return false;
+          if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
+
+          // Calculate the full span of the booking based on its duration
+          const bStartDate = parseISO(b.date);
+          const bEndDate = addDays(bStartDate, b.duration);
+
+          // The unit is occupied if the loop date is >= check-in AND < check-out
+          return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
+        }).length;
 
         const isAvailable = isWorkingDay && bookedCount < unit.capacity;
 

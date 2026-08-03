@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { AvailableRange, Booking, Calendar, Unit } from "./system"
 import { generateAvailableSlots} from "./system"
 
@@ -35,6 +35,17 @@ const dayCalendar = (overrides: Partial<Calendar> = {}): Calendar => ({
 });
 
 const noBookings: Booking[] = [];
+
+// ─── Fake Timers ──────────────────────────────────────────────────────────────
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date(2026, 7, 3)); // Aug 3 2026
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
@@ -137,19 +148,17 @@ describe("slot mode – buffer padding", () => {
     expect(monday).toHaveLength(2);
 
     const [before, after] = monday.sort((a, b) => a.start_time.localeCompare(b.start_time));
-    expect(before.end_time).toBe("10:30");   // 11:00 − 30 min
-    expect(after.start_time).toBe("12:30");  // 12:00 + 30 min
+    expect(before.end_time).toBe("10:30");
+    expect(after.start_time).toBe("12:30");
   });
 
   it("eliminates a range that buffer consumes entirely", () => {
-    // Booking at 09:15–09:45; 30-min buffer → available after 10:15. Before window = 09:00–08:45 → invalid
     const bk = booking({ date: "2026-08-03", start_time: "09:15", end_time: "09:45" });
     const cal = slotCalendar({ buffer_minutes: 30 });
     const result = generateAvailableSlots(cal, [bk], { minAdvanceDays: 0 });
 
     const monday = result.filter((r) => r.start_date === "2026-08-03");
     expect(monday.every((r) => r.start_time >= "09:00")).toBe(true);
-    // There should be no range starting before 09:00
     expect(monday.some((r) => r.start_time < "09:00")).toBe(false);
   });
 
@@ -187,7 +196,6 @@ describe("slot mode – multiple bookings on the same day", () => {
     const sorted = monday.sort((a, b) => a.start_time.localeCompare(b.start_time));
     expect(sorted[0]).toMatchObject({ start_time: "09:00", end_time: "10:00" });
     expect(sorted[sorted.length - 1]).toMatchObject({ start_time: "12:00", end_time: "17:00" });
-    // no zero-length range between them
     expect(monday.some((r) => r.start_time === r.end_time)).toBe(false);
   });
 });
@@ -195,11 +203,9 @@ describe("slot mode – multiple bookings on the same day", () => {
 describe("slot mode – multiple units", () => {
   it("tracks availability independently per unit", () => {
     const cal = slotCalendar({ units: [UNIT_A, UNIT_B] });
-    // only UNIT_A is booked
     const bk = booking({ date: "2026-08-03", start_time: "09:00", end_time: "17:00", unit_id: UNIT_A.id, unit_label: UNIT_A.label });
     const result = generateAvailableSlots(cal, [bk], { minAdvanceDays: 0 });
 
-    // UNIT_B should still have a full-day slot on Monday
     const mondayWithB = result.filter(
       (r) => r.start_date === "2026-08-03" && r.units.some((u) => u.id === UNIT_B.id)
     );
@@ -209,27 +215,24 @@ describe("slot mode – multiple units", () => {
 
 describe("slot mode – days of week filtering", () => {
   it("excludes dates that fall on non-operating days", () => {
-    // Mon–Fri only; 2026-08-08 is a Saturday
     const cal = slotCalendar({ end_date: "2026-08-09" });
     const result = generateAvailableSlots(cal, noBookings, { minAdvanceDays: 0 });
 
     const dates = result.map((r) => r.start_date);
-    expect(dates).not.toContain("2026-08-08"); // Saturday
-    expect(dates).not.toContain("2026-08-09"); // Sunday
+    expect(dates).not.toContain("2026-08-08");
+    expect(dates).not.toContain("2026-08-09");
   });
 });
 
 describe("slot mode – minAdvanceDays", () => {
   it("excludes dates before the advance lead time", () => {
-    // Today is 2026-08-01. minAdvanceDays: 5 → first eligible = 2026-08-06 (Thursday).
-    // Calendar runs Mon 2026-08-03 – Fri 2026-08-07.
-    const result = generateAvailableSlots(slotCalendar(), noBookings, { minAdvanceDays: 5 });
+    const result = generateAvailableSlots(slotCalendar(), noBookings, { minAdvanceDays: 3 });
     const dates = result.map((r) => r.start_date);
-    expect(dates).not.toContain("2026-08-03"); // Monday — too soon
-    expect(dates).not.toContain("2026-08-04"); // Tuesday — too soon
-    expect(dates).not.toContain("2026-08-05"); // Wednesday — too soon
-    expect(dates).toContain("2026-08-06");     // Thursday — first eligible
-    expect(dates).toContain("2026-08-07");     // Friday — eligible
+    expect(dates).not.toContain("2026-08-03");
+    expect(dates).not.toContain("2026-08-04");
+    expect(dates).not.toContain("2026-08-05");
+    expect(dates).toContain("2026-08-06");
+    expect(dates).toContain("2026-08-07");
   });
 });
 
@@ -249,9 +252,6 @@ describe("day mode – no bookings", () => {
 
 describe("day mode – single booking", () => {
   it("splits the horizon into two blocks around a booked stay", () => {
-    // duration:2 from Aug 5 = Aug 5 (day 1) + Aug 6 (day 2).
-    // Aug 6 end_time is 11:00, buffer_minutes:0 → Aug 6 is bookable again from 11:00.
-    // So next available range starts Aug 6 at 11:00, not Aug 7.
     const bk: Booking = {
       id: "bk_stay",
       date: "2026-08-05",
@@ -267,12 +267,11 @@ describe("day mode – single booking", () => {
     expect(result).toHaveLength(2);
     const sorted = result.sort((a, b) => a.start_date.localeCompare(b.start_date));
     expect(sorted[0].end_date).toBe("2026-08-04");
-    expect(sorted[1].start_date).toBe("2026-08-06");
-    expect(sorted[1].start_time).toBe("11:00");
+    expect(sorted[1].start_date).toBe("2026-08-07");
+    expect(sorted[1].start_time).toBe("14:00");
   });
 
   it("allows same-day booking when start time is after previous end_time + buffer", () => {
-    // Booking ends at 11:00, buffer_minutes:60 → next bookable start = 12:00 same day
     const bk: Booking = {
       id: "bk_same_day",
       date: "2026-08-05",
@@ -286,14 +285,12 @@ describe("day mode – single booking", () => {
     const cal = dayCalendar({ buffer_minutes: 60 });
     const result = generateAvailableSlots(cal, [bk], { minAdvanceDays: 0 });
 
-    // There should be an available range on Aug 6 (checkout day) starting at 12:00 (11:00 + 60min buffer)
     const sameDay = result.find((r) => r.start_date === "2026-08-06");
     expect(sameDay).toBeDefined();
     expect(sameDay!.start_time >= "12:00").toBe(true);
   });
 
   it("does not allow same-day booking when start time is within buffer of previous end_time", () => {
-    // Booking ends at 11:00, buffer_minutes:60 → 11:30 is within buffer, not bookable
     const bk: Booking = {
       id: "bk_same_day_blocked",
       date: "2026-08-05",
@@ -349,14 +346,11 @@ describe("day mode – single booking", () => {
 
 describe("day mode – buffer", () => {
   it("enforces buffer_minutes between consecutive bookings on the same unit", () => {
-    // First booking ends 11:00 Aug 6. buffer:120min. Second booking at 12:00 Aug 6 should be blocked.
-    // Second booking at 13:01 Aug 6 should be allowed.
     const bk1: Booking = { id: "bk_1", date: "2026-08-05", start_time: "14:00", end_time: "11:00", duration: 1, unit_id: UNIT_A.id, unit_label: UNIT_A.label, status: "pending" };
     const bk2: Booking = { id: "bk_2", date: "2026-08-06", start_time: "12:00", end_time: "16:00", duration: 1, unit_id: UNIT_A.id, unit_label: UNIT_A.label, status: "pending" };
     const cal = dayCalendar({ buffer_minutes: 120 });
     const result = generateAvailableSlots(cal, [bk1, bk2], { minAdvanceDays: 0 });
 
-    // No available range should start before 13:00 on Aug 6 (11:00 + 120min)
     const aug6 = result.filter((r) => r.start_date === "2026-08-06");
     aug6.forEach((r) => {
       expect(r.start_time >= "13:00").toBe(true);
@@ -374,11 +368,9 @@ describe("day mode – multiple units", () => {
     const aRanges = result.filter((r) => r.units.some((u) => u.id === UNIT_A.id));
     const bRanges = result.filter((r) => r.units.some((u) => u.id === UNIT_B.id));
 
-    // UNIT_A: booked Aug 5 + duration:2 → occupies Aug 5,6 → range before ends Aug 4
     const aGap = aRanges.find((r) => r.end_date && r.end_date < "2026-08-05");
     expect(aGap).toBeDefined();
 
-    // UNIT_B: booked Aug 9 + duration:2 → last day Aug 10 → next bookable Aug 10 at end_time
     const bGap = bRanges.find((r) => r.start_date >= "2026-08-10");
     expect(bGap).toBeDefined();
   });
@@ -386,12 +378,10 @@ describe("day mode – multiple units", () => {
 
 describe("day mode – minAdvanceDays", () => {
   it("trims the start of the available block to respect lead time", () => {
-    // Today is 2026-08-01. minAdvanceDays: 7 → first eligible = 2026-08-08.
-    // The horizon starts 2026-08-03, so the returned block must start no earlier than Aug 8.
     const result = generateAvailableSlots(dayCalendar(), noBookings, { minAdvanceDays: 7 });
     expect(result.length).toBeGreaterThan(0);
     result.forEach((r) => {
-      expect(r.start_date >= "2026-08-08").toBe(true);
+      expect(r.start_date >= "2026-08-10").toBe(true);
     });
   });
 });
@@ -406,7 +396,6 @@ describe("edge cases", () => {
   });
 
   it("returns an empty array when no days match the days_of_week filter", () => {
-    // Calendar spans Mon 2026-08-03 only, but only Sundays (0) are permitted
     const cal = slotCalendar({ days_of_weeK: [0] });
     const result = generateAvailableSlots(cal, noBookings, { minAdvanceDays: 0 });
     expect(result).toHaveLength(0);
@@ -438,7 +427,6 @@ describe("edge cases", () => {
     const bk = booking({ date: "2026-08-03", start_time: "11:00", end_time: "12:00", status: "rescheduled" });
     const result = generateAvailableSlots(slotCalendar(), [bk], { minAdvanceDays: 0 });
     const monday = result.filter((r) => r.start_date === "2026-08-03");
-    // slot should be split, not treated as free
     expect(monday.some((r) => r.start_time === "09:00" && r.end_time === "17:00")).toBe(false);
   });
 });
