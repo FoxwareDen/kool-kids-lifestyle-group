@@ -1,5 +1,6 @@
 import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
 import { type UnitType as U, type Calendar as C, type Booking as B, type SlotGenerationConfig, type AvailableSlot, generateAvailableSlots } from "booking-api-extended";
+import type { SlotType } from "./system";
 
 export type UnitType = U & {
   value: number;
@@ -11,8 +12,9 @@ export type Calendar = Omit<C, "user_id" | "units"> & {
   title: string;
   units: string[];
   experiences: string[];
-  min_advance_days?: number
-  max_advance_days?: number
+  min_advance_days?: number;
+  max_advance_days?: number;
+  booking_type: SlotType;
 };
 
 export type CalendarResponse = Calendar & MetaData;

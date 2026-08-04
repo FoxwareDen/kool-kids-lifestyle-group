@@ -15,8 +15,8 @@ const dayRange: AvailableRange = {
   end_date: "2026-08-10",
   start_time: "14:00",
   end_time: "10:00",
-  units,
   type: "day",
+  units,
 };
 
 // ----- SLOT RANGE -----
@@ -25,8 +25,8 @@ const slotRange: AvailableRange = {
   end_date: "2026-08-10",
   start_time: "09:00",
   end_time: "17:00",
-  units,
   type: "slot",
+  units,
 };
 
 // ----- EXISTING BOOKINGS (block some slots) -----

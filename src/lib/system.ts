@@ -37,7 +37,7 @@ export interface Unit {
  * - `"day"`: Multi-day or single-day stay-based reservations (e.g., hotels, equipment rentals).
  * - `"slot"`: Intra-day time-window reservations (e.g., restaurant tables, appointments, tours).
  */
-type SlotType = "slot" | "day";
+export type SlotType = "slot" | "day";
 
 /**
  * Defines the global operating rules, time bounds, active days, and associated units for a business schedule.
