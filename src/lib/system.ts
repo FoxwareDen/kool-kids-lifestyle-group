@@ -115,7 +115,7 @@ export interface AvailableRange {
    * - **`"day"`**: Final date of the contiguous multi-day stay block.
    * - **`"slot"`**: Identical to `start_date`.
    */
-  end_date?: string;
+  end_date: string;
 
   /** 
    * Opening boundary time in 24-hour `"HH:mm"` format.
@@ -278,7 +278,10 @@ export function generateAvailableSlots(
         availableSlots.push(activeRange);
       }
     }
-  } 
+  }
+  else if (schedule.booking_type === "static") {
+    return availableSlots;
+  }
   // =========================================================================
   // BRANCH 2: INTRA-DAY SLOT BOOKINGS (Dynamic Interval Carving)
   // =========================================================================

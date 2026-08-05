@@ -1,3 +1,4 @@
+import type { Language, Translatable } from '#/lib/experiences'
 import { ChevronRight } from 'lucide-react'
 
 /**
@@ -8,7 +9,8 @@ import { ChevronRight } from 'lucide-react'
  *
  * @returns {JSX.Element} The rendered gallery hero section.
  */
-export function GalleryHero() {
+export function GalleryHero({lang}:{lang: Language}) {
+
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
@@ -34,7 +36,7 @@ export function GalleryHero() {
                 href="/"
                 className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
               >
-                Home
+                {lang == "en" ? "Home" : "front armpit"}
               </a>
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />

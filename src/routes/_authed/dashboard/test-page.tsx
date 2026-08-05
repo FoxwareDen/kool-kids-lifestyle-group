@@ -9,8 +9,13 @@ const units: Unit[] = [
   { id: "u2", label: "Room B", capacity: 2, duration: 90 },  // 1.5 hour slots
 ];
 
+const units2: Unit[] = [
+  { id: "u2id", label: "2 Bedroom", capacity: 2, duration:0 }
+];
+
 // ----- DAY RANGE -----
 const dayRange: AvailableRange = {
+  calendar_ref: "",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
   start_time: "14:00",
@@ -19,8 +24,31 @@ const dayRange: AvailableRange = {
   units,
 };
 
+const dayRange2: AvailableRange = {
+  calendar_ref: "",
+  start_date: "2026-08-13",
+  end_date: "2026-08-15",
+  start_time: "14:00",
+  end_time: "10:00",
+  type: "day",
+  units: units2,
+};
+
+const dayRange3: AvailableRange = {
+  calendar_ref: "",
+  start_date: "2026-08-17",
+  end_date: "2026-08-20",
+  start_time: "14:00",
+  end_time: "10:00",
+  type: "day",
+  units: units2,
+};
+
+const coll = [dayRange, dayRange2, dayRange3]
+
 // ----- SLOT RANGE -----
 const slotRange: AvailableRange = {
+  calendar_ref: "",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
   start_time: "09:00",
@@ -85,6 +113,7 @@ function RouteComponent() {
 
       <Booker
         type={mode}
+        schedule={mode == "day" ? coll: [slotRange]}
       >
         <BookerStep name="unit_select">
           <BookingUnitSelect />
