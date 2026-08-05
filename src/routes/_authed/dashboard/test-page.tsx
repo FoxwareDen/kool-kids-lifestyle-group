@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
-import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect } from "#/components/booking/calendar";
+import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -110,9 +110,7 @@ function RouteComponent() {
         </BookerStep>
   
         <BookerStep name="view_booking">
-          <div className="py-12 px-6 text-center text-sm text-muted-foreground">
-            View goes goes here
-          </div>
+          <BookingView />
         </BookerStep>
 
 

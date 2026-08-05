@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { create } from "zustand";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { differenceInCalendarDays, eachDayOfInterval, endOfDay, format, parseISO, startOfDay } from "date-fns";
+import { addDays, differenceInCalendarDays, eachDayOfInterval, endOfDay, format, parseISO, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "../client-only";
 import type { AvailableRange, Booking, Unit } from "#/lib/system";
 import { Check, Clock, Users } from "lucide-react";
 import { isWithinInterval } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
 
 export type SlotType = "day" | "slot";
 export type StepName = "calendar" | "unit_select" | "time_picker" | "view_booking";
@@ -28,30 +31,29 @@ interface BookerState {
   booking: Booking;
   schedule: AvailableRange[];
   filteredSchedules: AvailableRange[];
-  selectedSchedule:  | null;
+  selectedSchedule: null;
   selectedUnit?: Unit;
   type: SlotType;
   sepCounter: number;
   date: Date | undefined;
   duration: number;
+  onSubmit?: (booking: Booking) => void;
 
   setSlot: (type: SlotType) => void;
   setDate: (date: Date | undefined) => void;
   setDuration: (days: number) => void;
-
   step: (direction: "forward" | "back") => void;
-
   setUnit: (unit: Unit) => void;
   populateSchedule: (schedule: AvailableRange[]) => void;
-
-  filterByUnit: (unit: Unit) => void
-  setSelectedSchedule: (slot: AvailableRange) => void
-  setBooking : (booking: Booking) => void
+  filterByUnit: (unit: Unit) => void;
+  setSelectedSchedule: (slot: AvailableRange) => void;
+  setBooking: (booking: Booking) => void;
+  setOnSubmit: (fn: (booking: Booking) => void) => void;
 }
 
 export const useBookerStore = create<BookerState>((set) => ({
   booking: {
-    calendar_ref:"",
+    calendar_ref: "",
     date: "",
     duration: 0,
     start_time: "",
@@ -68,29 +70,29 @@ export const useBookerStore = create<BookerState>((set) => ({
   sepCounter: 0,
   date: new Date(),
   duration: 1,
-  
+
   setDate: (date) => set({ date }),
   setSlot: (type) => set({ type, sepCounter: 0 }),
   setDuration: (duration) => set({ duration }),
-  
+
   step: (direction) =>
     set((state) => {
       const maxSteps = steps[state.type].setCount;
       const delta = direction === "forward" ? 1 : -1;
       const nextCounter = state.sepCounter + delta;
-      
       if (nextCounter < 0 || nextCounter >= maxSteps) return state;
       return { sepCounter: nextCounter };
     }),
-    
+
   setUnit: (unit) => set({ selectedUnit: unit }),
-  populateSchedule: (schedule) => set((prev)=>({...prev, schedule})),
-  filterByUnit: (unit: Unit) => set(prev=> ({
+  populateSchedule: (schedule) => set((prev) => ({ ...prev, schedule })),
+  filterByUnit: (unit: Unit) => set(prev => ({
     ...prev,
-    filteredSchedules: prev.schedule.filter(sc=> sc.units.flatMap(u=>u.id).includes(unit.id))
+    filteredSchedules: prev.schedule.filter(sc => sc.units.flatMap(u => u.id).includes(unit.id))
   })),
   setSelectedSchedule: () => {},
-  setBooking: (booking: Booking) => set(prev=> ({...prev, booking}))
+  setBooking: (booking: Booking) => set(prev => ({ ...prev, booking })),
+  setOnSubmit: (fn) => set({ onSubmit: fn }),
 }));
 
 export function Booker({
@@ -98,26 +100,24 @@ export function Booker({
   type = "slot",
   className,
   children,
+  onSubmit,
 }: {
-  schedule: AvailableRange[]
+  schedule: AvailableRange[];
   type?: SlotType;
   className?: string;
   children: React.ReactNode;
+  onSubmit?: (booking: Booking) => void;
 }) {
-  const { date, duration, booking, filteredSchedules, setSlot, populateSchedule} = useBookerStore();
+  const { setSlot, populateSchedule, setOnSubmit } = useBookerStore();
 
   useEffect(() => {
     setSlot(type);
-    populateSchedule(schedule)
+    populateSchedule(schedule);
+    if (onSubmit) setOnSubmit(onSubmit);
   }, [type, setSlot]);
 
   return (
-    <div
-      className={cn(
-        "w-fit rounded-xl border bg-card p-4 text-card-foreground shadow-sm flex flex-col gap-4",
-        className
-      )}
-    >
+    <div className={cn("w-fit rounded-xl border bg-card p-4 text-card-foreground shadow-sm flex flex-col gap-4", className)}>
       {children}
     </div>
   );
@@ -134,50 +134,36 @@ export function BookerStep({
 }) {
   const sepCounter = useBookerStore((s) => s.sepCounter);
   const type = useBookerStore((s) => s.type);
-
   const currentStepName = steps[type].steps[sepCounter];
 
   if (currentStepName !== name) return null;
 
   return (
-    <div
-      className={cn(
-        "w-full flex justify-center items-center min-h-96 min-w-96",
-        className
-      )}
-    >
+    <div className={cn("w-full flex justify-center items-center min-h-96 min-w-96", className)}>
       {name === "calendar" ? <ClientOnly>{children}</ClientOnly> : children}
     </div>
   );
 }
 
-// NOTE: set booking label and label id
 export function BookingUnitSelect() {
-  const {booking, schedule, type, selectedUnit, filterByUnit, setBooking, setUnit } = useBookerStore();
+  const { booking, schedule, type, selectedUnit, filterByUnit, setBooking, setUnit } = useBookerStore();
 
   const units = schedule.flatMap((sc) => sc.units)
-  .reduce((prev: Unit[], cur: Unit)=>{
-    if (prev.flatMap(p=>p.id).includes(cur.id)) {
-      return prev
-    }
-    return [...prev, cur]
-  },[]);
+    .reduce((prev: Unit[], cur: Unit) => {
+      if (prev.flatMap(p => p.id).includes(cur.id)) return prev;
+      return [...prev, cur];
+    }, []);
 
   const filterUnits = (unit: Unit) => {
     filterByUnit(unit);
     setUnit(unit);
-    setBooking({
-      ...booking,
-      unit_id: unit.id,
-      unit_label: unit.label
-    })
-  }
+    setBooking({ ...booking, unit_id: unit.id, unit_label: unit.label });
+  };
 
   return (
     <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
       {units.map((unit) => {
         const isSelected = selectedUnit?.id === unit.id;
-
         return (
           <button
             key={unit.id}
@@ -185,9 +171,7 @@ export function BookingUnitSelect() {
             onClick={() => filterUnits(unit)}
             className={cn(
               "relative flex flex-col items-start justify-between rounded-lg border p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isSelected
-                ? "border-primary bg-primary/5 text-foreground shadow-xs"
-                : "border-border bg-card text-card-foreground"
+              isSelected ? "border-primary bg-primary/5 text-foreground shadow-xs" : "border-border bg-card text-card-foreground"
             )}
           >
             <div className="flex w-full items-center justify-between gap-2">
@@ -198,13 +182,11 @@ export function BookingUnitSelect() {
                 </span>
               )}
             </div>
-
             <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
                 <span>Cap: {unit.capacity}</span>
               </div>
-
               {unit.duration > 0 && type !== "day" && (
                 <div className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
@@ -219,32 +201,25 @@ export function BookingUnitSelect() {
   );
 }
 
-// NOTE: set calendar_ref, date, start_time, end_time and duration
 export function BookingCalendar({ className }: { className?: string }) {
-  const { type, date, booking, selectedUnit, filteredSchedules, setDate, setDuration, setBooking} = useBookerStore();
+  const { type, date, booking, filteredSchedules, setDate, setDuration, setBooking } = useBookerStore();
 
-  const [currentRange, setCurrentRange] = useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined,
-  });
+  const [currentRange, setCurrentRange] = useState<DateRange | undefined>({ from: undefined, to: undefined });
 
   useEffect(() => {
     setCurrentRange({ from: undefined, to: undefined });
   }, [type]);
 
+  const availableDates: { from: Date; to: Date }[] = filteredSchedules.flatMap(r => ({
+    from: startOfDay(parseISO(r.start_date)),
+    to: endOfDay(parseISO(r.end_date)),
+  }));
+
   const handleChange = (date: Date) => {
     setDate(date);
-
     const formatted = format(date, 'yyyy-MM-dd');
-    
-
     const range = filteredSchedules.find((fs) => formatted >= fs.start_date && formatted <= fs.end_date);
-
-    if (!range) {
-      alert("range not set");
-      return;
-    }
-
+    if (!range) return;
     setBooking({
       ...booking,
       calendar_ref: range.calendar_ref,
@@ -278,7 +253,6 @@ export function BookingCalendar({ className }: { className?: string }) {
 
     const fromFormatted = format(range.from, 'yyyy-MM-dd');
     const matchingRange = filteredSchedules.find((fs) => fromFormatted >= fs.start_date && fromFormatted <= fs.end_date);
-
     if (!matchingRange) return;
 
     setDate(range.from);
@@ -293,13 +267,6 @@ export function BookingCalendar({ className }: { className?: string }) {
     });
   };
 
-  // YYYY-MM-DD
-  const availableDates: {from:Date, to:Date}[] = filteredSchedules.flatMap(r=>{
-    const from = startOfDay(parseISO(r.start_date));
-    const to = endOfDay(parseISO(r.end_date));
-    return [{from, to}]
-  });
-
   if (type === "slot") {
     return (
       <Calendar
@@ -308,12 +275,7 @@ export function BookingCalendar({ className }: { className?: string }) {
         onSelect={handleChange}
         className={cn("rounded-md border w-full", className)}
         required
-        disabled={(date: Date)=>{
-          return !availableDates.map(t=>(isWithinInterval(date, {
-            start: t.from,
-            end: t.to,
-          }))).includes(true)       
-        }}
+        disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
       />
     );
   }
@@ -324,12 +286,7 @@ export function BookingCalendar({ className }: { className?: string }) {
       className={cn("rounded-md border w-full", className)}
       selected={currentRange}
       onSelect={handleRangeChange}
-      disabled={(date: Date)=>{
-        return !availableDates.map(t=>(isWithinInterval(date, {
-          start: t.from,
-          end: t.to,
-        }))).includes(true)       
-      }}
+      disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
     />
   );
 }
@@ -338,8 +295,6 @@ export function BookingTimeSelect() {
   const filteredSchedules = useBookerStore((s) => s.filteredSchedules);
   const selectedUnit = useBookerStore((s) => s.selectedUnit);
   const date = useBookerStore((s) => s.date);
-  const setDate = useBookerStore((s) => s.setDate);
-
 
   return (
     <div className="w-full space-y-3">
@@ -348,13 +303,82 @@ export function BookingTimeSelect() {
   );
 }
 
-export function BookingPagingButtonGroup({ className, buttonClassName }:{className?: string, buttonClassName?: string }) {
+export function BookingView() {
+  const { booking, type } = useBookerStore();
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-base">Booking Summary</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Unit</span>
+          <Badge variant="secondary">{booking.unit_label}</Badge>
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">{type === "day" ? "Check-in" : "Date"}</span>
+          <span className="text-sm font-medium">{format(parseISO(booking.date), "EEE, MMM d yyyy")}</span>
+        </div>
+
+        {type === "day" ? (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Check-out</span>
+              <span className="text-sm font-medium">
+                {format(addDays(parseISO(booking.date), booking.duration), "EEE, MMM d yyyy")}
+              </span>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Duration</span>
+              <Badge>{booking.duration} {booking.duration === 1 ? "night" : "nights"}</Badge>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Check-in time</span>
+              <span className="text-sm font-medium">{booking.start_time}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Check-out time</span>
+              <span className="text-sm font-medium">{booking.end_time}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Start time</span>
+              <span className="text-sm font-medium">{booking.start_time}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">End time</span>
+              <span className="text-sm font-medium">{booking.end_time}</span>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function BookingPagingButtonGroup({ className, buttonClassName }: { className?: string; buttonClassName?: string }) {
   const sepCounter = useBookerStore((s) => s.sepCounter);
   const type = useBookerStore((s) => s.type);
   const step = useBookerStore((s) => s.step);
   const selectedUnit = useBookerStore((s) => s.selectedUnit);
   const date = useBookerStore((s) => s.date);
   const duration = useBookerStore((s) => s.duration);
+  const booking = useBookerStore((s) => s.booking);
+  const onSubmit = useBookerStore((s) => s.onSubmit);
 
   const isLastStep = sepCounter >= steps[type].setCount - 1;
   const currentStep = steps[type].steps[sepCounter];
@@ -380,14 +404,25 @@ export function BookingPagingButtonGroup({ className, buttonClassName }:{classNa
       >
         Back
       </Button>
-      <Button
-        disabled={isLastStep || !canProceed}
-        onClick={() => step("forward")}
-        className={cn("px-4", buttonClassName)}
-        size="sm"
-      >
-        Next
-      </Button>
+
+      {isLastStep ? (
+        <Button
+          onClick={() => onSubmit?.(booking)}
+          className={cn("px-4", buttonClassName)}
+          size="sm"
+        >
+          Confirm Booking
+        </Button>
+      ) : (
+        <Button
+          disabled={!canProceed}
+          onClick={() => step("forward")}
+          className={cn("px-4", buttonClassName)}
+          size="sm"
+        >
+          Next
+        </Button>
+      )}
     </div>
   );
 }
