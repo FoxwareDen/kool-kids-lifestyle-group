@@ -330,7 +330,7 @@ function RouteComponent() {
     if (!result.success) {
       setSubmitError(result.error ?? 'Something went wrong.')
     } else {
-      console.log('Created:', result.value)
+      // console.log('Created:', result.value)
       navigate({ to: "/dashboard", search: { lang } })
     }
   }

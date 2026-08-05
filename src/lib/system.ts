@@ -71,6 +71,7 @@ export interface Calendar {
  * Represents an existing reservation against a specific unit.
  */
 export interface Booking {
+  calendar_ref: string;
   /** Unique identifier for the booking record. */
   id: string;
   /** Calendar date of the reservation in `"YYYY-MM-DD"` format. */
@@ -279,9 +280,9 @@ export function generateAvailableSlots(
       }
     }
   }
-  else if (schedule.booking_type === "static") {
-    return availableSlots;
-  }
+  // else if (schedule.booking_type === "static") {
+  //   return availableSlots;
+  // }
   // =========================================================================
   // BRANCH 2: INTRA-DAY SLOT BOOKINGS (Dynamic Interval Carving)
   // =========================================================================

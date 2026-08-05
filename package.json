@@ -16,6 +16,7 @@
     "check": "prettier --check ."
   },
   "dependencies": {
+    "@paystack/inline-js": "^2.24.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/query-db-collection": "latest",
     "@tanstack/react-db": "latest",

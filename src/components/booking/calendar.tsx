@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { create } from "zustand";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { differenceInCalendarDays, eachDayOfInterval, endOfDay, isValid, parseISO, startOfDay } from "date-fns";
+import { differenceInCalendarDays, eachDayOfInterval, endOfDay, format, parseISO, startOfDay } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "../client-only";
-import type { AvailableRange, Unit } from "#/lib/system";
+import type { AvailableRange, Booking, Unit } from "#/lib/system";
 import { Check, Clock, Users } from "lucide-react";
 import { isWithinInterval } from "date-fns";
 
@@ -15,18 +15,20 @@ export type StepName = "calendar" | "unit_select" | "time_picker" | "view_bookin
 
 export const steps: Record<SlotType, { setCount: number; steps: StepName[] }> = {
   day: {
-    setCount: 2,
+    setCount: 3,
     steps: ["unit_select", "calendar", "view_booking"],
   },
   slot: {
-    setCount: 3,
+    setCount: 4,
     steps: ["unit_select", "calendar", "time_picker", "view_booking"],
   },
 };
 
 interface BookerState {
+  booking: Booking;
   schedule: AvailableRange[];
   filteredSchedules: AvailableRange[];
+  selectedSchedule:  | null;
   selectedUnit?: Unit;
   type: SlotType;
   sepCounter: number;
@@ -43,11 +45,25 @@ interface BookerState {
   populateSchedule: (schedule: AvailableRange[]) => void;
 
   filterByUnit: (unit: Unit) => void
+  setSelectedSchedule: (slot: AvailableRange) => void
+  setBooking : (booking: Booking) => void
 }
 
 export const useBookerStore = create<BookerState>((set) => ({
+  booking: {
+    calendar_ref:"",
+    date: "",
+    duration: 0,
+    start_time: "",
+    end_time: "",
+    unit_id: "",
+    unit_label: "",
+    status: "pending",
+    id: ""
+  },
   schedule: [],
   filteredSchedules: [],
+  selectedSchedule: null,
   type: "slot",
   sepCounter: 0,
   date: new Date(),
@@ -67,12 +83,14 @@ export const useBookerStore = create<BookerState>((set) => ({
       return { sepCounter: nextCounter };
     }),
     
-    setUnit: (unit) => set({ selectedUnit: unit }),
-    populateSchedule: (schedule) => set((prev)=>({...prev, schedule})),
-    filterByUnit: (unit: Unit) => set(prev=> ({
-      ...prev,
-      filteredSchedules: prev.schedule.filter(sc=> sc.units.flatMap(u=>u.id).includes(unit.id))
-    }))
+  setUnit: (unit) => set({ selectedUnit: unit }),
+  populateSchedule: (schedule) => set((prev)=>({...prev, schedule})),
+  filterByUnit: (unit: Unit) => set(prev=> ({
+    ...prev,
+    filteredSchedules: prev.schedule.filter(sc=> sc.units.flatMap(u=>u.id).includes(unit.id))
+  })),
+  setSelectedSchedule: () => {},
+  setBooking: (booking: Booking) => set(prev=> ({...prev, booking}))
 }));
 
 export function Booker({
@@ -86,13 +104,13 @@ export function Booker({
   className?: string;
   children: React.ReactNode;
 }) {
-  const { filteredSchedules, setSlot, populateSchedule} = useBookerStore();
+  const { date, duration, booking, filteredSchedules, setSlot, populateSchedule} = useBookerStore();
 
   useEffect(() => {
     setSlot(type);
     populateSchedule(schedule)
   }, [type, setSlot]);
-  
+
   return (
     <div
       className={cn(
@@ -133,12 +151,9 @@ export function BookerStep({
   );
 }
 
+// NOTE: set booking label and label id
 export function BookingUnitSelect() {
-  const { filterByUnit } = useBookerStore();
-  const schedule = useBookerStore((s) => s.schedule);
-  const type = useBookerStore((s) => s.type);
-  const selectedUnit = useBookerStore((s) => s.selectedUnit);
-  const setUnit = useBookerStore((s) => s.setUnit);
+  const {booking, schedule, type, selectedUnit, filterByUnit, setBooking, setUnit } = useBookerStore();
 
   const units = schedule.flatMap((sc) => sc.units)
   .reduce((prev: Unit[], cur: Unit)=>{
@@ -151,6 +166,11 @@ export function BookingUnitSelect() {
   const filterUnits = (unit: Unit) => {
     filterByUnit(unit);
     setUnit(unit);
+    setBooking({
+      ...booking,
+      unit_id: unit.id,
+      unit_label: unit.label
+    })
   }
 
   return (
@@ -199,12 +219,9 @@ export function BookingUnitSelect() {
   );
 }
 
+// NOTE: set calendar_ref, date, start_time, end_time and duration
 export function BookingCalendar({ className }: { className?: string }) {
-  const filteredSchedules = useBookerStore(s=>s.filteredSchedules);
-  const type = useBookerStore((s) => s.type);
-  const date = useBookerStore((s) => s.date);
-  const setDate = useBookerStore((s) => s.setDate);
-  const setDuration = useBookerStore((s) => s.setDuration);
+  const { type, date, booking, selectedUnit, filteredSchedules, setDate, setDuration, setBooking} = useBookerStore();
 
   const [currentRange, setCurrentRange] = useState<DateRange | undefined>({
     from: undefined,
@@ -215,18 +232,38 @@ export function BookingCalendar({ className }: { className?: string }) {
     setCurrentRange({ from: undefined, to: undefined });
   }, [type]);
 
+  const handleChange = (date: Date) => {
+    setDate(date);
+
+    const formatted = format(date, 'yyyy-MM-dd');
+    
+
+    const range = filteredSchedules.find((fs) => formatted >= fs.start_date && formatted <= fs.end_date);
+
+    if (!range) {
+      alert("range not set");
+      return;
+    }
+
+    setBooking({
+      ...booking,
+      calendar_ref: range.calendar_ref,
+      date: formatted,
+      duration: 1,
+      start_time: range.start_time,
+      end_time: range.end_time,
+    });
+  };
+
   const handleRangeChange = (range: DateRange | undefined) => {
     if (!range?.from || !range?.to) {
       setCurrentRange(range);
       return;
     }
 
-    // Block ranges that span disabled days
     const days = eachDayOfInterval({ start: range.from, end: range.to });
     const spansDisabled = days.some((day) =>
-      !availableDates.some(t =>
-        isWithinInterval(startOfDay(day), { start: t.from, end: t.to })
-      )
+      !availableDates.some(t => isWithinInterval(day, { start: t.from, end: t.to }))
     );
 
     if (spansDisabled) {
@@ -239,13 +276,22 @@ export function BookingCalendar({ className }: { className?: string }) {
     const amount = differenceInCalendarDays(range.to, range.from) + 1;
     if (amount <= 0) return;
 
+    const fromFormatted = format(range.from, 'yyyy-MM-dd');
+    const matchingRange = filteredSchedules.find((fs) => fromFormatted >= fs.start_date && fromFormatted <= fs.end_date);
+
+    if (!matchingRange) return;
+
     setDate(range.from);
     setDuration(amount);
+    setBooking({
+      ...booking,
+      calendar_ref: matchingRange.calendar_ref,
+      date: fromFormatted,
+      duration: amount,
+      start_time: matchingRange.start_time,
+      end_time: matchingRange.end_time,
+    });
   };
-
-  useEffect(()=>{
-    console.log(filteredSchedules)
-  },[filteredSchedules])
 
   // YYYY-MM-DD
   const availableDates: {from:Date, to:Date}[] = filteredSchedules.flatMap(r=>{
@@ -259,11 +305,10 @@ export function BookingCalendar({ className }: { className?: string }) {
       <Calendar
         mode="single"
         selected={date}
-        onSelect={setDate}
+        onSelect={handleChange}
         className={cn("rounded-md border w-full", className)}
         required
         disabled={(date: Date)=>{
-          // TODO: boundary check
           return !availableDates.map(t=>(isWithinInterval(date, {
             start: t.from,
             end: t.to,
@@ -289,18 +334,40 @@ export function BookingCalendar({ className }: { className?: string }) {
   );
 }
 
-export function BookingPagingButtonGroup({
-  className,
-  buttonClassName,
-}: {
-  className?: string;
-  buttonClassName?: string;
-}) {
+export function BookingTimeSelect() {
+  const filteredSchedules = useBookerStore((s) => s.filteredSchedules);
+  const selectedUnit = useBookerStore((s) => s.selectedUnit);
+  const date = useBookerStore((s) => s.date);
+  const setDate = useBookerStore((s) => s.setDate);
+
+
+  return (
+    <div className="w-full space-y-3">
+      
+    </div>
+  );
+}
+
+export function BookingPagingButtonGroup({ className, buttonClassName }:{className?: string, buttonClassName?: string }) {
   const sepCounter = useBookerStore((s) => s.sepCounter);
   const type = useBookerStore((s) => s.type);
   const step = useBookerStore((s) => s.step);
+  const selectedUnit = useBookerStore((s) => s.selectedUnit);
+  const date = useBookerStore((s) => s.date);
+  const duration = useBookerStore((s) => s.duration);
 
   const isLastStep = sepCounter >= steps[type].setCount - 1;
+  const currentStep = steps[type].steps[sepCounter];
+
+  const canProceed = (() => {
+    switch (currentStep) {
+      case "unit_select": return !!selectedUnit;
+      case "calendar": return !!date && duration > 0;
+      case "time_picker": return false;
+      case "view_booking": return true;
+      default: return false;
+    }
+  })();
 
   return (
     <div className={cn("flex items-center justify-between gap-3 pt-3 border-t w-full", className)}>
@@ -314,7 +381,7 @@ export function BookingPagingButtonGroup({
         Back
       </Button>
       <Button
-        disabled={isLastStep}
+        disabled={isLastStep || !canProceed}
         onClick={() => step("forward")}
         className={cn("px-4", buttonClassName)}
         size="sm"
