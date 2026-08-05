@@ -1,9 +1,68 @@
-import PocketBase from 'pocketbase';
+import PocketBase, { type RecordOptions } from 'pocketbase';
 import { environmentManager } from '@tanstack/react-query';
 
 // ============= Client (singleton) =============
-export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);// 💡 ADD THIS LINE TO KILL AUTO-CANCELLATION GLOBALLY
+export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
 pb.autoCancellation(false);
+
+// ==================== CRUD HELPERS ====================
+
+// TODO: add SQL sanitizing
+// TODO: refactor code to use theres helpers
+
+export async function create<T, R>(collectionName: string, data: T, cookieHeader?: string): Promise<Result<R, string>> {
+  const client = getPBSession(cookieHeader);
+
+  try {
+    //@ts-ignore
+    const record = await client.collection(collectionName).create(data);
+
+    return createResult(record as R, null);
+  } catch (error) {
+    return createResult(null, `Failed to create in ${collectionName}`)
+  }
+}
+
+export async function fetchCollection<R>(collectionName: string, options?: RecordOptions, cookieHeader?: string): Promise<Result<R[], string>> {
+  const client = getPBSession(cookieHeader);
+
+  try {
+    const records = await client.collection(collectionName).getFullList<R>(options);
+
+    return createResult(records, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, `Failed to fetch ${collectionName}`)
+  }
+}
+
+export async function updateItemInCollection<T, R>(collectionName: string, id: string, data: Partial<T>, options?: RecordOptions, cookieHeader?: string): Promise<Result<R, string>> {
+  const client = getPBSession(cookieHeader);
+
+  try {
+    const record = await client.collection(collectionName).update<R>(id, data, options);
+
+    return createResult(record, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, `Failed to update item in ${collectionName}`);
+  }
+}
+
+export async function deleteItemInCollection(collectionName: string, id: string, options?: RecordOptions, cookieHeader?: string): Promise<Result<boolean, string>> {
+  const client = getPBSession(cookieHeader);
+
+  try {
+    const record = await client.collection(collectionName).delete(id, options);
+
+    return createResult(record, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, `Failed to delete item in ${collectionName}`);
+  }
+}
+
+// ==================== ====================
 
 export const getPBSession = (cookieHeader?: string) => {
   if (environmentManager.isServer()) {
@@ -17,7 +76,7 @@ export const getPBSession = (cookieHeader?: string) => {
 /**
  * Client-side helper to check if the current user session exists and is valid.
  */
-export function isAuthenticated(cookieHeader?:string): boolean {
+export function isAuthenticated(cookieHeader?: string): boolean {
   const client = getPBSession(cookieHeader)
   return client.authStore.isValid;
 }
@@ -41,8 +100,8 @@ export function handleLogout() {
   document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
 }
 
-export function buildImageUrl(assetCollId: string, assetId:string, filename: string) {
-  return `${import.meta.env.VITE_CMS_URI}/api/files/${assetCollId}/${assetId}/${filename}`  
+export function buildImageUrl(assetCollId: string, assetId: string, filename: string) {
+  return `${import.meta.env.VITE_CMS_URI}/api/files/${assetCollId}/${assetId}/${filename}`
 }
 
 /**
@@ -59,26 +118,26 @@ export async function uploadAsset(
     formData.append("file", file);
     formData.append("type", meta?.type ?? "image");
     if (meta?.name) formData.append("name", meta.name);
-    if (meta?.alt)  formData.append("alt", meta.alt);
+    if (meta?.alt) formData.append("alt", meta.alt);
 
     const record = await pb.collection("assets").create(formData);
 
     return createResult<Asset, string>(
       {
-        id:             record.id,
-        collectionId:   record.collectionId,
+        id: record.id,
+        collectionId: record.collectionId,
         collectionName: record.collectionName,
-        file:           record.file,
-        type:           record.type,
-        name:           record.name,
-        alt:            record.alt,
+        file: record.file,
+        type: record.type,
+        name: record.name,
+        alt: record.alt,
       },
       null
     );
   } catch (error: any) {
     // 🚨 THIS extracts the nested JSON that says exactly what field was rejected
     console.error("EXACT VALIDATION ERROR:", JSON.stringify(error.response, null, 2));
-    
+
     return createResult<Asset, string>(null, error.message ?? "Upload failed.");
   }
 }
@@ -97,7 +156,7 @@ export async function fetchPageData(slug: string, language: "en" | "af" = "en"):
       { expand: 'components_via_pages' }
     );
 
-    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current:Component)=> {
+    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current: Component) => {
       prev[current.components] = current
       return prev
     }, {})
@@ -124,7 +183,7 @@ export async function fetchPageData(slug: string, language: "en" | "af" = "en"):
 export async function handleGoogleLogin() {
   try {
     const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
-    
+
     // EXPORT TO COOKIE: Sync auth data to a cookie so the SSR side can read it on subsequent page requests.
     // Secure flag should be appended in production environments (https)
     document.cookie = `pb_auth=${encodeURIComponent(pb.authStore.exportToCookie())}; path=/; SameSite=Strict`;
@@ -154,13 +213,13 @@ export type MetaData = {
   updated: string;
 }
 export interface Asset {
-    alt: string,
-    collectionId: string,
-    collectionName: string,
-    file: string,
-    id: string
-    name:string,
-    type: string,
+  alt: string,
+  collectionId: string,
+  collectionName: string,
+  file: string,
+  id: string
+  name: string,
+  type: string,
 }
 
 export interface Component<T = unknown> {
@@ -169,7 +228,7 @@ export interface Component<T = unknown> {
   collectionName: string;
   components: string;
   content: Record<string, Content<T>>;
-  media: Record<string,Asset>;
+  media: Record<string, Asset>;
   pages: string;
   created?: string;
   updated?: string;
@@ -178,14 +237,14 @@ export interface Component<T = unknown> {
   }
 }
 
-export interface Content<T=unknown> {
+export interface Content<T = unknown> {
   collectionId: string;
   collectionName: string;
   component: string,
   content: T
   created: string,
   updated: string,
-  lang: "en"|"af",
+  lang: "en" | "af",
   media: Record<string, Asset>
   pages?: string
   id?: string
@@ -206,7 +265,7 @@ export interface Page<T = unknown> {
   };
 }
 
-export interface PageData<T = unknown>  {
+export interface PageData<T = unknown> {
   id: string;
   collectionId: string;
   collectionName: string;
@@ -219,17 +278,16 @@ export interface PageData<T = unknown>  {
   components: Record<string, Component<T>>
 }
 
-
-export class Result<T,E> {
+export class Result<T, E> {
   public value: T | null;
   public error: E | null;
   public success: boolean = false;
-  constructor(value: T|null, error: E|null) {
-    this.value=value;
+  constructor(value: T | null, error: E | null) {
+    this.value = value;
     this.error = error;
     this.success = this.error === null;
   }
-  
+
   isSuccess() {
     // @ts-ignore
     return this.error === null;
@@ -253,7 +311,7 @@ export function createPB_SSR(cookieString?: string): PocketBase {
   const client = new PocketBase(process.env.CMS_URI);
   // 💡 KILL AUTO-CANCELLATION FOR SSR / SERVER FUNCTION INSTANCES
   client.autoCancellation(false);
-  
+
   if (cookieString) {
     // Parse our specific pb_auth cookie key out of the headers
     const match = cookieString.match(/pb_auth=([^;]+)/);
@@ -263,7 +321,7 @@ export function createPB_SSR(cookieString?: string): PocketBase {
       client.authStore.loadFromCookie(rawCookie);
     }
   }
-  
+
   return client;
 }
 
@@ -301,8 +359,8 @@ export async function fetchPageDataSSR(
       { expand: 'components_via_pages.media, components_via_pages' }
     );
 
-    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current:Component)=> {
-      const media: Record<string, Asset> = current?.expand?.media && current.expand.media.length > 0 ? 
+    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current: Component) => {
+      const media: Record<string, Asset> = current?.expand?.media && current.expand.media.length > 0 ?
         current.expand.media.reduce((prev, c) => {
           prev[c.name] = c;
           return prev;

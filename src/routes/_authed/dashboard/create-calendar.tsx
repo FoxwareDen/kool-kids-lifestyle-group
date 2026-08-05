@@ -1,10 +1,9 @@
 import { createFileRoute, useLocation, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { SlotPreset } from "booking-api-extended";
 import type { FeatureCard } from "@/lib/experiences";
 import { fetchExperienceById, resolveTranslatable, fetchAllExperiencesCard } from "@/lib/experiences";
-import type { Calendar, UnitType } from "@/lib/booking";
-import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule } from "@/lib/booking";
+import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule, type UnitType, type Calendar } from "@/lib/booking";
 import { createServerFn } from '@tanstack/react-start';
 import { formatDateForInput } from '#/lib/utils';
 import { Check } from 'lucide-react';
@@ -90,12 +89,6 @@ export const Route = createFileRoute('/_authed/dashboard/create-calendar')({
 // ---- Step type ----
 type Step = "experience" | "calendar"
 
-// ---- Default presets (swap for a fetch if these live server-side) ----
-const DEFAULT_PRESETS: SlotPreset[] = [
-  { id: "40min", label: "40-minute session", durationMinutes: 40 },
-  { id: "half-day", label: "Half day", durationMinutes: 240 },
-  { id: "day", label: "Full day", durationMinutes: 480 },
-];
 
 const DAYS = [
   { value: 0, label: "Sun" },
@@ -160,6 +153,8 @@ function RouteComponent() {
     days_of_week: [1, 2, 3, 4, 5],
     buffer_minutes: 15,
     units: [], // array of unit type ids
+    frequency: "weekly",
+    booking_type: "slot"
   });
   const [saving, setSaving] = useState(false);
   const [isLoaderReady, setIsLoaderReady] = useState(false);
@@ -167,7 +162,7 @@ function RouteComponent() {
 
   // all-day slots: for bookings like a full event, inn stay, or campground
   // slot where a specific start/end time doesn't apply
-  const [isAllDay, setIsAllDay] = useState(false);
+  const isAllDay = useMemo(()=> calendarForm.booking_type == "day", [calendarForm.booking_type]);
 
   // buffer time entered by the user, with a unit selector so an inn can say
   // "1 day cleanup" instead of typing minutes. Converted to minutes on save.
@@ -445,30 +440,31 @@ function RouteComponent() {
                   <input
                     type="checkbox"
                     checked={isAllDay}
-                    onChange={(e) => setIsAllDay(e.target.checked)}
+                    onChange={(e) => setCalendarForm((prev) => ({
+                      ...prev,
+                      booking_type: e.target.checked ? "day" : "slot",
+                    }))}
                     className="size-4 rounded-sm border-[var(--line)] accent-[var(--brand-orange)]"
                   />
                   <span className="text-sm font-semibold text-[var(--sea-ink)]">
-                    All-day slot (event, inn stay, campsite — no specific hours)
+                    All-day slot (for bookings that will be days long, like a hotel stay or campground)
                   </span>
                 </label>
 
-                {!isAllDay && (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <TextField
-                      label="Start time"
-                      type="time"
-                      value={calendarForm.start_time}
-                      onChange={(e) => updateField("start_time", e.target.value)}
-                    />
-                    <TextField
-                      label="End time"
-                      type="time"
-                      value={calendarForm.end_time}
-                      onChange={(e) => updateField("end_time", e.target.value)}
-                    />
-                  </div>
-                )}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextField
+                    label="Start time"
+                    type="time"
+                    value={calendarForm.start_time}
+                    onChange={(e) => updateField("start_time", e.target.value)}
+                  />
+                  <TextField
+                    label="End time"
+                    type="time"
+                    value={calendarForm.end_time}
+                    onChange={(e) => updateField("end_time", e.target.value)}
+                  />
+                </div>
               </div>
 
               <div>
@@ -494,35 +490,39 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-[var(--sea-ink)]">
-                  Buffer between bookings
-                </p>
-                <p className="mb-2 text-xs text-[var(--sea-ink-soft)]">
-                  Time blocked off before the next booking can start — e.g. cleanup for a room, or a gap between events.
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    value={bufferAmount}
-                    onChange={(e) => updateBuffer(Number(e.target.value), bufferUnit)}
-                    className={`${controlClass} w-28`}
-                  />
-                  <select
-                    value={bufferUnit}
-                    onChange={(e) => updateBuffer(bufferAmount, e.target.value as typeof bufferUnit)}
-                    className={`${controlClass} w-32`}
-                  >
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                  </select>
-                </div>
-                <p className="mt-1 text-xs text-[var(--sea-ink-soft)]">
-                  = {calendarForm.buffer_minutes ?? 0} minutes total
-                </p>
-              </div>
+              {
+                !isAllDay && (
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--sea-ink)]">
+                      Buffer between bookings
+                    </p>
+                    <p className="mb-2 text-xs text-[var(--sea-ink-soft)]">
+                      Time blocked off before the next booking can start — e.g. cleanup for a room, or a gap between events.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        value={bufferAmount}
+                        onChange={(e) => updateBuffer(Number(e.target.value), bufferUnit)}
+                        className={`${controlClass} w-28`}
+                      />
+                      <select
+                        value={bufferUnit}
+                        onChange={(e) => updateBuffer(bufferAmount, e.target.value as typeof bufferUnit)}
+                        className={`${controlClass} w-32`}
+                      >
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                      </select>
+                    </div>
+                    <p className="mt-1 text-xs text-[var(--sea-ink-soft)]">
+                      = {calendarForm.buffer_minutes ?? 0} minutes total
+                    </p>
+                  </div>
+                )
+              }
 
               {/* Unit types - a relation, selected from the UnitType collection */}
               <div>
