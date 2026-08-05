@@ -7,6 +7,8 @@ import { buildImageUrl, createPB_SSR, createResult, pb, Result, uploadAsset, typ
 
 export type Language = "en" | "af";
 
+export type ExperienceStatus = "Published" | "Draft";
+
 export type Translatable<T = string> = {
   default: T;
   translations?: Partial<Record<Language, T>>;
@@ -87,6 +89,7 @@ export type BookingPage = {
   defaultLanguage: Language;
   enabledLanguages: Language[];
   blocks: PageBlock[];
+  status: ExperienceStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -114,7 +117,8 @@ export type HydratedBookingPage = {
   category: string;
   defaultLanguage: Language;
   enabledLanguages: Language[];
-  blocks: HydratedPageBlock[]; // Updated to use the true hydrated blocks!
+  blocks: HydratedPageBlock[];
+  status: ExperienceStatus;
   createdAt: Date;
   updatedAt: Date;  
 };
@@ -197,7 +201,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       enabledLanguages: input.enabledLanguages,
       coverImage: fCover.value!.id,
       blocks: flatPack,
-      status: "Published",
+      status: input.status,
     });
 
     return createResult<HydratedBookingPage, string>({
@@ -210,6 +214,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       defaultLanguage: input.defaultLanguage,
       enabledLanguages: input.enabledLanguages,
       blocks: hydrateBlocks(flatPack),
+      status: input.status,
       createdAt: new Date(result.created),
       updatedAt: new Date(result.updated),
     }, null);
