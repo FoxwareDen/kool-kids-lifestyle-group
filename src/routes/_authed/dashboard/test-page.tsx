@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import type { AvailableRange, Booking, Unit } from "#/lib/system";
-import RangeBookingSelect from "#/components/booking/calendar";
+import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
+import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingUnitSelect } from "#/components/booking/calendar";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
 });
 
 function RouteComponent() {
-  const [mode, setMode] = useState<"day" | "slot">("day");
+  const [mode, setMode] = useState<SlotType>("day");
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
 
   const handleBooking = (booking: Booking) => {
@@ -83,11 +83,26 @@ function RouteComponent() {
         </button>
       </div>
 
-      <RangeBookingSelect
-        range={mode === "day" ? dayRange : slotRange}
-        existingBookings={existingBookings}
-        onBookingCreate={handleBooking}
-      />
+      <Booker
+        type={mode}
+      >
+        <BookerStep name="unit_select">
+          <BookingUnitSelect />
+        </BookerStep>
+
+        <BookerStep name="calendar">
+          <BookingCalendar />
+        </BookerStep>
+
+        <BookerStep name="time_picker">
+          <div className="py-12 px-6 text-center text-sm text-muted-foreground">
+            Time slots grid goes here
+          </div>
+        </BookerStep>
+
+
+        <BookingPagingButtonGroup />
+      </Booker>
 
       {lastBooking && (
         <div className="mt-4 p-4 border rounded bg-gray-50">

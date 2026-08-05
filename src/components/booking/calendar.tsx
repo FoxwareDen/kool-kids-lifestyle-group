@@ -1,218 +1,264 @@
-import { useState, useMemo } from "react";
-import { format, parseISO, differenceInDays, differenceInMinutes, addMinutes, isWithinInterval } from "date-fns";
+import React, { useState, useEffect } from "react";
+import { create } from "zustand";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { AvailableRange, Booking } from "#/lib/system";
+import { differenceInCalendarDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
+import { ClientOnly } from "../client-only";
+import type { AvailableRange, Unit } from "#/lib/system";
+import { Check, Clock, Users } from "lucide-react";
 
-interface RangeBookingSelectProps {
-  range: AvailableRange;
-  existingBookings?: Booking[];
-  onBookingCreate: (booking: Booking) => void;
+export type SlotType = "day" | "slot";
+export type StepName = "calendar" | "unit_select" | "time_picker";
+
+export const steps: Record<SlotType, { setCount: number; steps: StepName[] }> = {
+  day: {
+    setCount: 2,
+    steps: ["unit_select", "calendar"],
+  },
+  slot: {
+    setCount: 3,
+    steps: ["unit_select", "calendar", "time_picker"],
+  },
+};
+
+interface BookerState {
+  schedule: AvailableRange[];
+  filteredSchedules: AvailableRange[];
+  selectedUnit?: Unit;
+  type: SlotType;
+  sepCounter: number;
+  date: Date | undefined;
+  duration: number;
+
+  setSlot: (type: SlotType) => void;
+  setDate: (date: Date | undefined) => void;
+  setDuration: (days: number) => void;
+
+  step: (direction: "forward" | "back") => void;
+
+  setUnit: (unit: Unit) => void;
+  populateSchedule: (schedule: AvailableRange[]) => void;
 }
 
-export default function RangeBookingSelect({
-  range,
-  existingBookings = [],
-  onBookingCreate,
-}: RangeBookingSelectProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>(undefined);
-  const [selectedUnitId, setSelectedUnitId] = useState<string>("");
-  const [selectedStartTime, setSelectedStartTime] = useState<string>("");
+export const useBookerStore = create<BookerState>((set) => ({
+  schedule: [],
+  filteredSchedules: [],
+  type: "slot",
+  sepCounter: 0,
+  date: new Date(),
+  duration: 1,
 
-  // Parse range
-  const rangeStart = parseISO(range.start_date);
-  const rangeEnd = parseISO(range.end_date || range.start_date);
-  const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
-  const units = range.units;
+  setDate: (date) => set({ date }),
+  setSlot: (type) => set({ type, sepCounter: 0 }),
+  setDuration: (duration) => set({ duration }),
 
-  // ---------- Helper: is date within range ----------
-  const isDateInRange = (date: Date) =>
-    date >= rangeStart && date <= rangeEnd;
+  step: (direction) =>
+    set((state) => {
+      const maxSteps = steps[state.type].setCount;
+      const delta = direction === "forward" ? 1 : -1;
+      const nextCounter = state.sepCounter + delta;
 
-  // ---------- For day bookings ----------
-  // (unchanged – uses date range picker)
+      if (nextCounter < 0 || nextCounter >= maxSteps) return state;
+      return { sepCounter: nextCounter };
+    }),
 
-  // ---------- For slot bookings ----------
-  // Get the selected unit object
-  const selectedUnit = useMemo(
-    () => units.find((u) => u.id === selectedUnitId),
-    [units, selectedUnitId]
+  setUnit: (unit) => set({ selectedUnit: unit }),
+  populateSchedule: (schedule) => set((prev)=>({...prev, schedule}))
+
+}));
+
+export function Booker({
+  schedule,
+  type = "slot",
+  className,
+  children,
+}: {
+  schedule: AvailableRange[]
+  type?: SlotType;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const {setSlot, } = useBookerStore();
+
+  useEffect(() => {
+    setSlot(type);
+  }, [type, setSlot]);
+
+  return (
+    <div
+      className={cn(
+        "w-fit rounded-xl border bg-card p-4 text-card-foreground shadow-sm flex flex-col gap-4",
+        className
+      )}
+    >
+      {children}
+    </div>
   );
+}
 
-  // Compute available start times for the selected unit on the selected date
-  const availableStartTimes = useMemo(() => {
-    if (range.type !== "slot" || !selectedDate || !selectedUnit) return [];
+export function BookerStep({
+  name,
+  children,
+  className,
+}: {
+  name: StepName;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const sepCounter = useBookerStore((s) => s.sepCounter);
+  const type = useBookerStore((s) => s.type);
 
-    const unitDuration = selectedUnit.duration;
-    if (unitDuration <= 0) return []; // invalid
+  const currentStepName = steps[type].steps[sepCounter];
 
-    const dayStart = parseISO(`${dateStr}T${range.start_time}`);
-    const dayEnd = parseISO(`${dateStr}T${range.end_time}`);
+  if (currentStepName !== name) return null;
 
-    // Generate all possible start times (every 15 minutes) that allow a full slot
-    const startTimes: string[] = [];
-    let current = dayStart;
-    while (current <= dayEnd) {
-      const slotEnd = addMinutes(current, unitDuration);
-      if (slotEnd <= dayEnd) {
-        // Check if this slot overlaps any existing booking for this unit
-        const conflicts = existingBookings.filter(
-          (b) =>
-            b.unit_id === selectedUnit.id &&
-            b.date === dateStr &&
-            b.status !== "cancelled"
+  return (
+    <div
+      className={cn(
+        "w-full flex justify-center items-center min-h-96 min-w-96",
+        className
+      )}
+    >
+      {name === "calendar" ? <ClientOnly>{children}</ClientOnly> : children}
+    </div>
+  );
+}
+
+export function BookingUnitSelect() {
+  const schedule = useBookerStore((s) => s.schedule);
+  const type = useBookerStore((s) => s.type);
+  const selectedUnit = useBookerStore((s) => s.selectedUnit);
+  const setUnit = useBookerStore((s) => s.setUnit);
+
+  const units = schedule.flatMap((sc) => sc.units);
+
+  return (
+    <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {units.map((unit) => {
+        const isSelected = selectedUnit?.id === unit.id;
+
+        return (
+          <button
+            key={unit.id}
+            type="button"
+            onClick={() => setUnit(unit)}
+            className={cn(
+              "relative flex flex-col items-start justify-between rounded-lg border p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isSelected
+                ? "border-primary bg-primary/5 text-foreground shadow-xs"
+                : "border-border bg-card text-card-foreground"
+            )}
+          >
+            <div className="flex w-full items-center justify-between gap-2">
+              <span className="font-medium text-sm">{unit.label}</span>
+              {isSelected && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <Check className="h-3 w-3" />
+                </span>
+              )}
+            </div>
+
+            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Users className="h-3.5 w-3.5" />
+                <span>Cap: {unit.capacity}</span>
+              </div>
+
+              {unit.duration > 0 && type !== "day" && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{unit.duration} mins</span>
+                </div>
+              )}
+            </div>
+          </button>
         );
-        const isBlocked = conflicts.some((b) => {
-          const bStart = parseISO(`${dateStr}T${b.start_time}`);
-          const bEnd = parseISO(`${dateStr}T${b.end_time}`);
-          return current < bEnd && slotEnd > bStart;
-        });
-        if (!isBlocked) {
-          startTimes.push(format(current, "HH:mm"));
-        }
-      }
-      current = addMinutes(current, 15); // 15‑minute granularity
-    }
-    return startTimes;
-  }, [range.type, selectedDate, selectedUnit, dateStr, existingBookings, range.start_time, range.end_time]);
+      })}
+    </div>
+  );
+}
 
-  // ---------- Validation ----------
-  const canBook =
-    selectedDate &&
-    selectedUnitId &&
-    (range.type === "day"
-      ? true // end date is optional; if not set, it's a single day
-      : selectedStartTime && selectedUnit && selectedUnit.duration > 0);
+export function BookingCalendar({ className }: { className?: string }) {
+  const type = useBookerStore((s) => s.type);
+  const date = useBookerStore((s) => s.date);
+  const setDate = useBookerStore((s) => s.setDate);
+  const setDuration = useBookerStore((s) => s.setDuration);
 
-  const handleBook = () => {
-    if (!canBook) return;
-    const unit = units.find((u) => u.id === selectedUnitId);
-    if (!unit) return;
+  const [currentRange, setCurrentRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
 
-    let st: string, et: string, dur: number;
-    if (range.type === "day") {
-      st = range.start_time;
-      et = range.end_time;
-      const endDate = selectedEndDate || selectedDate!;
-      dur = differenceInDays(endDate, selectedDate!) + 1;
-    } else {
-      st = selectedStartTime;
-      dur = unit.duration;
-      const start = parseISO(`${dateStr}T${st}`);
-      const end = addMinutes(start, dur);
-      et = format(end, "HH:mm");
-    }
+  useEffect(() => {
+    setCurrentRange({ from: undefined, to: undefined });
+  }, [type]);
 
-    const booking: Booking = {
-      id: crypto.randomUUID?.() ?? Math.random().toString(36),
-      date: dateStr,
-      start_time: st,
-      end_time: et,
-      duration: dur,
-      unit_label: unit.label,
-      unit_id: unit.id,
-      status: "pending",
-    };
+  const handleRangeChange = (range: DateRange | undefined) => {
+    setCurrentRange(range);
+    if (!range?.from || !range.to) return;
 
-    onBookingCreate(booking);
-    // Reset
-    setSelectedDate(undefined);
-    setSelectedEndDate(undefined);
-    setSelectedUnitId("");
-    setSelectedStartTime("");
+    const amount = differenceInCalendarDays(range.to, range.from) + 1;
+    if (amount <= 0) return;
+
+    setDate(range.from);
+    setDuration(amount);
   };
 
-  // ---------- Render ----------
+  if (type === "slot") {
+    return (
+      <Calendar
+        mode="single"
+        selected={date}
+        onSelect={setDate}
+        className={cn("rounded-md border p-3 w-full", className)}
+        required
+      />
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      {/* Date picker */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-[280px] justify-start">
-            {range.type === "day"
-              ? selectedDate
-                ? selectedEndDate
-                  ? `${format(selectedDate, "PPP")} – ${format(selectedEndDate, "PPP")}`
-                  : format(selectedDate, "PPP")
-                : "Pick a date range"
-              : selectedDate
-              ? format(selectedDate, "PPP")
-              : "Pick a date"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode={range.type === "day" ? "range" : "single"}
-            selected={
-              range.type === "day"
-                ? { from: selectedDate, to: selectedEndDate }
-                : selectedDate
-            }
-            onSelect={(rangeOrDate) => {
-              if (range.type === "day") {
-                const r = rangeOrDate as { from?: Date; to?: Date };
-                setSelectedDate(r?.from);
-                setSelectedEndDate(r?.to);
-              } else {
-                setSelectedDate(rangeOrDate as Date);
-              }
-              setSelectedUnitId("");
-              setSelectedStartTime("");
-            }}
-            disabled={(date) => !isDateInRange(date)}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
+    <Calendar
+      mode="range"
+      className={cn("rounded-md border p-3 w-full", className)}
+      selected={currentRange}
+      onSelect={handleRangeChange}
+    />
+  );
+}
 
-      {/* Unit selection */}
-      {units.length > 0 && (
-        <Select value={selectedUnitId} onValueChange={(id) => {
-          setSelectedUnitId(id);
-          setSelectedStartTime("");
-        }}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select unit" />
-          </SelectTrigger>
-          <SelectContent>
-            {units.map((u) => (
-              <SelectItem key={u.id} value={u.id}>
-                {u.label} ({u.duration > 0 ? `${u.duration} min` : "flexible"})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+export function BookingPagingButtonGroup({
+  className,
+  buttonClassName,
+}: {
+  className?: string;
+  buttonClassName?: string;
+}) {
+  const sepCounter = useBookerStore((s) => s.sepCounter);
+  const type = useBookerStore((s) => s.type);
+  const step = useBookerStore((s) => s.step);
 
-      {/* Start time selection (slot only) */}
-      {range.type === "slot" && selectedDate && selectedUnit && availableStartTimes.length > 0 && (
-        <Select value={selectedStartTime} onValueChange={setSelectedStartTime}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Start time" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableStartTimes.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+  const isLastStep = sepCounter >= steps[type].setCount - 1;
 
-      {range.type === "slot" && selectedDate && selectedUnit && availableStartTimes.length === 0 && (
-        <p className="text-sm text-muted-foreground">No available slots for this unit on this date.</p>
-      )}
-
-      <Button onClick={handleBook} disabled={!canBook}>
-        Book
+  return (
+    <div className={cn("flex items-center justify-between gap-3 pt-3 border-t w-full", className)}>
+      <Button
+        disabled={sepCounter === 0}
+        onClick={() => step("back")}
+        className={cn("px-4", buttonClassName)}
+        variant="outline"
+        size="sm"
+      >
+        Back
+      </Button>
+      <Button
+        disabled={isLastStep}
+        onClick={() => step("forward")}
+        className={cn("px-4", buttonClassName)}
+        size="sm"
+      >
+        Next
       </Button>
     </div>
   );

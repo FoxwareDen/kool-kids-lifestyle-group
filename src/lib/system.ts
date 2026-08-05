@@ -43,6 +43,7 @@ export type SlotType = "slot" | "day";
  * Defines the global operating rules, time bounds, active days, and associated units for a business schedule.
  */
 export interface Calendar {
+  id: string;
   /** ISO-8601 string marking the start of the schedule horizon (e.g., `"2026-01-01"`). */
   start_date: string;
   /** ISO-8601 string marking the end of the schedule horizon (e.g., `"2026-12-31"`). */
@@ -101,6 +102,7 @@ export interface Booking {
  *   - `start_time` & `end_time`: Define the start and end of the free, unreserved time window carved out on that day (e.g., `"09:00"` to `"11:30"`).
  */
 export interface AvailableRange {
+  calendar_ref: string;
   /** 
    * Starting date in `"YYYY-MM-DD"` format.
    * - **`"day"`**: First date of a contiguous multi-day stay block.
@@ -250,6 +252,7 @@ export function generateAvailableSlots(
           if (!activeRange) {
             // INITIALIZE A NEW RANGE TRACKER
             activeRange = {
+              calendar_ref: schedule.id,
               start_date: formattedDate,
               end_date: formattedDate,
               start_time: schedule.start_time,
@@ -318,6 +321,7 @@ export function generateAvailableSlots(
           // Save free window prior to this booking if sufficient gap exists
           if (availEndBeforeBooking > windowStart) {
             availableSlots.push({
+              calendar_ref: schedule.id,
               start_date: formattedDate,
               end_date: formattedDate,
               start_time: minutesToTime(windowStart),
@@ -334,6 +338,7 @@ export function generateAvailableSlots(
         // Capture remaining unreserved operating window up to end-of-day
         if (windowStart < opEnd) {
           availableSlots.push({
+            calendar_ref: schedule.id,
             start_date: formattedDate,
             end_date: formattedDate,
             start_time: minutesToTime(windowStart),
