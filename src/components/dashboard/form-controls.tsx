@@ -14,7 +14,7 @@ import { cn } from '#/lib/utils'
  * {@link SelectField} wrappers, but this is exported for one-off inputs.
  */
 export const controlClass =
-  'w-full rounded-sm border border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2 text-sm text-[var(--sea-ink)] placeholder:text-[var(--sea-ink-soft)]/60 focus:border-[var(--brand-orange)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-orange)]/30'
+  'w-full rounded-sm border cursor-pointer border-[var(--line)] bg-[var(--surface-strong)] px-3 py-2 text-sm text-[var(--sea-ink)] placeholder:text-[var(--sea-ink-soft)]/60 focus:border-[var(--brand-orange)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-orange)]/30'
 
 /**
  * A titled panel used to group related form controls or content.
