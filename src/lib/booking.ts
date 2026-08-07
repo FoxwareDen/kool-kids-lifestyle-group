@@ -1,6 +1,5 @@
 import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
-import { type UnitType as U, type Calendar as C, type Booking as B, type SlotGenerationConfig, type AvailableSlot, generateAvailableSlots } from "booking-api-extended";
-import type { SlotType } from "./system";
+import type { Unit as U, Calendar as C, Booking as B } from "@/lib/system";
 
 export type UnitType = U & {
   value: number;
@@ -9,12 +8,12 @@ export type UnitType = U & {
 export type UnitTypeResponse = UnitType & MetaData;
 
 export type Calendar = Omit<C, "user_id" | "units"> & {
-  title: string;
   units: string[];
   experiences: string[];
+  // 
+  title: string;
   min_advance_days?: number;
   max_advance_days?: number;
-  booking_type: SlotType;
 };
 
 export type CalendarResponse = Calendar & MetaData;
@@ -120,6 +119,7 @@ export async function createCalendarSchedule(data: Calendar, cookieHeader?: stri
       units: data.units,
       experiences: data.experiences,
       title: data.title,
+      booking_type: data.booking_type,
     });
 
     return createResult(result, null);
@@ -170,6 +170,7 @@ export async function fetchCalendarSchedules(cookieHeader?: string): Promise<Res
 
       return {
         buffer_minutes: record.buffer_minutes,
+        booking_type: record.booking_type, // <-- FIX: was missing, required by TransformedCalendarSchedule
         collectionId: record.collectionId,
         collectionName: record.collectionName,
         created: record.created,
@@ -216,8 +217,10 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
           const image = obj.expand["coverImage"];
           return {
             id: obj.id,
+            booking_type: record.booking_type,
             category: obj.category,
             defaultLanguage: obj.defaultLanguage,
+            
             enabledLanguages: obj.enabledLanguages,
             title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
             description: obj.description
@@ -238,6 +241,7 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
 
       return {
         buffer_minutes: record.buffer_minutes,
+        booking_type: record.booking_type, // <-- FIX: was missing, required by TransformedCalendarSchedule
         collectionId: record.collectionId,
         collectionName: record.collectionName,
         created: record.created,
@@ -275,6 +279,7 @@ export async function updateCalendarSchedule(id: string, data: Calendar, cookieH
       units: data.units,
       experiences: data.experiences,
       title: data.title,
+      booking_type: data.booking_type,
     });
 
     return createResult(result, null);
@@ -406,35 +411,36 @@ export function toCalendar(schedule: TransformedCalendarSchedule): C {
     days_of_week: schedule.days_of_week,
     buffer_minutes: schedule.buffer_minutes,
     frequency: "weekly",
+    booking_type: schedule.booking_type,
     units,
   } as C;
 }
 
-export function toBooking(response: BookingResponse): B {
-  return {
-    date: response.date,
-    duration: response.duration,
-    end_time: response.end_time,
-    start_time: response.start_time,
-    slot_preset_id: response.slot_preset_id,
-    status: response.status,
-    unit_type: response.unit_type,
-    updated_at: response.updated_at
-  } as B
-}
+// export function toBooking(response: BookingResponse): B {
+//   return {
+//     date: response.date,
+//     duration: response.duration,
+//     end_time: response.end_time,
+//     start_time: response.start_time,
+//     slot_preset_id: response.slot_preset_id,
+//     status: response.status,
+//     unit_type: response.unit_type,
+//     updated_at: response.updated_at,
+//   } as B
+// }
 
-export function generateSlots(
-  schedules: TransformedCalendarSchedule[],
-  bookings: BookingResponse[],
-  startDate: string,
-  endDate: string,
-  config: SlotGenerationConfig
-): AvailableSlot[] {
-  const calendars = schedules.map(toCalendar);
-  const mappedBookings = bookings.map(toBooking);
+// export function generateSlots(
+//   schedules: TransformedCalendarSchedule[],
+//   bookings: BookingResponse[],
+//   startDate: string,
+//   endDate: string,
+//   config: SlotGenerationConfig
+// ): AvailableSlot[] {
+//   const calendars = schedules.map(toCalendar);
+//   const mappedBookings = bookings.map(toBooking);
 
-  return generateAvailableSlots(calendars, mappedBookings, startDate, endDate, config);
-}
+//   return generateAvailableSlots(calendars, mappedBookings, startDate, endDate, config);
+// }
 
 
 

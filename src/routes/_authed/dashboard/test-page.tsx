@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
-import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingUnitSelect } from "#/components/booking/calendar";
+import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
+import type { Language } from "#/lib/experiences";
+import { fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules } from "#/lib/booking";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -13,9 +15,8 @@ const units2: Unit[] = [
   { id: "u2id", label: "2 Bedroom", capacity: 2, duration:0 }
 ];
 
-// ----- DAY RANGE -----
 const dayRange: AvailableRange = {
-  calendar_ref: "",
+  calendar_ref: "cal_1",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
   start_time: "14:00",
@@ -25,7 +26,7 @@ const dayRange: AvailableRange = {
 };
 
 const dayRange2: AvailableRange = {
-  calendar_ref: "",
+  calendar_ref: "cal_1",
   start_date: "2026-08-13",
   end_date: "2026-08-15",
   start_time: "14:00",
@@ -35,7 +36,7 @@ const dayRange2: AvailableRange = {
 };
 
 const dayRange3: AvailableRange = {
-  calendar_ref: "",
+  calendar_ref: "cal_1",
   start_date: "2026-08-17",
   end_date: "2026-08-20",
   start_time: "14:00",
@@ -44,55 +45,61 @@ const dayRange3: AvailableRange = {
   units: units2,
 };
 
-const coll = [dayRange, dayRange2, dayRange3]
-
-// ----- SLOT RANGE -----
-const slotRange: AvailableRange = {
-  calendar_ref: "",
+// Range 1: Morning
+const slotRange1: AvailableRange = {
+  calendar_ref: "cal_2",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
-  start_time: "09:00",
-  end_time: "17:00",
+  start_time: "05:00",
+  end_time: "09:00", // Available 05:00 - 09:00
   type: "slot",
   units,
 };
 
-// ----- EXISTING BOOKINGS (block some slots) -----
-const existingBookings: Booking[] = [
-  {
-    id: "b1",
-    date: "2026-08-02",
-    start_time: "10:00",
-    end_time: "11:30",
-    duration: 90,
-    unit_label: "Room A",
-    unit_id: "u1",
-    status: "pending",
-  },
-  {
-    id: "b2",
-    date: "2026-08-02",
-    start_time: "14:00",
-    end_time: "15:30",
-    duration: 90,
-    unit_label: "Room B",
-    unit_id: "u2",
-    status: "pending",
-  },
-];
+// Range 2: Midday
+const slotRange2: AvailableRange = {
+  calendar_ref: "cal_2",
+  start_date: "2026-08-01",
+  end_date: "2026-08-10",
+  start_time: "10:30", // BOOKED GAP 1: 09:00 - 10:30
+  end_time: "13:00",   // Available 10:30 - 13:00
+  type: "slot",
+  units,
+};
+
+// Range 3: Afternoon
+const slotRange3: AvailableRange = {
+  calendar_ref: "cal_2",
+  start_date: "2026-08-01",
+  end_date: "2026-08-10",
+  start_time: "14:30", // BOOKED GAP 2: 13:00 - 14:30
+  end_time: "17:00",   // Available 14:30 - 17:00
+  type: "slot",
+  units,
+};
+
+const coll = [dayRange, dayRange2, dayRange3]
+
+const coll2 = [slotRange1, slotRange2, slotRange3]
+
 
 export const Route = createFileRoute("/_authed/dashboard/test-page")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as Language) ?? undefined,
+  }),
+  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loader: async ({ deps: { lang } }) => {
+    const slots = await fetchCalendarScheduleByExperiencesIds("9i530p06zj381zs")
+    return {
+      lang
+    }
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const [mode, setMode] = useState<SlotType>("day");
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
-
-  const handleBooking = (booking: Booking) => {
-    console.log("Booking created:", booking);
-    setLastBooking(booking);
-  };
 
   return (
     <div className="p-6 space-y-6">
@@ -113,7 +120,7 @@ function RouteComponent() {
 
       <Booker
         type={mode}
-        schedule={mode == "day" ? coll: [slotRange]}
+        schedule={mode == "day" ? coll: coll2}
       >
         <BookerStep name="unit_select">
           <BookingUnitSelect />
@@ -122,11 +129,13 @@ function RouteComponent() {
         <BookerStep name="calendar">
           <BookingCalendar />
         </BookerStep>
+  
+        <BookerStep name="view_booking">
+          <BookingView />
+        </BookerStep>
 
         <BookerStep name="time_picker">
-          <div className="py-12 px-6 text-center text-sm text-muted-foreground">
-            Time slots grid goes here
-          </div>
+          <BookingTimeSelect />
         </BookerStep>
 
 

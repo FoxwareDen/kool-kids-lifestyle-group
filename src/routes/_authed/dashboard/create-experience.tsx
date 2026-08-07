@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useMemo, type ChangeEvent } from 'rea
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 import { Button, SectionCard, SelectField, controlClass } from '#/components/dashboard/form-controls'
 import { Trash2 } from 'lucide-react'
+import { setTranslated } from '#/lib/utils'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800

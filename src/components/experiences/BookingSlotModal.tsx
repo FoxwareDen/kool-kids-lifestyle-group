@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Check, Clock, Users, X } from 'lucide-react'
-import { generateSlots, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
 import { formatDayLabel } from '#/lib/slots'
-import type { AvailableSlot } from '#/lib/booking' // adjust import path as needed
+import type { BookingResponse, TransformedCalendarSchedule } from '#/lib/booking'
 
 interface BookingSlotModalProps {
   open: boolean
@@ -17,7 +16,7 @@ interface BookingSlotModalProps {
 /** Group slots by date for the day‑picker. */
 type DayGroup = {
   date: string
-  slots: AvailableSlot[]
+  slots: any[]
 }
 
 export function BookingSlotModal({
@@ -29,40 +28,25 @@ export function BookingSlotModal({
 }: BookingSlotModalProps) {
   // Generate flat slot list and group by date
   const days = useMemo<DayGroup[]>(() => {
-    if (!calendarSchedule || !existingBookings) return []
+    if (true) return []
 
-    const now = new Date()
-    const thisMonth = now.toISOString().split('T')[0]
-    now.setMonth(now.getMonth() + 1)
-    const nextMonth = now.toISOString().split('T')[0]
+    // const now = new Date()
+    // const thisMonth = now.toISOString().split('T')[0]
+    // now.setMonth(now.getMonth() + 1)
+    // const nextMonth = now.toISOString().split('T')[0]
 
-    const slots = generateSlots(
-      calendarSchedule,
-      existingBookings,
-      thisMonth,
-      nextMonth,
-      {
-        bufferMinutes: 15,
-        maxAdvanceMonths: 1,
-        minAdvanceDays: 1,
-        preset: {
-          durationMinutes: 600,
-          id: '2',
-          label: 'testing',
-        },
-      }
-    )
+    // const slots = []
 
-    // Group by date
-    const map = new Map<string, AvailableSlot[]>()
-    for (const slot of slots) {
-      if (!map.has(slot.date)) map.set(slot.date, [])
-      map.get(slot.date)!.push(slot)
-    }
-    // Sort dates chronologically
-    return Array.from(map.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([date, slots]) => ({ date, slots }))
+    // // Group by date
+    // const map = new Map<string, any[]>()
+    // for (const slot of slots) {
+    //   if (!map.has(slot.date)) map.set(slot.date, [])
+    //   map.get(slot.date)!.push(slot)
+    // }
+    // // Sort dates chronologically
+    // return Array.from(map.entries())
+    //   .sort((a, b) => a[0].localeCompare(b[0]))
+    //   .map(([date, slots]) => ({ date, slots }))
   }, [calendarSchedule, existingBookings])
 
   const [dateKey, setDateKey] = useState<string | null>(null)
