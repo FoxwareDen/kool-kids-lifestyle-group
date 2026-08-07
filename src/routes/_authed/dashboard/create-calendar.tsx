@@ -154,7 +154,10 @@ function RouteComponent() {
 
   // ----- unit type state -----
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>(units);
-  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0.0 });
+  // FIX 7: duration only applies to slot-mode units (e.g. a 60-minute massage slot).
+  // Day-mode units don't have a fixed duration, so this field is only rendered/sent
+  // when calendarForm.booking_type === "slot".
+  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0.0, duration: 30 });
   const [creatingUnit, setCreatingUnit] = useState(false);
   const [createUnitError, setCreateUnitError] = useState<string | null>(null);
 
@@ -334,7 +337,7 @@ function RouteComponent() {
       } as UnitType;
       setAvailableUnits((prev) => [...prev, created]);
       setCalendarForm((prev) => ({ ...prev, units: [...prev.units, created.id] }));
-      setNewUnit({ label: "", capacity: 1, value: 0 });
+      setNewUnit({ label: "", capacity: 1, value: 0, duration: 30 });
     }
     setCreatingUnit(false);
   }
@@ -477,34 +480,51 @@ function RouteComponent() {
               </div>
 
               <div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                        <div className="mb-3">
-                          <Select
-                            value={calendarForm.booking_type}
-                            onValueChange={(value: SlotType) => updateMode(value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select booking mode" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {/* FIX 2 (cont.): now driven from `modes` instead of two
-                                  hardcoded SelectItem entries */}
-                              {modes.map((m) => (
-                                <SelectItem key={m.value} value={m.value}>
-                                  {m.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {lang == "en"? "Tydgleufmodus (Uurliks / Spesifieke tydgleuwe) / Dagmodus (Volledige dag / Meerdaagse besprekings)": "Slot Mode (Hourly / Specific time slots) / Day Mode (Full day / Multi-day bookings)"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <div className="mb-3 flex items-center gap-2">
+                  <Select
+                    value={calendarForm.booking_type}
+                    onValueChange={(value: SlotType) => updateMode(value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select booking mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {modes.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="shrink-0 text-[var(--sea-ink-soft)]">
+                        <span className="flex size-5 items-center justify-center rounded-full border border-[var(--line)] text-xs">?</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        {lang == "en"
+                          ? "Dag: volledige dae / meerdaagse besprekings. Tydgleuf: uurlikse / spesifieke tydgleuwe."
+                          : "Day: full-day / multi-day bookings. Slot: hourly / specific time-slot bookings."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
+                <div className="mb-2 flex items-center gap-2">
+                  <p className="text-sm font-semibold text-[var(--sea-ink)]">Operating hours</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="shrink-0 text-[var(--sea-ink-soft)]">
+                        <span className="flex size-5 items-center justify-center rounded-full border border-[var(--line)] text-xs">?</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        {lang == "en"
+                          ? "Dagmodus: intyk-/uittyktyd. Tydgleufmodus: venster waarbinne tydgleuwe kan oopmaak."
+                          : "Day mode: check-in / check-out time. Slot mode: window within which bookable time slots can open."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <TextField
@@ -654,6 +674,20 @@ function RouteComponent() {
                           }}
                         />
                       </div>
+                      {/* FIX 7 (cont.): duration only makes sense in slot mode — hidden in day mode */}
+                      {calendarForm.booking_type === "slot" && (
+                        <div className="grow">
+                          <TextField
+                            label="Duration (minutes)"
+                            type="number"
+                            placeholder="e.g. 60"
+                            value={newUnit.duration}
+                            onChange={(e) =>
+                              setNewUnit((p) => ({ ...p, duration: Number(e.target.value) }))
+                            }
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   {createUnitError && (
