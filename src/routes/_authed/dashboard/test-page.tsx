@@ -2,6 +2,8 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
 import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
+import type { Language } from "#/lib/experiences";
+import { fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules } from "#/lib/booking";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -82,6 +84,16 @@ const coll2 = [slotRange1, slotRange2, slotRange3]
 
 
 export const Route = createFileRoute("/_authed/dashboard/test-page")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as Language) ?? undefined,
+  }),
+  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loader: async ({ deps: { lang } }) => {
+    const slots = await fetchCalendarScheduleByExperiencesIds("9i530p06zj381zs")
+    return {
+      lang
+    }
+  },
   component: RouteComponent,
 });
 

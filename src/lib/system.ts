@@ -58,7 +58,7 @@ export interface Calendar {
    * Array of permitted days of the week using standard JavaScript indexing:
    * `0` = Sunday, `1` = Monday, ..., `6` = Saturday.
    */
-  days_of_weeK: number[];
+  days_of_week: number[];
   /** Recurrence pattern for the schedule rules. Defaults to weekly when omitted. */
   frequency?: "weekly";
   /** Mandatory operational turnaround or cleanup time (in minutes) required before and after bookings. */
@@ -231,7 +231,7 @@ export function generateAvailableSlots(
         const formattedDate = format(date, 'yyyy-MM-dd');
 
         // Rule Check 1: Is this day of the week enabled in the calendar schedule?
-        const isWorkingDay = schedule.days_of_weeK.includes(dotw);
+        const isWorkingDay = schedule.days_of_week.includes(dotw);
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
         const bookedCount = bookings.filter((b) => {
@@ -291,7 +291,7 @@ export function generateAvailableSlots(
       const dotw = getDay(date);
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      const isworkingDay = schedule.days_of_weeK.includes(dotw);
+      const isworkingDay = schedule.days_of_week.includes(dotw);
       if (!isworkingDay) continue;
 
       // Filter non-cancelled reservations for this calendar date
