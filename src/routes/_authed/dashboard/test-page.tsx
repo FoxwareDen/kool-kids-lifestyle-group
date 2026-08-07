@@ -43,29 +43,42 @@ const dayRange3: AvailableRange = {
   units: units2,
 };
 
-const slotRange: AvailableRange = {
+// Range 1: Morning
+const slotRange1: AvailableRange = {
   calendar_ref: "cal_2",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
-  start_time: "09:00",
-  end_time: "10:00",
+  start_time: "05:00",
+  end_time: "09:00", // Available 05:00 - 09:00
   type: "slot",
   units,
 };
 
+// Range 2: Midday
 const slotRange2: AvailableRange = {
   calendar_ref: "cal_2",
   start_date: "2026-08-01",
   end_date: "2026-08-10",
-  start_time: "11:30",
-  end_time: "17:00",
+  start_time: "10:30", // BOOKED GAP 1: 09:00 - 10:30
+  end_time: "13:00",   // Available 10:30 - 13:00
+  type: "slot",
+  units,
+};
+
+// Range 3: Afternoon
+const slotRange3: AvailableRange = {
+  calendar_ref: "cal_2",
+  start_date: "2026-08-01",
+  end_date: "2026-08-10",
+  start_time: "14:30", // BOOKED GAP 2: 13:00 - 14:30
+  end_time: "17:00",   // Available 14:30 - 17:00
   type: "slot",
   units,
 };
 
 const coll = [dayRange, dayRange2, dayRange3]
 
-const coll2 = [slotRange, slotRange2]
+const coll2 = [slotRange1, slotRange2, slotRange3]
 
 
 export const Route = createFileRoute("/_authed/dashboard/test-page")({
@@ -104,13 +117,13 @@ function RouteComponent() {
         <BookerStep name="calendar">
           <BookingCalendar />
         </BookerStep>
-
-        <BookerStep name="time_picker">
-          <BookingTimeSelect />
-        </BookerStep>
   
         <BookerStep name="view_booking">
           <BookingView />
+        </BookerStep>
+
+        <BookerStep name="time_picker">
+          <BookingTimeSelect />
         </BookerStep>
 
 
