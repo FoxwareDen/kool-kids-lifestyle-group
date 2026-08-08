@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
-import { generateSlots, type Booking, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
+import { generateSlots, type Booking, type BookingResponse, type PaymentContinueFunc, type TransformedCalendarSchedule } from '#/lib/booking'
 import { type AvailableRange } from '#/lib/system'
 import {
   Booker,
@@ -10,8 +10,8 @@ import {
   BookingTimeSelect,
   BookingView,
   BookingPagingButtonGroup,
-  type SlotType,
 } from '@/components/booking/calendar'
+import { initializePayment } from '#/server/utils'
 
 interface BookingSlotModalProps {
   open: boolean
@@ -30,8 +30,6 @@ export function BookingSlotModal({
   calendarSchedule,
   existingBookings,
 }: BookingSlotModalProps) {
-  if (!open) return null
-
   const schedule = useMemo<AvailableRange[]>(() => {
     if (!calendarSchedule || !existingBookings) return []
     console.log("calendarSchedule");
@@ -42,11 +40,39 @@ export function BookingSlotModal({
     console.log(slots);
     return slots
   }, [calendarSchedule, existingBookings])
+  const [isBookingComplete, setIsBookingComplete] = useState(false);
 
-  const onSubmit = async (booking: Booking) => {
-    console.log(booking);
-    
+  const [booking, setBooking] = useState<Booking| null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState<string|null>(null);
+  const paymentContinueFunc = useRef<PaymentContinueFunc | null>(null)
+  
+  
+  const onSubmit = async () => {
+    if (!booking) return;
+
+    if (!paymentContinueFunc.current) {
+      const amount = booking.duration * booking.unit_id
+      const access_code = initializePayment({data: {amount, email}})
+    }
+
+    setIsLoading(true);
+    try {
+      
+    } catch (error) {
+      
+    }finally {
+      setIsLoading(false);
+    }
+
+  };
+
+  const bookingFormCompletion = async (booking: Booking) => {
+    setBooking(booking)
+    setIsBookingComplete(true)        
   }
+  
+  if (!open) return null
 
   return (
     <div
@@ -81,8 +107,8 @@ export function BookingSlotModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          <Booker schedule={schedule} type={schedule[0].type} onSubmit={onSubmit}>
+        <div className="flex flex-wrap justify-center gap-2 px-6 py-6">
+          <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
             <BookerStep name="unit_select">
               <BookingUnitSelect />
             </BookerStep>
@@ -101,6 +127,9 @@ export function BookingSlotModal({
 
             <BookingPagingButtonGroup />
           </Booker>
+          <div>
+
+          </div>
         </div>
       </div>
     </div>

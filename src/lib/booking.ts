@@ -461,7 +461,9 @@ export interface PackageResponse extends Package {
   }
 }
 
-export async function createPackage(booking: Booking, cookieHeader?: string) {
+export type PaymentContinueFunc = (data: {name?: string, phone: string, email: string}) => Promise<Result<PackageResponse, string>>
+
+export async function createPackage(booking: Booking, cookieHeader?: string): Promise<Result<PaymentContinueFunc, string>> {
   const bookingResult = await createBooking(booking, cookieHeader);
 
   if (!bookingResult.success || bookingResult.value == null) {
@@ -469,7 +471,7 @@ export async function createPackage(booking: Booking, cookieHeader?: string) {
   }
 
   const bookingTemp = bookingResult.value;
-  return async ({name, email, phone}:{name?: string, phone: string, email: string}) => {
+  return createResult(async function ({name, email, phone}:{name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
     const result = await createPayment({phone, email, name, bookingId: bookingTemp.id}, cookieHeader);
 
     if (!result.success || !result.value) {
@@ -488,12 +490,13 @@ export async function createPackage(booking: Booking, cookieHeader?: string) {
         payment_ref: paymentTemp.id
       }, cookieHeader);
 
-      return createResult(record, null);      
+      // @ts-ignore
+      return createResult(record.value, null);      
     } catch (error) {
       console.error(error);
       return createResult(null, "Failed to create package");
     }
-  }
+  }, null)
 }
 
 export async function fetchPackages(cookieHeader?: string) {
