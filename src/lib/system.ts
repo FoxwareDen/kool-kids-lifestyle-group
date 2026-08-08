@@ -17,7 +17,8 @@ import {
  *   id: "unit_101",
  *   label: "Deluxe Suite 101",
  *   capacity: 1,
- *   duration: 1440 // 1 day in minutes
+ *   duration: 1440, // 1 day in minutes
+ *   value: 1200
  * };
  * ```
  */
@@ -30,6 +31,8 @@ export interface Unit {
   capacity: number;
   /** Expected default duration for a single booking (minutes for slots, days for daily bookings). */
   duration: number;
+  /** Optional display value associated with the unit (e.g., price, points cost). Omit if not applicable. */
+  value?: number;
 }
 
 /**
@@ -101,6 +104,12 @@ export interface Booking {
  * - **`type === "slot"` (Intra-day time windows)**:
  *   - `start_date` & `end_date`: Anchor to the exact same single date (e.g., `"2026-08-01"`).
  *   - `start_time` & `end_time`: Define the start and end of the free, unreserved time window carved out on that day (e.g., `"09:00"` to `"11:30"`).
+ *
+ * ### Unit Value Passthrough:
+ * Each entry in `units` is the same `Unit` object taken directly from the source `Calendar.units`
+ * array — including its optional `value` field. `generateAvailableSlots` never spreads or
+ * reconstructs unit objects, so `value` (when present upstream) is guaranteed to survive into
+ * every `AvailableRange` unchanged.
  */
 export interface AvailableRange {
   calendar_ref: string;
@@ -132,7 +141,7 @@ export interface AvailableRange {
    */
   end_time: string;
 
-  /** List of bookable units available throughout this range. */
+  /** List of bookable units available throughout this range. Carries `value` through from `Calendar.units` unchanged. */
   units: Unit[];
 
   /** Mode of availability represented by this range object. */
@@ -252,6 +261,9 @@ export function generateAvailableSlots(
         if (isAvailable) {
           if (!activeRange) {
             // INITIALIZE A NEW RANGE TRACKER
+            // NOTE: `unit` is passed by reference here — any optional fields on Unit
+            // (e.g. `value`) are preserved automatically without needing to be copied
+            // individually.
             activeRange = {
               calendar_ref: schedule.id,
               start_date: formattedDate,

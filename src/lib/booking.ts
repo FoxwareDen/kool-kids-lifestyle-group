@@ -1,5 +1,5 @@
 import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
-import type { Unit as U, Calendar as C, Booking as B } from "@/lib/system";
+import { type Unit as U, type Calendar as C, type Booking as B, type AvailableRange, generateAvailableSlots } from "@/lib/system";
 
 export type UnitType = U & {
   value: number;
@@ -36,6 +36,8 @@ export type TransformedCalendarSchedule = Omit<CalendarResponse, "units" | "expe
   units: UnitTypeResponse[];
   experiences: TransformedExperience[];
 };
+
+
 
 // We omit days_of_week here so we can redefine it safely without parent-type collision errors
 export interface CalendarScheduleRecord extends Omit<CalendarResponse, "units" | "experiences" | "days_of_week"> {
@@ -393,6 +395,8 @@ export function toUnitType(unit: UnitType): U {
     id: unit.id,
     label: unit.label,
     capacity: unit.capacity,
+    value: unit.value,
+    duration: unit.duration
   } as U
 }
 
@@ -400,6 +404,7 @@ export function toCalendar(schedule: TransformedCalendarSchedule): C {
   const units: U[] = schedule.units.map(toUnitType);
 
   return {
+    id: schedule.id,
     start_date: schedule.start_date,
     end_date: schedule.end_date,
     start_time: schedule.start_time,
@@ -409,34 +414,36 @@ export function toCalendar(schedule: TransformedCalendarSchedule): C {
     frequency: "weekly",
     booking_type: schedule.booking_type,
     units,
-  } as C;
+  };
 }
 
-// export function toBooking(response: BookingResponse): B {
-//   return {
-//     date: response.date,
-//     duration: response.duration,
-//     end_time: response.end_time,
-//     start_time: response.start_time,
-//     slot_preset_id: response.slot_preset_id,
-//     status: response.status,
-//     unit_type: response.unit_type,
-//     updated_at: response.updated_at,
-//   } as B
-// }
+export function toBooking(response: BookingResponse): B {
+  return {
+    calendar_ref: response.calendar_ref,
+    id: response.id,
+    date: response.date,
+    start_time: response.start_time,
+    end_time: response.end_time,
+    duration: response.duration,
+    unit_label: response.unit_label,
+    unit_id: response.unit_id,
+    status: response.status,
+  };
+}
 
-// export function generateSlots(
-//   schedules: TransformedCalendarSchedule[],
-//   bookings: BookingResponse[],
-//   startDate: string,
-//   endDate: string,
-//   config: SlotGenerationConfig
-// ): AvailableSlot[] {
-//   const calendars = schedules.map(toCalendar);
-//   const mappedBookings = bookings.map(toBooking);
+export function generateSlots(
+  schedules: TransformedCalendarSchedule[],
+  bookings: BookingResponse[]
+): AvailableRange[] {
+  const calendars = schedules.map(toCalendar);
+  const mappedBookings = bookings.map(toBooking);
 
-//   return generateAvailableSlots(calendars, mappedBookings, startDate, endDate, config);
-// }
+  return generateAvailableSlots(calendars[0], mappedBookings, { minAdvanceDays: 0 }).sort((a, b) => {
+    const dateA = new Date(`${a.start_date}T${a.start_time}`);
+    const dateB = new Date(`${b.start_date}T${b.start_time}`);
+    return dateA.getTime() - dateB.getTime();
+  });
+}
 
 export interface Package extends MetaData {
   booking_ids: string[],

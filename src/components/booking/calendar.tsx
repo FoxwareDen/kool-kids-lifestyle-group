@@ -7,7 +7,7 @@ import type { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { ClientOnly } from "../client-only";
 import type { AvailableRange, Booking, Unit } from "#/lib/system";
-import { Check, Clock, Users } from "lucide-react";
+import { Check, Clock, Tag, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
@@ -145,7 +145,14 @@ export function BookerStep({
   );
 }
 
-export function BookingUnitSelect() {
+/**
+ * Renders selectable bookable units for the current schedule.
+ *
+ * Each unit's optional `value` field (e.g. price or points cost) is shown next to a `Tag`
+ * icon whenever it is present on the source `Unit` object. `value` is omitted from the row
+ * entirely when the unit has no `value` set, rather than rendering a blank/zero placeholder.
+ */
+export function BookingUnitSelect({valueSymbol="R"}:{valueSymbol?: string}) {
   const { booking, schedule, type, selectedUnit, filterByUnit, setBooking, setUnit } = useBookerStore();
 
   const units = schedule.flatMap((sc) => sc.units)
@@ -182,8 +189,13 @@ export function BookingUnitSelect() {
                 </span>
               )}
             </div>
-            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
+            <div className="mt-3 flex w-full items-center gap-3 text-xs text-muted-foreground">
+              {unit.value !== undefined && (
+                <div className="flex justify-evenly w-full gap-1">
+                  <span>{`${valueSymbol} ${unit.value}`}</span>
+                </div>
+              )}
+              <div className="flex flex-row flex-nowrap w-full gap-1">
                 <Users className="h-3.5 w-3.5" />
                 <span>Cap: {unit.capacity}</span>
               </div>
@@ -486,8 +498,8 @@ export function BookingTimeSelect({ className }: { className?: string }) {
   );
 }
 
-export function BookingView() {
-  const { booking, type } = useBookerStore();
+export function BookingView({valueSymbol="R"}:{valueSymbol?: string}) {
+  const { booking, type, selectedUnit, date, duration} = useBookerStore();
 
   return (
     <Card className="w-full">
@@ -499,6 +511,13 @@ export function BookingView() {
           <span className="text-sm text-muted-foreground">Unit</span>
           <Badge variant="secondary">{booking.unit_label}</Badge>
         </div>
+
+        {selectedUnit?.value !== undefined && (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Value</span>
+            <span className="text-sm font-medium">{`${valueSymbol} ${selectedUnit.value * duration}`}</span>
+          </div>
+        )}
 
         <Separator />
 
