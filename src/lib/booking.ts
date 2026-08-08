@@ -303,16 +303,13 @@ export async function deleteCalendarSchedule(id: string, cookieHeader?: string):
 
 // ==================================== Booking & packages ====================================
 
-export interface Booking extends B {
-  schedule_id: string
-}
+export interface Booking extends B {}
 
 export interface BookingResponse extends Omit<Booking, "id">, MetaData {
   expanded: {
-    schedule_id?: CalendarResponse
+    calendar_ref?: CalendarResponse
   }
 }
-
 
 export async function createBooking(
   data: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">,
@@ -329,8 +326,7 @@ export async function createBooking(
     return createResult(null, "Failed to create client booking");
   }
 }
-
-
+3
 export interface Package extends MetaData {
   booking_ids: string[],
   status: "canceled" | "pending" | "complete",
@@ -339,7 +335,7 @@ export interface Package extends MetaData {
 
 export interface BookingResponse extends Omit<Booking, "id">, MetaData {
   expanded: {
-    schedule_id?: CalendarResponse
+    calendar_ref?: CalendarResponse
   }
 }
 
@@ -348,7 +344,7 @@ export async function fetchBookingsByScheduleId(
   cookieHeader?: string
 ): Promise<Result<BookingResponse[], string>> {
   const client = getPBSession(cookieHeader);
-  const filter = `schedule_id = "${scheduleId}"`;
+  const filter = `calendar_ref = "${scheduleId}"`;
   try {
     const records = await client.collection("Bookings").getFullList<BookingResponse>({
       filter,
@@ -441,8 +437,6 @@ export function toCalendar(schedule: TransformedCalendarSchedule): C {
 
 //   return generateAvailableSlots(calendars, mappedBookings, startDate, endDate, config);
 // }
-
-
 
 export interface Package extends MetaData {
   booking_ids: string[],
