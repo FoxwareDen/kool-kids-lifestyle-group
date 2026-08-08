@@ -89,7 +89,6 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
   }),
   loaderDeps: ({ search: {lang} }) => ({lang}),
   loader: async ({ deps: { lang } }) => {
-    const slots = await fetchCalendarScheduleByExperiencesIds("9i530p06zj381zs")
     return {
       lang
     }
@@ -98,56 +97,10 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
 });
 
 function RouteComponent() {
-  const [mode, setMode] = useState<SlotType>("day");
-  const [lastBooking, setLastBooking] = useState<Booking | null>(null);
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex gap-2">
-        <button
-          className={`px-4 py-2 rounded ${mode === "day" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          onClick={() => setMode("day")}
-        >
-          Day Mode
-        </button>
-        <button
-          className={`px-4 py-2 rounded ${mode === "slot" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          onClick={() => setMode("slot")}
-        >
-          Slot Mode
-        </button>
-      </div>
-
-      <Booker
-        type={mode}
-        schedule={mode == "day" ? coll: coll2}
-      >
-        <BookerStep name="unit_select">
-          <BookingUnitSelect />
-        </BookerStep>
-
-        <BookerStep name="calendar">
-          <BookingCalendar />
-        </BookerStep>
-  
-        <BookerStep name="view_booking">
-          <BookingView />
-        </BookerStep>
-
-        <BookerStep name="time_picker">
-          <BookingTimeSelect />
-        </BookerStep>
-
-
-        <BookingPagingButtonGroup />
-      </Booker>
-
-      {lastBooking && (
-        <div className="mt-4 p-4 border rounded bg-gray-50">
-          <h3 className="font-semibold">Last Booking:</h3>
-          <pre className="text-sm">{JSON.stringify(lastBooking, null, 2)}</pre>
-        </div>
-      )}
+      
     </div>
   );
 }

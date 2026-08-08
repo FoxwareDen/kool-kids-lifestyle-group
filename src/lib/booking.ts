@@ -1,4 +1,6 @@
-import { buildImageUrl, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
+import { createBookingPage } from "./experiences";
+import { createPayment } from "./payment";
+import { buildImageUrl, create, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
 import { type Unit as U, type Calendar as C, type Booking as B, type AvailableRange, generateAvailableSlots } from "@/lib/system";
 
 export type UnitType = U & {
@@ -328,7 +330,8 @@ export async function createBooking(
     return createResult(null, "Failed to create client booking");
   }
 }
-3
+
+
 export interface Package extends MetaData {
   booking_ids: string[],
   status: "canceled" | "pending" | "complete",
@@ -458,16 +461,38 @@ export interface PackageResponse extends Package {
   }
 }
 
-export async function createPackage(data: Package, cookieHeader?: string) {
-  const client = getPBSession(cookieHeader);
+export async function createPackage(booking: Booking, cookieHeader?: string) {
+  const bookingResult = await createBooking(booking, cookieHeader);
 
-  try {
-    const record = await client.collection("Packages").create(data);
+  if (!bookingResult.success || bookingResult.value == null) {
+    return createResult(null, "Failed to create booking for package");
+  }
 
-    return createResult(record, null);
-  } catch (err) {
-    console.error(err);
-    return createResult(null, "Failed to create Package");
+  const bookingTemp = bookingResult.value;
+  return async ({name, email, phone}:{name?: string, phone: string, email: string}) => {
+    const result = await createPayment({phone, email, name, bookingId: bookingTemp.id}, cookieHeader);
+
+    if (!result.success || !result.value) {
+      return createResult(null, "Failed to create payment for package");
+    }
+
+    const paymentTemp = result.value;
+
+    try {
+      const bookingId = bookingTemp.id;
+
+      const record = await
+        create("Packages", {
+        booking_ids: [bookingId],
+        status: "pending",
+        payment_ref: paymentTemp.id
+      }, cookieHeader);
+
+      return createResult(record, null);      
+    } catch (error) {
+      console.error(error);
+      return createResult(null, "Failed to create package");
+    }
   }
 }
 
