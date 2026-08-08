@@ -1,10 +1,8 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * The page hero for the "Heritage" route. Displays a full-width heritage
  * background image behind navy readability overlays, the shared
- * {@link SiteHeader}, a breadcrumb trail, an orange eyebrow, a serif headline
  * and a script-styled subtitle. Mirrors the visual language of the About hero
  * for a consistent secondary-page format.
  *
@@ -26,7 +24,6 @@ export function HeritageHero() {
       {/* Top fade so the solid navy navbar blends into the image */}
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
 
-      <SiteHeader />
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">

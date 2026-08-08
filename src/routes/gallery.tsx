@@ -4,6 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { GalleryHero } from '#/components/gallery/GalleryHero'
 import { GalleryShowcase } from '#/components/gallery/GalleryShowcase'
 import { GalleryCta } from '#/components/gallery/GalleryCta'
+import type { Language } from '#/lib/experiences'
 
 /**
  * The "Gallery" page route. Composes the page-level sections in order: hero,
@@ -23,6 +24,10 @@ export const Route = createFileRoute('/gallery')({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as Language) ?? undefined,
+  }),
+  loaderDeps: ({search: {lang} }) => ({lang}),
   component: GalleryPage,
 })
 
@@ -32,9 +37,11 @@ export const Route = createFileRoute('/gallery')({
  * @returns {JSX.Element} The rendered page.
  */
 function GalleryPage() {
+  const { lang } = Route.useLoaderDeps();
+
   return (
     <main>
-      <GalleryHero />
+      <GalleryHero lang={lang} />
       <GalleryShowcase />
       <GalleryCta />
     </main>

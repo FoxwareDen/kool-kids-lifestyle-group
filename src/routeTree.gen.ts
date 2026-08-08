@@ -24,8 +24,10 @@ import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
 import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
 import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
-import { Route as AuthedDashboardExperienceRouteImport } from './routes/_authed/dashboard/experience'
-import { Route as AuthedDashboardCreatePostsRouteImport } from './routes/_authed/dashboard/create-posts'
+import { Route as AuthedDashboardTestPageRouteImport } from './routes/_authed/dashboard/test-page'
+import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
+import { Route as AuthedDashboardCreatePostRouteImport } from './routes/_authed/dashboard/create-post'
+import { Route as AuthedDashboardCreateExperienceRouteImport } from './routes/_authed/dashboard/create-experience'
 import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
 import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 
@@ -103,16 +105,27 @@ const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedDashboardRoute,
 } as any)
-const AuthedDashboardExperienceRoute =
-  AuthedDashboardExperienceRouteImport.update({
-    id: '/experience',
-    path: '/experience',
+const AuthedDashboardTestPageRoute = AuthedDashboardTestPageRouteImport.update({
+  id: '/test-page',
+  path: '/test-page',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedDashboardExperiencesRoute =
+  AuthedDashboardExperiencesRouteImport.update({
+    id: '/experiences',
+    path: '/experiences',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
-const AuthedDashboardCreatePostsRoute =
-  AuthedDashboardCreatePostsRouteImport.update({
-    id: '/create-posts',
-    path: '/create-posts',
+const AuthedDashboardCreatePostRoute =
+  AuthedDashboardCreatePostRouteImport.update({
+    id: '/create-post',
+    path: '/create-post',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardCreateExperienceRoute =
+  AuthedDashboardCreateExperienceRouteImport.update({
+    id: '/create-experience',
+    path: '/create-experience',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
 const AuthedDashboardCreateCalendarRoute =
@@ -144,8 +157,10 @@ export interface FileRoutesByFullPath {
   '/experiences/': typeof ExperiencesIndexRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
-  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
-  '/dashboard/experience': typeof AuthedDashboardExperienceRoute
+  '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard/test-page': typeof AuthedDashboardTestPageRoute
   '/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
@@ -163,8 +178,10 @@ export interface FileRoutesByTo {
   '/experiences': typeof ExperiencesIndexRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
-  '/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
-  '/dashboard/experience': typeof AuthedDashboardExperienceRoute
+  '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/dashboard/test-page': typeof AuthedDashboardTestPageRoute
   '/dashboard': typeof AuthedDashboardIndexRoute
 }
 export interface FileRoutesById {
@@ -185,8 +202,10 @@ export interface FileRoutesById {
   '/experiences/': typeof ExperiencesIndexRoute
   '/_authed/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/_authed/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
-  '/_authed/dashboard/create-posts': typeof AuthedDashboardCreatePostsRoute
-  '/_authed/dashboard/experience': typeof AuthedDashboardExperienceRoute
+  '/_authed/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
+  '/_authed/dashboard/create-post': typeof AuthedDashboardCreatePostRoute
+  '/_authed/dashboard/experiences': typeof AuthedDashboardExperiencesRoute
+  '/_authed/dashboard/test-page': typeof AuthedDashboardTestPageRoute
   '/_authed/dashboard/': typeof AuthedDashboardIndexRoute
 }
 export interface FileRouteTypes {
@@ -207,8 +226,10 @@ export interface FileRouteTypes {
     | '/experiences/'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
-    | '/dashboard/create-posts'
-    | '/dashboard/experience'
+    | '/dashboard/create-experience'
+    | '/dashboard/create-post'
+    | '/dashboard/experiences'
+    | '/dashboard/test-page'
     | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -226,8 +247,10 @@ export interface FileRouteTypes {
     | '/experiences'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
-    | '/dashboard/create-posts'
-    | '/dashboard/experience'
+    | '/dashboard/create-experience'
+    | '/dashboard/create-post'
+    | '/dashboard/experiences'
+    | '/dashboard/test-page'
     | '/dashboard'
   id:
     | '__root__'
@@ -247,8 +270,10 @@ export interface FileRouteTypes {
     | '/experiences/'
     | '/_authed/dashboard/calendars'
     | '/_authed/dashboard/create-calendar'
-    | '/_authed/dashboard/create-posts'
-    | '/_authed/dashboard/experience'
+    | '/_authed/dashboard/create-experience'
+    | '/_authed/dashboard/create-post'
+    | '/_authed/dashboard/experiences'
+    | '/_authed/dashboard/test-page'
     | '/_authed/dashboard/'
   fileRoutesById: FileRoutesById
 }
@@ -375,18 +400,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
-    '/_authed/dashboard/experience': {
-      id: '/_authed/dashboard/experience'
-      path: '/experience'
-      fullPath: '/dashboard/experience'
-      preLoaderRoute: typeof AuthedDashboardExperienceRouteImport
+    '/_authed/dashboard/test-page': {
+      id: '/_authed/dashboard/test-page'
+      path: '/test-page'
+      fullPath: '/dashboard/test-page'
+      preLoaderRoute: typeof AuthedDashboardTestPageRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
-    '/_authed/dashboard/create-posts': {
-      id: '/_authed/dashboard/create-posts'
-      path: '/create-posts'
-      fullPath: '/dashboard/create-posts'
-      preLoaderRoute: typeof AuthedDashboardCreatePostsRouteImport
+    '/_authed/dashboard/experiences': {
+      id: '/_authed/dashboard/experiences'
+      path: '/experiences'
+      fullPath: '/dashboard/experiences'
+      preLoaderRoute: typeof AuthedDashboardExperiencesRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-post': {
+      id: '/_authed/dashboard/create-post'
+      path: '/create-post'
+      fullPath: '/dashboard/create-post'
+      preLoaderRoute: typeof AuthedDashboardCreatePostRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-experience': {
+      id: '/_authed/dashboard/create-experience'
+      path: '/create-experience'
+      fullPath: '/dashboard/create-experience'
+      preLoaderRoute: typeof AuthedDashboardCreateExperienceRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
     '/_authed/dashboard/create-calendar': {
@@ -409,16 +448,20 @@ declare module '@tanstack/react-router' {
 interface AuthedDashboardRouteChildren {
   AuthedDashboardCalendarsRoute: typeof AuthedDashboardCalendarsRoute
   AuthedDashboardCreateCalendarRoute: typeof AuthedDashboardCreateCalendarRoute
-  AuthedDashboardCreatePostsRoute: typeof AuthedDashboardCreatePostsRoute
-  AuthedDashboardExperienceRoute: typeof AuthedDashboardExperienceRoute
+  AuthedDashboardCreateExperienceRoute: typeof AuthedDashboardCreateExperienceRoute
+  AuthedDashboardCreatePostRoute: typeof AuthedDashboardCreatePostRoute
+  AuthedDashboardExperiencesRoute: typeof AuthedDashboardExperiencesRoute
+  AuthedDashboardTestPageRoute: typeof AuthedDashboardTestPageRoute
   AuthedDashboardIndexRoute: typeof AuthedDashboardIndexRoute
 }
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
   AuthedDashboardCalendarsRoute: AuthedDashboardCalendarsRoute,
   AuthedDashboardCreateCalendarRoute: AuthedDashboardCreateCalendarRoute,
-  AuthedDashboardCreatePostsRoute: AuthedDashboardCreatePostsRoute,
-  AuthedDashboardExperienceRoute: AuthedDashboardExperienceRoute,
+  AuthedDashboardCreateExperienceRoute: AuthedDashboardCreateExperienceRoute,
+  AuthedDashboardCreatePostRoute: AuthedDashboardCreatePostRoute,
+  AuthedDashboardExperiencesRoute: AuthedDashboardExperiencesRoute,
+  AuthedDashboardTestPageRoute: AuthedDashboardTestPageRoute,
   AuthedDashboardIndexRoute: AuthedDashboardIndexRoute,
 }
 

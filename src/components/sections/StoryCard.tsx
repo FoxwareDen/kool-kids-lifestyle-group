@@ -67,7 +67,7 @@ export function StoryCard({
         </p>
 
         <a
-          href={href}
+          href={"/heritage"}
           className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline hover:!text-[var(--brand-orange-deep)]"
         >
           {ctaLabel}

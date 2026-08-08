@@ -1,9 +1,7 @@
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * The page hero for the "Contact" route. Displays a full-width river
- * background behind navy readability overlays, the shared {@link SiteHeader},
  * a breadcrumb trail, an orange eyebrow, a serif headline and a script-styled
  * subtitle. Mirrors the visual language of the About and Heritage heroes for a
  * consistent secondary-page format.

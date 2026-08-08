@@ -1,16 +1,16 @@
+import type { Language, Translatable } from '#/lib/experiences'
 import { ChevronRight } from 'lucide-react'
-import { SiteHeader } from '#/components/hero/SiteHeader'
 
 /**
  * The page hero for the "Gallery" route. Displays a full-width Karoo landscape
- * behind navy readability overlays, the shared {@link SiteHeader}, a breadcrumb
  * trail, an orange eyebrow, a serif headline and a script-styled subtitle.
  * Mirrors the visual language of the Heritage and About heroes so secondary
  * pages stay consistent.
  *
  * @returns {JSX.Element} The rendered gallery hero section.
  */
-export function GalleryHero() {
+export function GalleryHero({lang}:{lang: Language}) {
+
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
@@ -36,7 +36,7 @@ export function GalleryHero() {
                 href="/"
                 className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
               >
-                Home
+                {lang == "en" ? "Home" : "front armpit"}
               </a>
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />

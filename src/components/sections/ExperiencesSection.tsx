@@ -13,6 +13,7 @@ import { ExperienceCard } from './ExperienceCard'
 import { type Content } from '#/lib/pocketbase'
 import { mapIcon } from '#/lib/utils'
 import type { FeatureCard, Language } from '#/lib/experiences'
+import { Link } from '@tanstack/react-router'
 
 /**
  * A single entry rendered as an {@link ExperienceCard} within
@@ -130,13 +131,14 @@ export function ExperiencesSection({data, lang }:{data: Content<Partial<Experien
         </div>
 
         <div className="mt-12 flex justify-center">
-          <a
-            href="#"
+          <Link
+            to='/experiences'
+            search={(prev)=>({...prev, lang, category: prev.category? prev.category: undefined,})}
             className="group inline-flex items-center gap-4 bg-transparent border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline shadow-lg shadow-black/30 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
             {button?.title??""}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

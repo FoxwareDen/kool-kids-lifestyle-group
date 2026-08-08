@@ -1,15 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
-import { ChevronDown, Menu, Calendar, X } from 'lucide-react'
-import { Link } from '@tanstack/react-router';
-import type { Language } from '#/lib/experiences';
+import { useState, useEffect, useRef } from 'react'
+import { ChevronDown, Menu, X, Globe } from 'lucide-react'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import type { Language } from '#/lib/experiences'
+import { useExperienceCategories } from '#/hooks/useExperiences'
 
-/**
- * The WhatsApp brand glyph. lucide-react does not ship a WhatsApp icon,
- * so it is provided as an inline SVG.
- *
- * @param {{ className?: string }} props - Optional class names for sizing/color.
- * @returns {JSX.Element} The WhatsApp icon.
- */
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -23,53 +17,47 @@ function WhatsAppIcon({ className }: { className?: string }) {
   )
 }
 
-/**
- * A single top-level navigation entry.
- * @typedef {Object} NavItem
- * @property {string} label - Visible text of the link.
- * @property {string} href - Link target for the item.
- * @property {boolean} [hasDropdown] - Whether the item shows a dropdown caret.
- */
+const LANGUAGES: { code: Language; label: string; short: string }[] = [
+  { code: 'en', label: 'English', short: 'EN' },
+  { code: 'af', label: 'Afrikaans', short: 'AF' },
+]
 
-/**
- * The navigation items rendered in the desktop and mobile menus.
- * @type {Array<{ label: string, href: string, hasDropdown?: boolean }>}
- */
 const NAV_ITEMS: Record<Language, any> = {
-  en: [{ label: 'HOME', href: '/', authed: false },
-  { label: "DashBoard", href: "/dashboard" , authed: true},
-  { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
-  { label: 'EXPERIENCES', href: '#', hasDropdown: true, authed: false },
-  { label: 'HERITAGE', href: '/heritage', authed: false },
-  { label: 'GALLERY', href: '/gallery', authed: false },
-  { label: 'EVENTS', href: '#', authed: false },
-  { label: 'BLOG', href: '#', authed: false },
-  { label: 'CONTACT', href: '/contact', authed: false },
+  en: [
+    { label: 'HOME', href: '/', authed: false },
+    { label: "DashBoard", href: "/dashboard", authed: true },
+    { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
+    { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true, authed: false },
+    { label: 'HERITAGE', href: '/heritage', authed: false },
+    { label: 'GALLERY', href: '/gallery', authed: false },
+    { label: 'EVENTS', href: '/events', authed: false },
+    { label: 'BLOG', href: '/blogs', authed: false },
+    { label: 'CONTACT', href: '/contact', authed: false },
   ],
   af: [
     { label: 'TUIS', href: '/', authed: false },
-    { label: "Proneel", href: "/dashboard" , authed: true}, // Alternatively: "Dashboard" is also widely used in SA tech
+    { label: "Proneel", href: "/dashboard", authed: true },
     { label: 'OOR PRIESKA', href: '/about-prieska', authed: false },
-    { label: 'ERVARINGS', href: '#', hasDropdown: true, authed: false },
+    { label: 'ERVARINGS', href: '/experiences', hasDropdown: true, authed: false },
     { label: 'ERFENIS', href: '/heritage', authed: false },
     { label: 'GALERY', href: '/gallery', authed: false },
-    { label: 'GEBEURE', href: '#', authed: false },
-    { label: 'BLOG', href: '#', authed: false },
+    { label: 'GEBEURE', href: '/events', authed: false },
+    { label: 'BLOG', href: '/blogs', authed: false },
     { label: 'KONTAK', href: '/contact', authed: false },
   ]
 }
 
-/**
- * The fixed, transparent site header that overlays the hero section.
- * Contains the brand logo, primary navigation, a WhatsApp contact icon
- * and the "Book Now" call to action. Collapses into a hamburger menu
- * on smaller screens.
- *
- * @returns {JSX.Element} The rendered header element.
- */
-export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Language}) {
+export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [langOpen, setLangOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { categories, isLoading: categoriesLoading } = useExperienceCategories()
+  const langRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  
+  // FIX: Read language from URL using useSearch
+  const search = useSearch({ from: '__root__' }) as { lang?: Language }
+  const lang = search.lang || 'en' // Default to English if not specified
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80)
@@ -77,48 +65,70 @@ export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Lang
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0]
+
+  function switchLang(code: Language) {
+    // FIX: Use replace to avoid creating history entries
+    navigate({ 
+      to: window.location.pathname, // Stay on current page
+      search: (prev) => ({ ...prev, lang: code }),
+      replace: true // Replace instead of push
+    })
+    setLangOpen(false)
+    setMobileOpen(false)
+  }
+
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
       {/* Brand */}
-        <a href="/" className="absolute left-0 top-0 z-10 flex items-center no-underline" aria-label="360 Experiences home">
-          <img
-            src="/logo-2.png"
-            alt="360 Experiences logo"
-            className={`
-                       w-auto object-contain transition-all duration-500 ease-in-out
-                        ${mobileOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}
-                        ${scrolled ? 'h-13 mb-0' : 'h-25 mb-[-3rem]'}
-                      `}
-                      />
-        </a>
-        <div className="mx-auto flex max-w-[1280px] py-2 items-center justify-end px-4 sm:px-6 lg:px-8 ">
-
+      <a href="/" className="absolute left-0 top-0 z-10 flex items-center no-underline" aria-label="360 Experiences home">
+        <img
+          src="/logo-2.png"
+          alt="360 Experiences logo"
+          className={`
+            w-auto object-contain transition-all duration-500 ease-in-out
+            ${mobileOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+            ${scrolled ? 'h-13 mb-0' : 'h-25 mb-[-3rem]'}
+          `}
+        />
+      </a>
+      
+      <div className="mx-auto flex max-w-[1280px] py-2 items-center justify-end px-4 sm:px-6 lg:px-8">
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {NAV_ITEMS[lang].map((item, index) => {
             return item.authed ? (
-              
-                isAuthed ? (
-                    <Link
-                      key={item.label + index}
-                      to={item.href}
-                      search={(prev)=> prev}
-                      className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
-                    >
-                      {item.label}
-                      {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
-                    </Link>
-                ) : null
+              isAuthed ? (
+                <Link
+                  key={item.label + index}
+                  to={item.href}
+                  search={(prev) => prev}
+                  className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+                >
+                  {item.label}
+                  {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+                </Link>
+              ) : null
             ) : (
               <Link
-              key={item.label + index}
-              to={item.href}
-              search={(prev)=> prev}
-              className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
-            >
-              {item.label}
-              {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
-            </Link>
+                key={item.label + index}
+                to={item.href}
+                search={(prev) => prev}
+                className="flex items-center gap-1 text-xs font-semibold tracking-wide !text-white/85 no-underline transition-colors hover:!text-[var(--brand-orange)]"
+              >
+                {item.label}
+                {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
+              </Link>
             );
           })}
         </nav>
@@ -126,21 +136,60 @@ export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Lang
         {/* Actions */}
         <div className="flex items-center gap-3 ml-30">
           <a
-            href="#"
+            href="https://wa.me/27721234567"
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label="Contact us on WhatsApp"
             className="hidden h-10 w-10 items-center justify-center rounded-full bg-[#25D366] !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[#1ebe5b] sm:flex"
           >
             <WhatsAppIcon className="h-5 w-5" />
           </a>
 
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-4 py-2.5 text-xs font-bold tracking-wide !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
-          >
-            <Calendar className="h-4 w-4" />
-            {lang == "af" ? "BESPREEK NOU": "BOOK NOW"}
-          </a>
+          {/* Language switcher */}
+          <div className="relative" ref={langRef}>
+            <button
+              type="button"
+              onClick={() => setLangOpen((v) => !v)}
+              aria-expanded={langOpen}
+              aria-haspopup="listbox"
+              aria-label="Switch language"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold tracking-wide text-white/85 border border-white/20 hover:border-white/50 hover:text-white transition-colors"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              {currentLang.short}
+              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
+            </button>
 
+            {langOpen && (
+              <ul
+                role="listbox"
+                aria-label="Language"
+                className="absolute right-0 top-full mt-1 w-36 bg-[var(--brand-navy)] border border-white/15 shadow-xl z-50"
+              >
+                {LANGUAGES.map((l) => (
+                  <li key={l.code} role="option" aria-selected={l.code === lang}>
+                    <button
+                      type="button"
+                      onClick={() => switchLang(l.code)}
+                      className={`
+                        w-full flex items-center gap-2 px-4 py-2.5 text-xs font-semibold tracking-wide text-left transition-colors
+                        ${l.code === lang
+                          ? 'text-[var(--brand-orange)] bg-white/5'
+                          : 'text-white/75 hover:text-white hover:bg-white/10'
+                        }
+                      `}
+                    >
+                      <span className="w-5 text-center opacity-60">{l.short}</span>
+                      {l.label}
+                      {l.code === lang && <span className="ml-auto text-[var(--brand-orange)]">✓</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Mobile toggle */}
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
@@ -160,17 +209,43 @@ export function SiteHeader({isAuthed, lang="en"}:{isAuthed: boolean, lang?: Lang
           aria-label="Mobile"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS[lang].map((item, index) => (
-              <li key={item.label + index}>
-                <a
-                  href={item.href}
-                  className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
-                >
-                  {item.label}
-                  {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
-                </a>
-              </li>
-            ))}
+            {NAV_ITEMS[lang].map((item, index) => {
+              if (item.authed && !isAuthed) return null
+              
+              return (
+                <li key={item.label + index}>
+                  <a
+                    href={item.href}
+                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-semibold text-white/85 transition-colors hover:bg-white/10"
+                  >
+                    {item.label}
+                    {item.hasDropdown && <ChevronDown className="h-4 w-4" />}
+                  </a>
+                </li>
+              )
+            })}
+            
+            <li className="mt-2 border-t border-white/10 pt-2">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">Language</p>
+              <div className="flex gap-1 px-3">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => switchLang(l.code)}
+                    className={`
+                      flex-1 py-2 text-xs font-semibold tracking-wide border transition-colors
+                      ${l.code === lang
+                        ? 'border-[var(--brand-orange)] text-[var(--brand-orange)]'
+                        : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
+                      }
+                    `}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </li>
           </ul>
         </nav>
       )}

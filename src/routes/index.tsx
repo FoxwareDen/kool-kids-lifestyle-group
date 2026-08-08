@@ -1,15 +1,15 @@
 // HAS CMS MANAGING
 
 import { HeroSection } from '#/components/hero/HeroSection';
-import { StoriesSection, type StoriesSectionProps } from '#/components/sections/StoriesSection';
+import { StoriesSection } from '#/components/sections/StoriesSection';
 import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
 import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
 import { GallerySection } from '#/components/sections/GallerySection';
 import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchPageDataSSR, type Content, type PageData } from '#/lib/pocketbase';
+import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { fetchFeaturedExperienceCard } from '#/lib/experiences';
+import { fetchFeaturedExperienceCard, type Language } from '#/lib/experiences';
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
@@ -20,7 +20,7 @@ export const getPageData = createServerFn()
 
 export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as 'en' | 'af') ?? undefined,
+    lang: (search.lang as Language) ?? undefined,
   }),
   loaderDeps: ({ search: {lang} }) => ({lang}),
   loader: async ({ location, deps: { lang }}) => {
