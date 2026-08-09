@@ -12,7 +12,6 @@ export type UnitTypeResponse = UnitType & MetaData;
 export type Calendar = Omit<C, "user_id" | "units"> & {
   units: string[];
   experiences: string[];
-  // 
   title: string;
   min_advance_days?: number;
   max_advance_days?: number;
@@ -20,7 +19,6 @@ export type Calendar = Omit<C, "user_id" | "units"> & {
 
 export type CalendarResponse = Calendar & MetaData;
 
-// Type definition for an individual experience after custom property resolution
 export type TransformedExperience = {
   id: string;
   category: any;
@@ -33,15 +31,11 @@ export type TransformedExperience = {
   coverImage: string;
 };
 
-// Main return payload representing a fully populated schedule row
 export type TransformedCalendarSchedule = Omit<CalendarResponse, "units" | "experiences"> & {
   units: UnitTypeResponse[];
   experiences: TransformedExperience[];
 };
 
-
-
-// We omit days_of_week here so we can redefine it safely without parent-type collision errors
 export interface CalendarScheduleRecord extends Omit<CalendarResponse, "units" | "experiences" | "days_of_week"> {
   units: string[];
   experiences: string[];
@@ -68,9 +62,17 @@ export interface CalendarScheduleRecord extends Omit<CalendarResponse, "units" |
   };
 }
 
+function convertTo24Hour(time: string): string {
+  if (!time.includes("AM") && !time.includes("PM")) return time;
+  const [timePart, modifier] = time.split(" ");
+  let [hours, minutes] = timePart.split(":").map(Number);
+  if (modifier === "AM" && hours === 12) hours = 0;
+  if (modifier === "PM" && hours !== 12) hours += 12;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
 export async function createUnit(label: string, capacity: number, value: number, cookieHeader?: string): Promise<Result<string, string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const result = await client.collection("UnitType").create<UnitTypeResponse>({
       label,
@@ -86,7 +88,6 @@ export async function createUnit(label: string, capacity: number, value: number,
 
 export async function fetchUnitTypes(cookieHeader?: string): Promise<Result<UnitTypeResponse[], string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const records = await client.collection("UnitType").getFullList<UnitTypeResponse>({
       sort: "label",
@@ -111,7 +112,6 @@ export async function deleteUnitType(id: string, cookieHeader?: string): Promise
 
 export async function createCalendarSchedule(data: Calendar, cookieHeader?: string): Promise<Result<CalendarResponse, string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const result = await client.collection("CalendarSchedules").create<CalendarResponse>({
       start_date: data.start_date,
@@ -125,7 +125,6 @@ export async function createCalendarSchedule(data: Calendar, cookieHeader?: stri
       title: data.title,
       booking_type: data.booking_type,
     });
-
     return createResult(result, null);
   } catch (error) {
     console.error(error);
@@ -133,12 +132,8 @@ export async function createCalendarSchedule(data: Calendar, cookieHeader?: stri
   }
 }
 
-/**
- * Fetches all calendar schedules sorted by start date.
- */
 export async function fetchCalendarSchedules(cookieHeader?: string): Promise<Result<TransformedCalendarSchedule[], string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const rawRecords = await client.collection("CalendarSchedules").getFullList<CalendarScheduleRecord>({
       sort: "start_date",
@@ -166,15 +161,13 @@ export async function fetchCalendarSchedules(cookieHeader?: string): Promise<Res
       ) : [];
 
       const units = record.expand?.units ? record.expand.units : [];
-
-      // Map strings perfectly into standard numbers to satisfy TransformedCalendarSchedule
       const daysOfWeekNumbers = record.days_of_week
         ? record.days_of_week.map(day => typeof day === "string" ? parseInt(day, 10) : day)
         : [];
 
       return {
         buffer_minutes: record.buffer_minutes,
-        booking_type: record.booking_type, // <-- FIX: was missing, required by TransformedCalendarSchedule
+        booking_type: record.booking_type,
         collectionId: record.collectionId,
         collectionName: record.collectionName,
         created: record.created,
@@ -198,12 +191,8 @@ export async function fetchCalendarSchedules(cookieHeader?: string): Promise<Res
   }
 }
 
-/**
- * Fetches calendar schedules filtered by experience IDs.
- **/
 export async function fetchCalendarScheduleByExperiencesIds(filter: string | string[], cookieHeader?: string): Promise<Result<TransformedCalendarSchedule[], string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const filterQuery = Array.isArray(filter)
       ? filter.map(id => `experiences ~ "${id}"`).join(" || ")
@@ -224,7 +213,6 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
             booking_type: record.booking_type,
             category: obj.category,
             defaultLanguage: obj.defaultLanguage,
-            
             enabledLanguages: obj.enabledLanguages,
             title: typeof obj.title === "string" ? JSON.parse(obj.title) : obj.title,
             description: obj.description
@@ -238,14 +226,13 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
       ) : [];
 
       const units = record.expand?.units ? record.expand.units : [];
-
       const daysOfWeekNumbers = record.days_of_week
         ? record.days_of_week.map(day => typeof day === "string" ? parseInt(day, 10) : day)
         : [];
 
       return {
         buffer_minutes: record.buffer_minutes,
-        booking_type: record.booking_type, // <-- FIX: was missing, required by TransformedCalendarSchedule
+        booking_type: record.booking_type,
         collectionId: record.collectionId,
         collectionName: record.collectionName,
         created: record.created,
@@ -271,7 +258,6 @@ export async function fetchCalendarScheduleByExperiencesIds(filter: string | str
 
 export async function updateCalendarSchedule(id: string, data: Calendar, cookieHeader?: string): Promise<Result<CalendarResponse, string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const result = await client.collection("CalendarSchedules").update<CalendarResponse>(id, {
       start_date: data.start_date,
@@ -285,7 +271,6 @@ export async function updateCalendarSchedule(id: string, data: Calendar, cookieH
       title: data.title,
       booking_type: data.booking_type,
     });
-
     return createResult(result, null);
   } catch (error) {
     console.error(error);
@@ -295,7 +280,6 @@ export async function updateCalendarSchedule(id: string, data: Calendar, cookieH
 
 export async function deleteCalendarSchedule(id: string, cookieHeader?: string): Promise<Result<boolean, string>> {
   const client = getPBSession(cookieHeader);
-
   try {
     const result = await client.collection("CalendarSchedules").delete(id);
     return createResult(result, null);
@@ -319,18 +303,15 @@ export async function createBooking(
   data: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">,
   cookieHeader?: string
 ): Promise<Result<BookingResponse, string>> {
-  const client = getPBSession(cookieHeader)
-
+  const client = getPBSession(cookieHeader);
   try {
     const record = await client.collection("Bookings").create<BookingResponse>(data);
-
-    return createResult(record, null)
+    return createResult(record, null);
   } catch (error) {
     console.error(error);
     return createResult(null, "Failed to create client booking");
   }
 }
-
 
 export interface Package extends MetaData {
   booking_ids: string[],
@@ -338,26 +319,20 @@ export interface Package extends MetaData {
   payment_ref: string
 }
 
-export interface BookingResponse extends Omit<Booking, "id">, MetaData {
-  expanded: {
-    calendar_ref?: CalendarResponse
-  }
-}
-
 export async function fetchBookingsByScheduleId(
   scheduleId: string,
   cookieHeader?: string
 ): Promise<Result<BookingResponse[], string>> {
   const client = getPBSession(cookieHeader);
-  const filter = `calendar_ref.id ~ "${scheduleId}"`;
   try {
     const records = await client.collection("Bookings").getFullList<BookingResponse>({
-      // filter,
       sort: "date, start_time",
     });
     const cleaned = records.map((r) => ({
       ...r,
       date: r.date.split(" ")[0],
+      start_time: convertTo24Hour(r.start_time),
+      end_time: convertTo24Hour(r.end_time),
     }));
     return createResult(cleaned, null);
   } catch (error) {
@@ -381,7 +356,6 @@ export async function updateBooking(
   }
 }
 
-// Delete a booking
 export async function deleteBooking(
   id: string,
   cookieHeader?: string
@@ -404,12 +378,11 @@ export function toUnitType(unit: UnitType): U {
     capacity: unit.capacity,
     value: unit.value,
     duration: unit.duration
-  } as U
+  } as U;
 }
 
 export function toCalendar(schedule: TransformedCalendarSchedule): C {
   const units: U[] = schedule.units.map(toUnitType);
-
   return {
     id: schedule.id,
     start_date: schedule.start_date.split(" ")[0],
@@ -429,8 +402,8 @@ export function toBooking(response: BookingResponse): B {
     calendar_ref: response.calendar_ref,
     id: response.id,
     date: response.date.split(" ")[0],
-    start_time: response.start_time,
-    end_time: response.end_time,
+    start_time: convertTo24Hour(response.start_time),
+    end_time: convertTo24Hour(response.end_time),
     duration: response.duration,
     unit_label: response.unit_label,
     unit_id: response.unit_id,
@@ -452,16 +425,9 @@ export function generateSlots(
   });
 }
 
-export interface Package extends MetaData {
-  booking_ids: string[],
-  status: "canceled" | "pending" | "complete",
-  payment_ref: string
-}
-
 export interface PackageResponse extends Package {
   expanded: {
     booking_ids: Booking[],
-    // TODO: implement code for Payment collection
   }
 }
 
@@ -475,7 +441,7 @@ export async function createPackage(booking: Booking, cookieHeader?: string): Pr
   }
 
   const bookingTemp = bookingResult.value;
-  return createResult(async function ({name, email, phone}:{name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
+  return createResult(async function ({name, email, phone}: {name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
     const result = await createPayment({phone, email, name, bookingId: bookingTemp.id}, cookieHeader);
 
     if (!result.success || !result.value) {
@@ -485,30 +451,25 @@ export async function createPackage(booking: Booking, cookieHeader?: string): Pr
     const paymentTemp = result.value;
 
     try {
-      const bookingId = bookingTemp.id;
-
-      const record = await
-        create("Packages", {
-        booking_ids: [bookingId],
+      const record = await create("Packages", {
+        booking_ids: [bookingTemp.id],
         status: "pending",
         payment_ref: paymentTemp.id
       }, cookieHeader);
 
       // @ts-ignore
-      return createResult(record.value, null);      
+      return createResult(record.value, null);
     } catch (error) {
       console.error(error);
       return createResult(null, "Failed to create package");
     }
-  }, null)
+  }, null);
 }
 
 export async function fetchPackages(cookieHeader?: string) {
   const client = getPBSession(cookieHeader);
-
   try {
     const records = await client.collection("Packages").getFullList<PackageResponse>({ batch: 50 });
-
     return createResult(records, null);
   } catch (err) {
     console.error(err);
@@ -532,8 +493,7 @@ export async function fetchPackageByRef(ref_key: RefKey, value: string, cookieHe
     const records = await client.collection("Packages").getFullList<PackageResponse>({
       filter,
       expand: "payment_ref, booking_ids"
-    })
-
+    });
     return createResult(records, null);
   } catch (err) {
     console.error(err);
@@ -543,10 +503,8 @@ export async function fetchPackageByRef(ref_key: RefKey, value: string, cookieHe
 
 export async function updatePackageById(id: string, data: Partial<Package>, cookieHeader?: string) {
   const client = getPBSession(cookieHeader);
-
   try {
     const record = await client.collection("Packages").update(id, data);
-
     return createResult(record, null);
   } catch (err) {
     console.error(err);
@@ -556,10 +514,8 @@ export async function updatePackageById(id: string, data: Partial<Package>, cook
 
 export async function deletePackageById(id: string, cookieHeader?: string) {
   const client = getPBSession(cookieHeader);
-
   try {
     const success = await client.collection("Packages").delete(id);
-
     return createResult(success, null);
   } catch (err) {
     console.error(err);
