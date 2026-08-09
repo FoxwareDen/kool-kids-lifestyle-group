@@ -15,7 +15,7 @@ export interface Payment {
 const payloadSchema = z.object({
   email: z.email(),
   name: z.string().optional(),
-  phone: z.e164(),
+  phone: z.string(),
 });
 
 export interface PaymentResponse extends MetaData, Payment {

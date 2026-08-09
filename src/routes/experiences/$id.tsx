@@ -71,13 +71,21 @@ function RouteComponent() {
         if (!result.value) {
           throw new Error("No schedules found");
         }
-
+        
         // @ts-ignore
-        const bookings: BookingResponse[] = (await Promise.all(
-          result.value.map((schedule)=> fetchBookingsByScheduleId(schedule.id))
-        )).filter((booking)=> !booking.value == null || !booking.success).map((booking)=>(booking.value));
+        const bookings: BookingResponse[] = (
+          await Promise.all(
+            result.value.map((schedule) =>
+              fetchBookingsByScheduleId(schedule.id)
+            )
+          )
+        )
+          .filter((booking) => booking.success && booking.value != null)
+          .flatMap((booking) => booking.value);
 
-        setExistingBookings(bookings)
+        console.log("bookings//", bookings);
+
+        setExistingBookings(bookings);
 
         setScheduleData(result.value);
       } catch (error) {

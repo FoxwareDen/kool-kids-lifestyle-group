@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
+import { generateAvailableSlots, type AvailableRange, type Booking, type Calendar, type SlotType, type Unit } from "#/lib/system";
 import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
 import type { Language } from "#/lib/experiences";
 import { fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules } from "#/lib/booking";
@@ -82,6 +82,31 @@ const coll = [dayRange, dayRange2, dayRange3]
 
 const coll2 = [slotRange1, slotRange2, slotRange3]
 
+const calendar: Calendar = {
+  id: "this-is-a-test",
+  booking_type: "day",
+  buffer_minutes: 1,
+  days_of_weeK: [0,1,2,3,4,5,6],
+  start_date: "2026-08-20",
+  end_date: "2026-08-23",
+  start_time: "09:00",
+  end_time: "04:00",
+  frequency: "weekly",
+  units: units2,
+}
+
+const bookings: Booking[] = [
+  {
+    id: "bobby",
+    date: "2026-08-21",
+    duration: 1,
+    start_time: "09:00",
+    end_time: "04:00",
+    status: "pending",
+    unit_id: "u2id",
+    unit_label: "2 Bedroom"
+  }
+]
 
 export const Route = createFileRoute("/_authed/dashboard/test-page")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -97,6 +122,20 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
 });
 
 function RouteComponent() {
+
+  useEffect(()=>{
+    console.log("bookings");
+    console.log(bookings);
+    console.log("");
+    console.log("calendar");
+    console.log(calendar);
+
+    console.log("////////////////// Generating //////////////////");
+    
+    const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
+    
+    
+  },[])
 
   return (
     <div className="p-6 space-y-6">

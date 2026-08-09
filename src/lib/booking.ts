@@ -349,7 +349,7 @@ export async function fetchBookingsByScheduleId(
   cookieHeader?: string
 ): Promise<Result<BookingResponse[], string>> {
   const client = getPBSession(cookieHeader);
-  const filter = `calendar_ref = "${scheduleId}"`;
+  const filter = `calendar_ref.id = "${scheduleId}"`;
   try {
     const records = await client.collection("Bookings").getFullList<BookingResponse>({
       filter,

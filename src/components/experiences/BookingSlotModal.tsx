@@ -11,7 +11,7 @@ import {
   BookingView,
   BookingPagingButtonGroup,
 } from '@/components/booking/calendar'
-import { initializePayment } from '#/server/utils'
+import { PaymentForm } from '../payment'
 
 interface BookingSlotModalProps {
   open: boolean
@@ -22,6 +22,7 @@ interface BookingSlotModalProps {
   loading: boolean
   error: string | null
 }
+
 
 export function BookingSlotModal({
   open,
@@ -34,44 +35,29 @@ export function BookingSlotModal({
     if (!calendarSchedule || !existingBookings) return []
     console.log("calendarSchedule");
     console.log(calendarSchedule);
+    console.log("existingBookings");
+    console.log(existingBookings);
     const slots = generateSlots(calendarSchedule, existingBookings)
-    
+
     console.log("slots");
     console.log(slots);
+    
+
     return slots
   }, [calendarSchedule, existingBookings])
+
   const [isBookingComplete, setIsBookingComplete] = useState(false);
 
   const [booking, setBooking] = useState<Booking| null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState<string|null>(null);
   const paymentContinueFunc = useRef<PaymentContinueFunc | null>(null)
-  
-  
-  const onSubmit = async () => {
-    if (!booking) return;
-
-    if (!paymentContinueFunc.current) {
-      const amount = booking.duration * booking.unit_id
-      const access_code = initializePayment({data: {amount, email}})
-    }
-
-    setIsLoading(true);
-    try {
-      
-    } catch (error) {
-      
-    }finally {
-      setIsLoading(false);
-    }
-
-  };
 
   const bookingFormCompletion = async (booking: Booking) => {
     setBooking(booking)
-    setIsBookingComplete(true)        
+    setIsBookingComplete(true)
   }
-  
+
   if (!open) return null
 
   return (
@@ -83,11 +69,11 @@ export function BookingSlotModal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92svh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        className="flex w-full max-h-[92svh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl lg:max-w-4xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-[var(--brand-navy)]/10 bg-[var(--brand-navy)] px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-[var(--brand-navy)]/10 bg-[var(--brand-navy)] px-5 py-5 sm:px-6">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand-orange)]">
               Book your slot
@@ -107,28 +93,31 @@ export function BookingSlotModal({
         </div>
 
         {/* Body */}
-        <div className="flex flex-wrap justify-center gap-2 px-6 py-6">
-          <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
-            <BookerStep name="unit_select">
-              <BookingUnitSelect />
-            </BookerStep>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+          <div className="min-w-0 flex-1 px-5 py-5 sm:px-6 sm:py-6 lg:overflow-y-auto">
+            <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
+              <BookerStep name="unit_select">
+                <BookingUnitSelect />
+              </BookerStep>
 
-            <BookerStep name="calendar">
-              <BookingCalendar />
-            </BookerStep>
+              <BookerStep name="calendar">
+                <BookingCalendar />
+              </BookerStep>
 
-            <BookerStep name="time_picker">
-              <BookingTimeSelect />
-            </BookerStep>
+              <BookerStep name="time_picker">
+                <BookingTimeSelect />
+              </BookerStep>
 
-            <BookerStep name="view_booking">
-              <BookingView />
-            </BookerStep>
+              <BookerStep name="view_booking">
+                <BookingView />
+              </BookerStep>
 
-            <BookingPagingButtonGroup />
-          </Booker>
-          <div>
+              <BookingPagingButtonGroup />
+            </Booker>
+          </div>
 
+          <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 px-5 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
+            <PaymentForm disabled={!isBookingComplete} booking={booking} />
           </div>
         </div>
       </div>

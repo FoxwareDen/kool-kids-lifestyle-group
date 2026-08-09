@@ -17,8 +17,7 @@ import {
  *   id: "unit_101",
  *   label: "Deluxe Suite 101",
  *   capacity: 1,
- *   duration: 1440, // 1 day in minutes
- *   value: 1200
+ *   duration: 1440 // 1 day in minutes
  * };
  * ```
  */
@@ -31,8 +30,6 @@ export interface Unit {
   capacity: number;
   /** Expected default duration for a single booking (minutes for slots, days for daily bookings). */
   duration: number;
-  /** Optional display value associated with the unit (e.g., price, points cost). Omit if not applicable. */
-  value?: number;
 }
 
 /**
@@ -61,7 +58,7 @@ export interface Calendar {
    * Array of permitted days of the week using standard JavaScript indexing:
    * `0` = Sunday, `1` = Monday, ..., `6` = Saturday.
    */
-  days_of_week: number[];
+  days_of_weeK: number[];
   /** Recurrence pattern for the schedule rules. Defaults to weekly when omitted. */
   frequency?: "weekly";
   /** Mandatory operational turnaround or cleanup time (in minutes) required before and after bookings. */
@@ -74,7 +71,6 @@ export interface Calendar {
  * Represents an existing reservation against a specific unit.
  */
 export interface Booking {
-  calendar_ref: string;
   /** Unique identifier for the booking record. */
   id: string;
   /** Calendar date of the reservation in `"YYYY-MM-DD"` format. */
@@ -104,12 +100,6 @@ export interface Booking {
  * - **`type === "slot"` (Intra-day time windows)**:
  *   - `start_date` & `end_date`: Anchor to the exact same single date (e.g., `"2026-08-01"`).
  *   - `start_time` & `end_time`: Define the start and end of the free, unreserved time window carved out on that day (e.g., `"09:00"` to `"11:30"`).
- *
- * ### Unit Value Passthrough:
- * Each entry in `units` is the same `Unit` object taken directly from the source `Calendar.units`
- * array — including its optional `value` field. `generateAvailableSlots` never spreads or
- * reconstructs unit objects, so `value` (when present upstream) is guaranteed to survive into
- * every `AvailableRange` unchanged.
  */
 export interface AvailableRange {
   calendar_ref: string;
@@ -141,7 +131,7 @@ export interface AvailableRange {
    */
   end_time: string;
 
-  /** List of bookable units available throughout this range. Carries `value` through from `Calendar.units` unchanged. */
+  /** List of bookable units available throughout this range. */
   units: Unit[];
 
   /** Mode of availability represented by this range object. */
@@ -208,7 +198,7 @@ export function generateAvailableSlots(
   const today = startOfDay(new Date());
 
   // Parse ISO date strings from the schedule into standard Date objects
-  const scheduleStart = parseISO(schedule.start_date);
+  const scheduleStart = startOfDay(parseISO(schedule.start_date));
   const scheduleEnd = parseISO(schedule.end_date);
 
   // Calculate the earliest permissible date for reservations based on lead-time configuration
@@ -229,18 +219,29 @@ export function generateAvailableSlots(
   // BRANCH 1: DAY-BASED BOOKINGS (Contiguous Range Coalescing)
   // =========================================================================
   if (schedule.booking_type === "day") {
+    console.log("booking type selected mode:{day}");
     
     // Evaluate unit-by-unit to track individual contiguous active ranges independently
+    console.log("looping units");
     for (const unit of schedule.units) {
+      console.log(`unit: ${unit.label} (${unit.id}) capacity: ${unit.capacity} duration: ${unit.duration})`);
 
       let activeRange: AvailableRange | null = null;
+      console.log("activeRange initialized to null");
 
+      // Iterate through each day in the schedule horizon to determine availability
+      console.log(`looping daysInRange: ${daysInRange.length} days`);
       for (const date of daysInRange) {
-        const dotw = getDay(date);
+        console.log(`checking date: ${format(date, "yyyy-MM-dd")}`);
+
+        const day_of_the_week = getDay(date);
+        console.log(`day_of_the_week: ${day_of_the_week} (0=Sun, 1=Mon, ..., 6=Sat)`);
+
         const formattedDate = format(date, 'yyyy-MM-dd');
+        console.log(`formattedDate: ${formattedDate}`);
 
         // Rule Check 1: Is this day of the week enabled in the calendar schedule?
-        const isWorkingDay = schedule.days_of_week.includes(dotw);
+        const isWorkingDay = schedule.days_of_weeK.includes(day_of_the_week);
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
         const bookedCount = bookings.filter((b) => {
@@ -250,10 +251,9 @@ export function generateAvailableSlots(
 
           // Calculate the full span of the booking based on its duration
           const bStartDate = parseISO(b.date);
-          const bEndDate = addDays(bStartDate, b.duration);
+          const bEndDate = addDays(bStartDate, b.duration); // Inclusive of the start date
 
-          // The unit is occupied if the loop date is >= check-in AND < check-out
-          return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
+          return date.getTime() >= bStartDate.getTime() && date.getTime() <= bEndDate.getTime();
         }).length;
 
         const isAvailable = isWorkingDay && bookedCount < unit.capacity;
@@ -261,9 +261,6 @@ export function generateAvailableSlots(
         if (isAvailable) {
           if (!activeRange) {
             // INITIALIZE A NEW RANGE TRACKER
-            // NOTE: `unit` is passed by reference here — any optional fields on Unit
-            // (e.g. `value`) are preserved automatically without needing to be copied
-            // individually.
             activeRange = {
               calendar_ref: schedule.id,
               start_date: formattedDate,
@@ -300,10 +297,10 @@ export function generateAvailableSlots(
   // =========================================================================
   else {
     for (const date of daysInRange) {
-      const dotw = getDay(date);
+      const day_of_the_week = getDay(date);
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      const isworkingDay = schedule.days_of_week.includes(dotw);
+      const isworkingDay = schedule.days_of_weeK.includes(day_of_the_week);
       if (!isworkingDay) continue;
 
       // Filter non-cancelled reservations for this calendar date
@@ -369,3 +366,41 @@ export function generateAvailableSlots(
 
   return availableSlots;
 }
+
+
+const units2: Unit[] = [
+  { id: "u2id", label: "2 Bedroom", capacity: 1, duration:0 }
+];
+
+const calendar: Calendar = {
+  id: "this-is-a-test",
+  booking_type: "day",
+  buffer_minutes: 1,
+  days_of_weeK: [0,1,2,3,4,5,6],
+  start_date: "2026-08-20",
+  end_date: "2026-08-23",
+  start_time: "09:00",
+  end_time: "04:00",
+  frequency: "weekly",
+  units: units2,
+}
+
+const bookings: Booking[] = [
+  {
+    date: "2026-08-21",
+    duration: 1,
+    start_time: "09:00",
+    end_time: "04:00",
+    status: "pending",
+    unit_id: "u2id",
+    unit_label: "2 Bedroom",
+    id: "b1id",
+  }
+];
+
+(()=>{
+  const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
+  console.log(`slots generated`);
+  console.log(slots);
+  
+})()

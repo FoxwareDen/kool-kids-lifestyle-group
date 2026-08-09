@@ -13,10 +13,12 @@ export const generateUniqueCode = createServerFn().handler(()=>{
 export const initializePayment = createServerFn()
     .inputValidator((input: { email: string; amount: number }) => ({email:input.email, amount: input.amount}))
     .handler(async ({ data: {amount, email} }): Promise<{access_code?: string}> => {
+    const PAYSTACK_SECRET_KEY: string = process.env.PAYMENT_SERVER_KEY!;
+    
     const res = await fetch("https://api.paystack.co/transaction/initialize",{
         method: "POST",
         headers: {
-            "Authorization": "Bearer YOUR_SECRET_KEY",
+            "Authorization": `Bearer ${PAYSTACK_SECRET_KEY}`,
             "Content-Type": "application/json",
             body: JSON.stringify({
                 // Convert Rand to kobo
