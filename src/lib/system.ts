@@ -245,18 +245,24 @@ export function generateAvailableSlots(
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
         const bookedCount = bookings.filter((b) => {
-          // Ignore cancelled bookings or bookings for other units
           if (b.status === "cancelled") return false;
           if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
-
-          // Calculate the full span of the booking based on its duration
           const bStartDate = parseISO(b.date);
-          const bEndDate = addDays(bStartDate, b.duration); // Inclusive of the start date
-
-          return date.getTime() >= bStartDate.getTime() && date.getTime() <= bEndDate.getTime();
+          const bEndDate = addDays(bStartDate, b.duration);
+          return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
         }).length;
 
-        const isAvailable = isWorkingDay && bookedCount < unit.capacity;
+        // Rule Check 3: Also check next day isn't booked (since stay runs into next morning)
+        const nextDate = addDays(date, 1);
+        const nextDayBookedCount = bookings.filter((b) => {
+          if (b.status === "cancelled") return false;
+          if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
+          const bStartDate = parseISO(b.date);
+          const bEndDate = addDays(bStartDate, b.duration);
+          return nextDate.getTime() >= bStartDate.getTime() && nextDate.getTime() < bEndDate.getTime();
+        }).length;
+
+        const isAvailable = isWorkingDay && bookedCount < unit.capacity && nextDayBookedCount < unit.capacity;
 
         if (isAvailable) {
           if (!activeRange) {
