@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { generateAvailableSlots, type AvailableRange, type Booking, type Calendar, type SlotType, type Unit } from "#/lib/system";
 import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
 import type { Language } from "#/lib/experiences";
-import { fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules } from "#/lib/booking";
+import { fetchBookingsByScheduleId, fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules, toCalendar } from "#/lib/booking";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -12,7 +12,7 @@ const units: Unit[] = [
 ];
 
 const units2: Unit[] = [
-  { id: "u2id", label: "2 Bedroom", capacity: 2, duration:0 }
+  { id: "u2id", label: "2 Bedroom", capacity: 1, duration:0 }
 ];
 
 const dayRange: AvailableRange = {
@@ -86,7 +86,7 @@ const calendar: Calendar = {
   id: "this-is-a-test",
   booking_type: "day",
   buffer_minutes: 1,
-  days_of_weeK: [0,1,2,3,4,5,6],
+  days_of_week: [0,1,2,3,4,5,6],
   start_date: "2026-08-20",
   end_date: "2026-08-23",
   start_time: "09:00",
@@ -121,25 +121,93 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
   component: RouteComponent,
 });
 
+
 function RouteComponent() {
+  const [mode, setMode] = useState<SlotType>("day");
+  const [lastBooking, setLastBooking] = useState<Booking | null>(null);
+  const [liveSlots, setLiveSlots] = useState<AvailableRange[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(()=>{
-    console.log("bookings");
-    console.log(bookings);
-    console.log("");
-    console.log("calendar");
-    console.log(calendar);
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const id = "9i530p06zj381zs";
+      const scheduleResult = await fetchCalendarScheduleByExperiencesIds(id);
+      const matchingBookingsResult = await fetchBookingsByScheduleId(id);
 
-    console.log("////////////////// Generating //////////////////");
-    
-    const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
-    
-    
-  },[])
+      if (scheduleResult.value == null || matchingBookingsResult.value == null) {
+        setError("Failed to load schedule or bookings");
+        setLoading(false);
+        return;
+      }
+
+      const schedule = scheduleResult.value;
+      const matchingBookings = matchingBookingsResult.value;
+
+      if (!schedule[0]) {
+        setError("No calendar found for this experience ID");
+        setLoading(false);
+        return;
+      }
+
+      const slots = generateAvailableSlots(toCalendar(schedule[0]), matchingBookings, { minAdvanceDays: 0 });
+      setLiveSlots(slots);
+      setLoading(false);
+    })();
+  }, []);
+
+  const activeSchedule = liveSlots ?? (mode === "day" ? coll : coll2);
 
   return (
     <div className="p-6 space-y-6">
-      
+      <div className="flex gap-2 items-center">
+        <button
+          className={`px-4 py-2 rounded ${mode === "day" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          onClick={() => setMode("day")}
+        >
+          Day Mode
+        </button>
+        <button
+          className={`px-4 py-2 rounded ${mode === "slot" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          onClick={() => setMode("slot")}
+        >
+          Slot Mode
+        </button>
+        {loading && <span className="text-sm text-gray-400">Loading live data...</span>}
+        {error && <span className="text-sm text-red-500">{error}</span>}
+        {liveSlots && <span className="text-sm text-green-500">Live data loaded ✓</span>}
+      </div>
+
+      <Booker
+        type={mode}
+        schedule={activeSchedule}
+      >
+        <BookerStep name="unit_select">
+          <BookingUnitSelect />
+        </BookerStep>
+
+        <BookerStep name="calendar">
+          <BookingCalendar />
+        </BookerStep>
+
+        <BookerStep name="view_booking">
+          <BookingView />
+        </BookerStep>
+
+        <BookerStep name="time_picker">
+          <BookingTimeSelect />
+        </BookerStep>
+
+        <BookingPagingButtonGroup />
+      </Booker>
+
+      {lastBooking && (
+        <div className="mt-4 p-4 border rounded bg-gray-50">
+          <h3 className="font-semibold">Last Booking:</h3>
+          <pre className="text-sm">{JSON.stringify(lastBooking, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 }

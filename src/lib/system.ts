@@ -58,7 +58,7 @@ export interface Calendar {
    * Array of permitted days of the week using standard JavaScript indexing:
    * `0` = Sunday, `1` = Monday, ..., `6` = Saturday.
    */
-  days_of_weeK: number[];
+  days_of_week: number[];
   /** Recurrence pattern for the schedule rules. Defaults to weekly when omitted. */
   frequency?: "weekly";
   /** Mandatory operational turnaround or cleanup time (in minutes) required before and after bookings. */
@@ -219,35 +219,27 @@ export function generateAvailableSlots(
   // BRANCH 1: DAY-BASED BOOKINGS (Contiguous Range Coalescing)
   // =========================================================================
   if (schedule.booking_type === "day") {
-    console.log("booking type selected mode:{day}");
     
     // Evaluate unit-by-unit to track individual contiguous active ranges independently
-    console.log("looping units");
     for (const unit of schedule.units) {
-      console.log(`unit: ${unit.label} (${unit.id}) capacity: ${unit.capacity} duration: ${unit.duration})`);
 
       let activeRange: AvailableRange | null = null;
-      console.log("activeRange initialized to null");
 
       // Iterate through each day in the schedule horizon to determine availability
-      console.log(`looping daysInRange: ${daysInRange.length} days`);
       for (const date of daysInRange) {
-        console.log(`checking date: ${format(date, "yyyy-MM-dd")}`);
 
         const day_of_the_week = getDay(date);
-        console.log(`day_of_the_week: ${day_of_the_week} (0=Sun, 1=Mon, ..., 6=Sat)`);
 
         const formattedDate = format(date, 'yyyy-MM-dd');
-        console.log(`formattedDate: ${formattedDate}`);
 
         // Rule Check 1: Is this day of the week enabled in the calendar schedule?
-        const isWorkingDay = schedule.days_of_weeK.includes(day_of_the_week);
+        const isWorkingDay = schedule.days_of_week.includes(day_of_the_week);
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
         const bookedCount = bookings.filter((b) => {
           if (b.status === "cancelled") return false;
           if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
-          const bStartDate = parseISO(b.date);
+          const bStartDate = startOfDay(parseISO(b.date));
           const bEndDate = addDays(bStartDate, b.duration);
           return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
         }).length;
@@ -306,7 +298,7 @@ export function generateAvailableSlots(
       const day_of_the_week = getDay(date);
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      const isworkingDay = schedule.days_of_weeK.includes(day_of_the_week);
+      const isworkingDay = schedule.days_of_week.includes(day_of_the_week);
       if (!isworkingDay) continue;
 
       // Filter non-cancelled reservations for this calendar date
@@ -382,7 +374,7 @@ const calendar: Calendar = {
   id: "this-is-a-test",
   booking_type: "day",
   buffer_minutes: 1,
-  days_of_weeK: [0,1,2,3,4,5,6],
+  days_of_week: [0,1,2,3,4,5,6],
   start_date: "2026-08-20",
   end_date: "2026-08-23",
   start_time: "09:00",
@@ -404,9 +396,9 @@ const bookings: Booking[] = [
   }
 ];
 
-(()=>{
-  const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
-  console.log(`slots generated`);
-  console.log(slots);
+// (()=>{
+//   const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
+//   console.log(`slots generated`);
+//   console.log(slots);
   
-})()
+// })()

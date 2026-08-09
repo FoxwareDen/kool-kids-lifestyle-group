@@ -349,13 +349,17 @@ export async function fetchBookingsByScheduleId(
   cookieHeader?: string
 ): Promise<Result<BookingResponse[], string>> {
   const client = getPBSession(cookieHeader);
-  const filter = `calendar_ref.id = "${scheduleId}"`;
+  const filter = `calendar_ref.id ~ "${scheduleId}"`;
   try {
     const records = await client.collection("Bookings").getFullList<BookingResponse>({
-      filter,
+      // filter,
       sort: "date, start_time",
     });
-    return createResult(records, null);
+    const cleaned = records.map((r) => ({
+      ...r,
+      date: r.date.split(" ")[0],
+    }));
+    return createResult(cleaned, null);
   } catch (error) {
     console.error(error);
     return createResult(null, "Failed to fetch bookings");
@@ -408,8 +412,8 @@ export function toCalendar(schedule: TransformedCalendarSchedule): C {
 
   return {
     id: schedule.id,
-    start_date: schedule.start_date,
-    end_date: schedule.end_date,
+    start_date: schedule.start_date.split(" ")[0],
+    end_date: schedule.end_date.split(" ")[0],
     start_time: schedule.start_time,
     end_time: schedule.end_time,
     days_of_week: schedule.days_of_week,
@@ -424,7 +428,7 @@ export function toBooking(response: BookingResponse): B {
   return {
     calendar_ref: response.calendar_ref,
     id: response.id,
-    date: response.date,
+    date: response.date.split(" ")[0],
     start_time: response.start_time,
     end_time: response.end_time,
     duration: response.duration,

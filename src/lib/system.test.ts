@@ -15,7 +15,7 @@ const slotCalendar = (overrides: Partial<Calendar> = {}): Calendar => ({
   start_time: "09:00",
   end_time: "17:00",
   booking_type: "slot",
-  days_of_weeK: [1, 2, 3, 4, 5], // Mon–Fri
+  days_of_week: [1, 2, 3, 4, 5], // Mon–Fri
   buffer_minutes: 0,
   units: [UNIT_A],
   ...overrides,
@@ -28,7 +28,7 @@ const dayCalendar = (overrides: Partial<Calendar> = {}): Calendar => ({
   start_time: "14:00",
   end_time: "11:00",
   booking_type: "day",
-  days_of_weeK: [0, 1, 2, 3, 4, 5, 6],
+  days_of_week: [0, 1, 2, 3, 4, 5, 6],
   buffer_minutes: 0,
   units: [UNIT_A],
   ...overrides,
@@ -288,7 +288,7 @@ describe("slot mode – days of week filtering", () => {
   });
 
   it("only includes the specified days of week", () => {
-    const cal = slotCalendar({ days_of_weeK: [1, 3], end_date: "2026-08-09" }); // Mon + Wed only
+    const cal = slotCalendar({ days_of_week: [1, 3], end_date: "2026-08-09" }); // Mon + Wed only
     const result = generateAvailableSlots(cal, noBookings, { minAdvanceDays: 0 });
 
     const dates = result.map((r) => r.start_date);
@@ -530,7 +530,7 @@ describe("edge cases", () => {
   });
 
   it("returns an empty array when no days match the days_of_week filter", () => {
-    const cal = slotCalendar({ days_of_weeK: [0] }); // Sunday only, but calendar is Mon–Fri
+    const cal = slotCalendar({ days_of_week: [0] }); // Sunday only, but calendar is Mon–Fri
     const result = generateAvailableSlots(cal, noBookings, { minAdvanceDays: 0 });
     expect(result).toHaveLength(0);
   });
