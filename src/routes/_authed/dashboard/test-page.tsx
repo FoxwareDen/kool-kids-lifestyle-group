@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import type { AvailableRange, Booking, SlotType, Unit } from "#/lib/system";
+import { generateAvailableSlots, type AvailableRange, type Booking, type Calendar, type SlotType, type Unit } from "#/lib/system";
 import { Booker, BookerStep, BookingCalendar, BookingPagingButtonGroup, BookingTimeSelect, BookingUnitSelect, BookingView } from "#/components/booking/calendar";
 import type { Language } from "#/lib/experiences";
-import { fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules } from "#/lib/booking";
+import { fetchBookingsByScheduleId, fetchCalendarScheduleByExperiencesIds, fetchCalendarSchedules, toCalendar } from "#/lib/booking";
 
 // ----- MOCK UNITS -----
 const units: Unit[] = [
@@ -12,7 +12,7 @@ const units: Unit[] = [
 ];
 
 const units2: Unit[] = [
-  { id: "u2id", label: "2 Bedroom", capacity: 2, duration:0 }
+  { id: "u2id", label: "2 Bedroom", capacity: 1, duration:0 }
 ];
 
 const dayRange: AvailableRange = {
@@ -82,6 +82,31 @@ const coll = [dayRange, dayRange2, dayRange3]
 
 const coll2 = [slotRange1, slotRange2, slotRange3]
 
+const calendar: Calendar = {
+  id: "this-is-a-test",
+  booking_type: "day",
+  buffer_minutes: 1,
+  days_of_week: [0,1,2,3,4,5,6],
+  start_date: "2026-08-20",
+  end_date: "2026-08-23",
+  start_time: "09:00",
+  end_time: "04:00",
+  frequency: "weekly",
+  units: units2,
+}
+
+const bookings: Booking[] = [
+  {
+    id: "bobby",
+    date: "2026-08-21",
+    duration: 1,
+    start_time: "09:00",
+    end_time: "04:00",
+    status: "pending",
+    unit_id: "u2id",
+    unit_label: "2 Bedroom"
+  }
+]
 
 export const Route = createFileRoute("/_authed/dashboard/test-page")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -89,7 +114,6 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
   }),
   loaderDeps: ({ search: {lang} }) => ({lang}),
   loader: async ({ deps: { lang } }) => {
-    const slots = await fetchCalendarScheduleByExperiencesIds("9i530p06zj381zs")
     return {
       lang
     }
@@ -97,13 +121,47 @@ export const Route = createFileRoute("/_authed/dashboard/test-page")({
   component: RouteComponent,
 });
 
+
 function RouteComponent() {
   const [mode, setMode] = useState<SlotType>("day");
   const [lastBooking, setLastBooking] = useState<Booking | null>(null);
+  const [liveSlots, setLiveSlots] = useState<AvailableRange[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const id = "9i530p06zj381zs";
+      const scheduleResult = await fetchCalendarScheduleByExperiencesIds(id);
+      const matchingBookingsResult = await fetchBookingsByScheduleId(id);
+
+      if (scheduleResult.value == null || matchingBookingsResult.value == null) {
+        setError("Failed to load schedule or bookings");
+        setLoading(false);
+        return;
+      }
+
+      const schedule = scheduleResult.value;
+      const matchingBookings = matchingBookingsResult.value;
+
+      if (!schedule[0]) {
+        setError("No calendar found for this experience ID");
+        setLoading(false);
+        return;
+      }
+
+      const slots = generateAvailableSlots(toCalendar(schedule[0]), matchingBookings, { minAdvanceDays: 0 });
+      setLiveSlots(slots);
+      setLoading(false);
+    })();
+  }, []);
+
+  const activeSchedule = liveSlots ?? (mode === "day" ? coll : coll2);
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <button
           className={`px-4 py-2 rounded ${mode === "day" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
           onClick={() => setMode("day")}
@@ -116,11 +174,14 @@ function RouteComponent() {
         >
           Slot Mode
         </button>
+        {loading && <span className="text-sm text-gray-400">Loading live data...</span>}
+        {error && <span className="text-sm text-red-500">{error}</span>}
+        {liveSlots && <span className="text-sm text-green-500">Live data loaded ✓</span>}
       </div>
 
       <Booker
         type={mode}
-        schedule={mode == "day" ? coll: coll2}
+        schedule={activeSchedule}
       >
         <BookerStep name="unit_select">
           <BookingUnitSelect />
@@ -129,7 +190,7 @@ function RouteComponent() {
         <BookerStep name="calendar">
           <BookingCalendar />
         </BookerStep>
-  
+
         <BookerStep name="view_booking">
           <BookingView />
         </BookerStep>
@@ -137,7 +198,6 @@ function RouteComponent() {
         <BookerStep name="time_picker">
           <BookingTimeSelect />
         </BookerStep>
-
 
         <BookingPagingButtonGroup />
       </Booker>

@@ -71,7 +71,6 @@ export interface Calendar {
  * Represents an existing reservation against a specific unit.
  */
 export interface Booking {
-  calendar_ref: string;
   /** Unique identifier for the booking record. */
   id: string;
   /** Calendar date of the reservation in `"YYYY-MM-DD"` format. */
@@ -199,7 +198,7 @@ export function generateAvailableSlots(
   const today = startOfDay(new Date());
 
   // Parse ISO date strings from the schedule into standard Date objects
-  const scheduleStart = parseISO(schedule.start_date);
+  const scheduleStart = startOfDay(parseISO(schedule.start_date));
   const scheduleEnd = parseISO(schedule.end_date);
 
   // Calculate the earliest permissible date for reservations based on lead-time configuration
@@ -226,28 +225,36 @@ export function generateAvailableSlots(
 
       let activeRange: AvailableRange | null = null;
 
+      // Iterate through each day in the schedule horizon to determine availability
       for (const date of daysInRange) {
-        const dotw = getDay(date);
+
+        const day_of_the_week = getDay(date);
+
         const formattedDate = format(date, 'yyyy-MM-dd');
 
         // Rule Check 1: Is this day of the week enabled in the calendar schedule?
-        const isWorkingDay = schedule.days_of_week.includes(dotw);
+        const isWorkingDay = schedule.days_of_week.includes(day_of_the_week);
 
         // Rule Check 2: Count non-cancelled bookings occupying this unit on this date
         const bookedCount = bookings.filter((b) => {
-          // Ignore cancelled bookings or bookings for other units
           if (b.status === "cancelled") return false;
           if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
-
-          // Calculate the full span of the booking based on its duration
-          const bStartDate = parseISO(b.date);
+          const bStartDate = startOfDay(parseISO(b.date));
           const bEndDate = addDays(bStartDate, b.duration);
-
-          // The unit is occupied if the loop date is >= check-in AND < check-out
           return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
         }).length;
 
-        const isAvailable = isWorkingDay && bookedCount < unit.capacity;
+        // Rule Check 3: Also check next day isn't booked (since stay runs into next morning)
+        const nextDate = addDays(date, 1);
+        const nextDayBookedCount = bookings.filter((b) => {
+          if (b.status === "cancelled") return false;
+          if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
+          const bStartDate = parseISO(b.date);
+          const bEndDate = addDays(bStartDate, b.duration);
+          return nextDate.getTime() >= bStartDate.getTime() && nextDate.getTime() < bEndDate.getTime();
+        }).length;
+
+        const isAvailable = isWorkingDay && bookedCount < unit.capacity && nextDayBookedCount < unit.capacity;
 
         if (isAvailable) {
           if (!activeRange) {
@@ -288,10 +295,10 @@ export function generateAvailableSlots(
   // =========================================================================
   else {
     for (const date of daysInRange) {
-      const dotw = getDay(date);
+      const day_of_the_week = getDay(date);
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      const isworkingDay = schedule.days_of_week.includes(dotw);
+      const isworkingDay = schedule.days_of_week.includes(day_of_the_week);
       if (!isworkingDay) continue;
 
       // Filter non-cancelled reservations for this calendar date
@@ -357,3 +364,41 @@ export function generateAvailableSlots(
 
   return availableSlots;
 }
+
+
+const units2: Unit[] = [
+  { id: "u2id", label: "2 Bedroom", capacity: 1, duration:0 }
+];
+
+const calendar: Calendar = {
+  id: "this-is-a-test",
+  booking_type: "day",
+  buffer_minutes: 1,
+  days_of_week: [0,1,2,3,4,5,6],
+  start_date: "2026-08-20",
+  end_date: "2026-08-23",
+  start_time: "09:00",
+  end_time: "04:00",
+  frequency: "weekly",
+  units: units2,
+}
+
+const bookings: Booking[] = [
+  {
+    date: "2026-08-21",
+    duration: 1,
+    start_time: "09:00",
+    end_time: "04:00",
+    status: "pending",
+    unit_id: "u2id",
+    unit_label: "2 Bedroom",
+    id: "b1id",
+  }
+];
+
+// (()=>{
+//   const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
+//   console.log(`slots generated`);
+//   console.log(slots);
+  
+// })()

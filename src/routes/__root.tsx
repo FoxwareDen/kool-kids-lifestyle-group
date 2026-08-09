@@ -18,7 +18,6 @@ import { isAuthenticated } from '#/lib/pocketbase'
 import { getRequestHeader } from '@tanstack/react-start/server'
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
 
-
 export const getSessionMiddleware = createMiddleware().server(({next})=>{
   const cookieHeader = getRequestHeader("Cookie");
   const isAuthed = isAuthenticated(cookieHeader);  
