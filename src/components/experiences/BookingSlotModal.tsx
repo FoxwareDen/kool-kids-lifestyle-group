@@ -117,7 +117,7 @@ export function BookingSlotModal({
           </div>
 
           <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 px-5 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
-            <PaymentForm disabled={!isBookingComplete} booking={booking} />
+            <PaymentForm toggleModel={onClose} disabled={!isBookingComplete} booking={booking} />
           </div>
         </div>
       </div>
