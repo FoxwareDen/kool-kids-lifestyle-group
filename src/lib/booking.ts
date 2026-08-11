@@ -1,6 +1,7 @@
+import { addDays, format } from "date-fns";
 import { createBookingPage } from "./experiences";
 import { createPayment } from "./payment";
-import { buildImageUrl, create, createResult, getPBSession, Result, type MetaData } from "./pocketbase";
+import { buildImageUrl, create, createResult, fetchCollection, getPBSession, Result, type MetaData } from "./pocketbase";
 import { type Unit as U, type Calendar as C, type Booking as B, type AvailableRange, generateAvailableSlots } from "@/lib/system";
 
 export type UnitType = U & {
@@ -299,12 +300,43 @@ export interface BookingResponse extends Omit<Booking, "id">, MetaData {
   }
 }
 
+export async function checkBookingTaken(booking: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">, cookieHeader?: string): Promise<Result<boolean, string>> {
+  const client = getPBSession(cookieHeader);
+  
+  try {
+    const dateStr = booking.date
+    const startTime = booking.start_time
+    const unitId = booking.unit_id
+    const nextDay = format(addDays(new Date(dateStr), 1), "yyyy-MM-dd");
+
+    const filter = `date >= "${dateStr} 00:00:00" && date < "${nextDay} 00:00:00" && start_time = "${startTime}" && unit_id = "${unitId}" && status != "cancelled"`;
+    const records = await client.collection("Bookings").getFirstListItem(filter)
+
+    const isTaken = records.items.length > 0;
+
+    return createResult(isTaken, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to check if booking is taken")
+  }
+}
+
 export async function createBooking(
   data: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">,
   cookieHeader?: string
 ): Promise<Result<BookingResponse, string>> {
   const client = getPBSession(cookieHeader);
   try {
+    const isTaken = await checkBookingTaken(data)
+
+    if (!isTaken.value || !isTaken.success) {
+      return createResult(null, "Failed to something idont know")
+    }
+
+    if (isTaken.value) {
+      return createResult(null, "blop")
+    }
+
     const record = await client.collection("Bookings").create<BookingResponse>(data);
     return createResult(record, null);
   } catch (error) {
@@ -433,16 +465,16 @@ export interface PackageResponse extends Package {
 
 export type PaymentContinueFunc = (data: {name?: string, phone: string, email: string}) => Promise<Result<PackageResponse, string>>
 
-export async function createPackage(booking: Booking, cookieHeader?: string): Promise<Result<PaymentContinueFunc, string>> {
+export async function createPackage(booking: Booking, code: string, reference: string, cookieHeader?: string): Promise<Result<PaymentContinueFunc, string>> {
   const bookingResult = await createBooking(booking, cookieHeader);
 
   if (!bookingResult.success || bookingResult.value == null) {
-    return createResult(null, "Failed to create booking for package");
+    return createResult(null, bookingResult.error ?? "Failed to create booking for package");
   }
 
   const bookingTemp = bookingResult.value;
   return createResult(async function ({name, email, phone}: {name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
-    const result = await createPayment({phone, email, name, bookingId: bookingTemp.id}, cookieHeader);
+    const result = await createPayment({phone, email, name, bookingId: bookingTemp.id, code, reference}, cookieHeader);
 
     if (!result.success || !result.value) {
       return createResult(null, "Failed to create payment for package");

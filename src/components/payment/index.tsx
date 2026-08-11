@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import type { Booking } from "#/lib/system";
 import { createPackage, fetchUnitTypes } from "#/lib/booking";
 import { useEffect, useState } from "react";
-import { initializePayment } from "#/server/utils";
+import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
 import PaystackPop from "@paystack/inline-js";
 
 const payloadSchema = z.object({
@@ -27,7 +27,7 @@ interface PaymentFormProps {
 }
 
 type PaymentStatus = {
-  type: "success" | "error" | "cancelled";
+  type: "success" | "error" | "cancelled" | "conflict";
   message: string;
 };
 
@@ -72,8 +72,14 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
 
       console.log("[Payment] Calling createPackage with booking:", booking);
       let packageResult;
+      let reference;
+      let code;
       try {
-        packageResult = await createPackage(booking);
+        reference = await generatePaymentReference();
+        code = await generateUniqueCode();
+
+        packageResult = await createPackage(booking, code, reference);
+        
         console.log("[Payment] createPackage response:", packageResult);
       } catch (err) {
         console.error("[Payment] createPackage threw an exception:", err);
@@ -86,6 +92,15 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
           error: packageResult.error,
           value: packageResult.value,
         });
+
+        if (packageResult.error === "blop") {
+          setPaymentStatus({
+            type: "conflict",
+            message: "This booking is no longer available. Please refresh the page.",
+          });
+          return;
+        }
+
         setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
         return;
       }
@@ -126,7 +141,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
           // @ts-ignore
           name: value.name,
           email: value.email,
-          phone: value.phone
+          phone: value.phone,
+          reference,
+          code,
         },
       };
 
@@ -385,17 +402,29 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             </form.Subscribe>
 
             {paymentStatus && (
-              <p
-                className={`mt-3 text-center text-sm font-medium ${
-                  paymentStatus.type === "success"
-                    ? "text-emerald-600"
-                    : paymentStatus.type === "cancelled"
-                    ? "text-amber-600"
-                    : "text-destructive"
-                }`}
-              >
-                {paymentStatus.message}
-              </p>
+              <div className="mt-3 text-center">
+                <p
+                  className={`text-sm font-medium ${
+                    paymentStatus.type === "success"
+                      ? "text-emerald-600"
+                      : paymentStatus.type === "cancelled" || paymentStatus.type === "conflict"
+                      ? "text-amber-600"
+                      : "text-destructive"
+                  }`}
+                >
+                  {paymentStatus.message}
+                </p>
+                {paymentStatus.type === "conflict" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-2 border-[var(--brand-navy)]/20 text-[var(--brand-navy)]"
+                    onClick={() => window.location.reload()}
+                  >
+                    Refresh page
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         </fieldset>
