@@ -341,6 +341,38 @@ export async function fetchBookingsByScheduleId(
   }
 }
 
+/**
+ * Fetch every booking in the system, cleaned for display.
+ *
+ * Dates are normalised to `YYYY-MM-DD` and times to 24-hour `HH:mm`, and the
+ * linked calendar schedule is expanded when available. Used by the admin
+ * dashboard to monitor all active bookings across every schedule.
+ *
+ * @param cookieHeader - Optional session cookie forwarded to PocketBase.
+ * @returns A {@link Result} with the cleaned booking records, or an error message.
+ */
+export async function fetchAllBookings(
+  cookieHeader?: string
+): Promise<Result<BookingResponse[], string>> {
+  const client = getPBSession(cookieHeader);
+  try {
+    const records = await client.collection("Bookings").getFullList<BookingResponse>({
+      sort: "date, start_time",
+      expand: "calendar_ref",
+    });
+    const cleaned = records.map((r) => ({
+      ...r,
+      date: r.date.split(" ")[0],
+      start_time: convertTo24Hour(r.start_time),
+      end_time: convertTo24Hour(r.end_time),
+    }));
+    return createResult(cleaned, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to fetch bookings");
+  }
+}
+
 export async function updateBooking(
   id: string,
   data: Partial<Omit<Booking, "id" | "created" | "updated">>,

@@ -10,13 +10,16 @@ import {
   Boxes,
   FileText,
   Users,
+  CalendarCheck2,
 } from 'lucide-react'
 import { getSessionMiddleware } from '#/routes/__root'
 import { fetchExperiences } from '#/lib/experiences'
-import { fetchCalendarSchedules, fetchUnitTypes } from '#/lib/booking'
+import { fetchCalendarSchedules, fetchUnitTypes, fetchAllBookings } from '#/lib/booking'
 import { StatCard } from '#/components/dashboard/StatCard'
 import { QuickAccessCard } from '#/components/dashboard/QuickAccessCard'
 import { GuideAccordion, type Guide } from '#/components/dashboard/GuideAccordion'
+import { ActiveBookingsPanel } from '#/components/dashboard/ActiveBookingsPanel'
+import { selectActiveBookings } from '#/components/dashboard/booking-utils'
 
 // ------------------------------------------------------------------
 // Server data: real counts for the stats row
@@ -27,16 +30,18 @@ const getDashboardStats = createServerFn()
     if (!context.isAuthed) throw new Error('Not authenticated')
 
     const cookie = context.cookieString
-    const [experiences, schedules, units] = await Promise.all([
+    const [experiences, schedules, units, bookings] = await Promise.all([
       fetchExperiences(cookie),
       fetchCalendarSchedules(cookie),
       fetchUnitTypes(cookie),
+      fetchAllBookings(cookie),
     ])
 
     return {
       experiences: experiences.success ? (experiences.value?.length ?? 0) : 0,
       schedules: schedules.success ? (schedules.value?.length ?? 0) : 0,
       units: units.success ? (units.value?.length ?? 0) : 0,
+      bookings: bookings.success ? (bookings.value ?? []) : [],
     }
   })
 
@@ -105,6 +110,7 @@ const GUIDES: Guide[] = [
 // ------------------------------------------------------------------
 function RouteComponent() {
   const stats = Route.useLoaderData()
+  const activeBookingsCount = selectActiveBookings(stats.bookings).length
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8 p-6">
@@ -117,7 +123,13 @@ function RouteComponent() {
       </div>
 
       {/* Stats row */}
-      <section aria-label="Workspace stats" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section aria-label="Workspace stats" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label="Active Bookings"
+          value={activeBookingsCount}
+          caption="Upcoming & in-progress reservations"
+          icon={CalendarCheck2}
+        />
         <StatCard
           label="Experiences"
           value={stats.experiences}
@@ -136,6 +148,12 @@ function RouteComponent() {
           caption="Bookable units across schedules"
           icon={Boxes}
         />
+      </section>
+
+      {/* Active bookings monitor */}
+      <section aria-label="Active bookings monitor" className="flex flex-col gap-4">
+        <h2 className="text-lg font-bold text-[var(--sea-ink)]">Bookings</h2>
+        <ActiveBookingsPanel bookings={stats.bookings} />
       </section>
 
       {/* Quick access */}
