@@ -129,7 +129,7 @@ export function PlanYourVisitSection({ lang = "en" }: { lang?: Language }) {
             </div>
 
             <a
-              href="#"
+              href="/experiences"
               className="group mt-3 inline-flex items-center justify-center gap-4 bg-[var(--sea-ink)] px-7 py-4 text-xs font-bold uppercase tracking-widest !text-white no-underline transition-colors hover:bg-[var(--brand-orange)]"
             >
               {t.visit.bookCta}
