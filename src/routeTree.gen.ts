@@ -30,6 +30,7 @@ import { Route as AuthedDashboardCreatePostRouteImport } from './routes/_authed/
 import { Route as AuthedDashboardCreateExperienceRouteImport } from './routes/_authed/dashboard/create-experience'
 import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
 import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
+import { Route as AuthedDashboardBookingsRouteImport } from './routes/_authed/dashboard/bookings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -140,6 +141,11 @@ const AuthedDashboardCalendarsRoute =
     path: '/calendars',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
+const AuthedDashboardBookingsRoute = AuthedDashboardBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/blogs/': typeof BlogsIndexRoute
   '/events/': typeof EventsIndexRoute
   '/experiences/': typeof ExperiencesIndexRoute
+  '/dashboard/bookings': typeof AuthedDashboardBookingsRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
   '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/blogs': typeof BlogsIndexRoute
   '/events': typeof EventsIndexRoute
   '/experiences': typeof ExperiencesIndexRoute
+  '/dashboard/bookings': typeof AuthedDashboardBookingsRoute
   '/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
   '/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/blogs/': typeof BlogsIndexRoute
   '/events/': typeof EventsIndexRoute
   '/experiences/': typeof ExperiencesIndexRoute
+  '/_authed/dashboard/bookings': typeof AuthedDashboardBookingsRoute
   '/_authed/dashboard/calendars': typeof AuthedDashboardCalendarsRoute
   '/_authed/dashboard/create-calendar': typeof AuthedDashboardCreateCalendarRoute
   '/_authed/dashboard/create-experience': typeof AuthedDashboardCreateExperienceRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/blogs/'
     | '/events/'
     | '/experiences/'
+    | '/dashboard/bookings'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
     | '/dashboard/create-experience'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/blogs'
     | '/events'
     | '/experiences'
+    | '/dashboard/bookings'
     | '/dashboard/calendars'
     | '/dashboard/create-calendar'
     | '/dashboard/create-experience'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/blogs/'
     | '/events/'
     | '/experiences/'
+    | '/_authed/dashboard/bookings'
     | '/_authed/dashboard/calendars'
     | '/_authed/dashboard/create-calendar'
     | '/_authed/dashboard/create-experience'
@@ -442,10 +454,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardCalendarsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
+    '/_authed/dashboard/bookings': {
+      id: '/_authed/dashboard/bookings'
+      path: '/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof AuthedDashboardBookingsRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
   }
 }
 
 interface AuthedDashboardRouteChildren {
+  AuthedDashboardBookingsRoute: typeof AuthedDashboardBookingsRoute
   AuthedDashboardCalendarsRoute: typeof AuthedDashboardCalendarsRoute
   AuthedDashboardCreateCalendarRoute: typeof AuthedDashboardCreateCalendarRoute
   AuthedDashboardCreateExperienceRoute: typeof AuthedDashboardCreateExperienceRoute
@@ -456,6 +476,7 @@ interface AuthedDashboardRouteChildren {
 }
 
 const AuthedDashboardRouteChildren: AuthedDashboardRouteChildren = {
+  AuthedDashboardBookingsRoute: AuthedDashboardBookingsRoute,
   AuthedDashboardCalendarsRoute: AuthedDashboardCalendarsRoute,
   AuthedDashboardCreateCalendarRoute: AuthedDashboardCreateCalendarRoute,
   AuthedDashboardCreateExperienceRoute: AuthedDashboardCreateExperienceRoute,
