@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Booking } from "#/lib/system";
-import { createPackage, fetchUnitTypes } from "#/lib/booking";
+import { createPackage, deleteBookingByMatches, fetchUnitTypes } from "#/lib/booking";
 import { useEffect, useState } from "react";
 import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
 import PaystackPop from "@paystack/inline-js";
@@ -176,7 +176,11 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             });
             toggleModel()
           },
-          onCancel: () => {
+          onCancel: async () => {
+            const res = await deleteBookingByMatches(booking);
+            
+            if (!res) await deleteBookingByMatches(booking);
+
             console.log("[Payment] Transaction cancelled by user");
             setIsPopupOpen(false);
             setPaymentStatus({
@@ -184,7 +188,11 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               message: "Payment was cancelled. You can try again whenever you're ready.",
             });
           },
-          onError: (error) => {
+          onError: async (error) => {
+            const res = await deleteBookingByMatches(booking);
+            
+            if (!res) await deleteBookingByMatches(booking);
+            
             console.error("[Payment] Paystack transaction error:", error);
             setIsPopupOpen(false);
             setPaymentStatus({
