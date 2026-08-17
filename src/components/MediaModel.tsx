@@ -15,29 +15,32 @@ import { Separator } from "./ui/separator";
 
 interface MediaModelProps {
   open: boolean;
-  onClick?: (item: Asset & { src: string}) => void;
+  accept?: "image" | "video" | "all";
+  onClick?: (item: Asset & { src: string }) => void;
   toggleOpen: () => void;
 }
 
-export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProps) {
+function getAssetType(file: File): "image" | "video" | "svg" {
+  if (file.type === "image/svg+xml") return "svg";
+  if (file.type.startsWith("video/")) return "video";
+  return "image";
+}
+
+export default function MediaModel({ open, onClick, toggleOpen, accept = "all" }: MediaModelProps) {
   const [list, setList] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string|null>(null);
-  
+  const [error, setError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     (async () => {
-        const result = await getAssets();
-
-        if (!result.success || !result.value) {
-            return ([]);
-        }
-
-        setList(result.value);
-    })()
-  }, [])
+      const result = await getAssets();
+      if (!result.success || !result.value) return;
+      setList(result.value);
+    })();
+  }, []);
 
   const handleDeletion = (event: MouseEvent<HTMLButtonElement>, item: Asset) => {
     event.stopPropagation();
@@ -49,6 +52,8 @@ export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProp
     event.stopPropagation();
     event.preventDefault();
     setPendingDelete(null);
+
+    // TODO: check related items tied to this image
   };
 
   const handleCancelDelete = (event: MouseEvent<HTMLButtonElement>) => {
@@ -62,38 +67,50 @@ export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProp
     if (!onClick) return;
     onClick({
       ...item,
-      src: buildImageUrl(item.collectionId, item.id, item.file)
+      src: buildImageUrl(item.collectionId, item.id, item.file),
     });
-    toggleOpen()
+    toggleOpen();
   };
 
-  const handleUploadClick = async () => {
+  const handleUploadClick = () => {
     fileInputRef.current?.click();
-
-    const files: FileList | null | undefined = fileInputRef.current?.files
-    
-    if (!files) {
-        // TODO: throw error no files found
-        return
-    }
-
-    const file: File = files[0]
-
-    const res = await uploadAsset(file, {
-        name: "", // TODO: add a name fild
-        type: "image", // TODO: add a select for this"image | video | svg" 
-        alt: "" // TODO: add a input for this
-    })
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      // Reset input so same file can be re-uploaded if needed
-    //   event.target.value = "";
-        uploadAsset
+    if (!files || files.length === 0) return;
+
+    const file: File | null = files.item(files.length - 1);
+    
+    if (!file) return;
+      
+    const derivedType = getAssetType(file);
+
+    setIsLoading(true);
+    setError(null);  
+
+    try {
+      const res = await uploadAsset(file, {
+        name: file.name.replace(/\.\w+/, ""),
+        type: derivedType,
+        alt: "",
+      });
+
+      if (res.success && res.value) {
+        setList((prev) => [...prev, res.value]);
+      }
+    } catch (e) {
+      setError("Upload failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+      event.target.value = "";
     }
   };
+
+  const acceptAttr =
+    accept === "image" ? "image/*" :
+    accept === "video" ? "video/*" :
+    "image/*,video/*";
 
   return (
     <Dialog open={open} onOpenChange={toggleOpen}>
@@ -103,32 +120,45 @@ export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProp
           <Button
             size="sm"
             onClick={handleUploadClick}
+            disabled={isLoading}
             className="gap-2 mr-8"
           >
             <Upload className="w-4 h-4" />
-            Upload
+            {isLoading ? "Uploading..." : "Upload"}
           </Button>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*|video/*"
+            accept={acceptAttr}
             className="hidden"
             onChange={handleFileChange}
           />
         </DialogHeader>
+
+        {error && (
+          <p className="text-sm text-destructive px-1">{error}</p>
+        )}
+
         <Separator orientation="horizontal" />
+
         <div className="overflow-y-auto pr-1 mt-2">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 my-2 mx-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 my-2 mx-2">
             {list.map((item) => (
-              <button key={item.id} onClick={() => handleImageSelected(item)}>
+                <div key={item.id} onClick={() => handleImageSelected(item)}>
                 <Card className="relative mx-auto w-full max-w-sm pt-0 hover:scale-105 hover:shadow-2xl duration-300">
                   <div className="relative">
-                    <img
-                      src={buildImageUrl(item.collectionId, item.id, item.file)}
-                      alt="Event cover"
-                      className="relative z-20 aspect-video w-full object-cover rounded-t-2xl"
-                      loading="lazy"
-                    />
+                    {
+                      item.type == "image" || item.type == "svg" ? (
+                        <img
+                          src={buildImageUrl(item.collectionId, item.id, item.file)}
+                          alt={item.alt}
+                          className="relative z-20 aspect-video w-full object-cover rounded-t-2xl"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <video src={buildImageUrl(item.collectionId, item.id, item.file)} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+                      )
+                    }
                     <div className="absolute right-0 top-0 z-50">
                       {pendingDelete === item.id ? (
                         <ButtonGroup className="m-2">
@@ -148,7 +178,6 @@ export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProp
                       )}
                     </div>
 
-                    {/* Dimming overlay when pending delete */}
                     {pendingDelete === item.id && (
                       <div className="absolute inset-0 z-30 rounded-t-2xl bg-destructive/20" />
                     )}
@@ -158,8 +187,8 @@ export default function MediaModel({ open, onClick, toggleOpen }: MediaModelProp
                     <CardTitle>{item.name}</CardTitle>
                   </CardHeader>
                 </Card>
-              </button>
-            ))}
+              </div>
+              ))}
           </div>
         </div>
       </DialogContent>
