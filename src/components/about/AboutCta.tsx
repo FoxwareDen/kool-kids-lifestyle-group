@@ -1,6 +1,6 @@
 import storyImg from '../../images/karoo-2.jpeg'
 import type { Content } from '#/lib/pocketbase'
-import { mapIcon } from '#/lib/utils'
+import { ArrowRight, Phone } from 'lucide-react'
 
 
 interface AboutCta {
@@ -24,7 +24,7 @@ interface AboutCta {
  * @returns {JSX.Element} The rendered call-to-action section.
  */
 export function AboutCta({data}: {data: Content<Partial<AboutCta>>}) {
-  const { content: { kicker, title, description, buttons } } = data;
+  const { content: { kicker, title, description } } = data;
 
   return (
     <section className="relative overflow-hidden">
@@ -45,21 +45,21 @@ export function AboutCta({data}: {data: Content<Partial<AboutCta>>}) {
         <p className="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-white/75">
           {description??"Let our team help you plan a journey filled with heritage, adventure and the unmistakable warmth of the Northern Cape."}
         </p>
-
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          {buttons?.map(({label, style,icon,href}:{label:string, style:string,icon:string,href:string})=>{
-            const Icon = mapIcon(icon);
-
-            return (
-              <a
-                href={href}
-                className={`group inline-flex items-center gap-3 border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline transition-colors  ${style=="primary"?"bg-[var(--brand-orange)] hover:bg-[var(--brand-orange-deep)]":"hover:bg-white/10"}`}
-              >
-              {label}
-                <Icon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </a>
-            )  
-          })}
+          <a
+            href="/experiences"
+            className="group inline-flex items-center gap-3 bg-[var(--brand-orange)] px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline shadow-lg shadow-black/30 transition-colors hover:bg-[var(--brand-orange-deep)]"
+          >
+            Book an experience
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </a>
+          <a
+            href="/contact"
+            className="group inline-flex items-center gap-3 border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline transition-colors hover:bg-white/10"
+          >
+            <Phone className="h-4 w-4" aria-hidden="true" />
+            Contact Us
+          </a>
         </div>
       </div>
     </section>
