@@ -28,22 +28,22 @@ export async function createPayment({
   email,
   phone,
   name,
-  bookingId
+  bookingId,
+  reference,
+  code
 }: {
   email: string,
   phone: string,
   name?: string,
-  bookingId: string
+  bookingId: string,
+  reference: string,
+  code: string
 }, cookieHeader?: string): Promise<Result<PaymentResponse, string>> {
   const validData = payloadSchema.parse({
     email,
     phone,
     name
   });
-
-  const reference = await generatePaymentReference();
-
-  const code = await  generateUniqueCode();
 
   const data: Payment = {
     name: validData.name,

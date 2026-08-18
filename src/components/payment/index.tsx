@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import type { Booking } from "#/lib/system";
 import { createPackage, fetchUnitTypes } from "#/lib/booking";
 import { useEffect, useState } from "react";
-import { initializePayment } from "#/server/utils";
+import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
 import PaystackPop from "@paystack/inline-js";
 
 const payloadSchema = z.object({
@@ -23,7 +23,13 @@ interface PaymentFormProps {
   /** True until the booking step is complete — locks and dims the form. */
   disabled?: boolean;
   booking: Booking | null;
+  toggleModel: () => void
 }
+
+type PaymentStatus = {
+  type: "success" | "error" | "cancelled" | "conflict";
+  message: string;
+};
 
 const fieldLabelClass =
   "text-xs font-semibold uppercase tracking-wide text-[var(--brand-navy)]/70";
@@ -31,9 +37,13 @@ const fieldLabelClass =
 const inputClass =
   "border-[var(--brand-navy)]/15 focus-visible:border-[var(--brand-orange)] focus-visible:ring-[var(--brand-orange)]/30";
 
-export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
+export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAmountError, setIsAmountError] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  // Tracks the Paystack popup lifecycle separately from form.state.isSubmitting,
+  // since onSubmit returns as soon as the popup opens, not when it resolves.
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -49,6 +59,7 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
     },
     onSubmit: async ({ value }) => {
       console.log("[Payment] Submission triggered:", { value, disabled, booking });
+      setPaymentStatus(null);
 
       if (disabled || booking == null) {
         console.warn("[Payment] Submission aborted:", {
@@ -61,11 +72,18 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
 
       console.log("[Payment] Calling createPackage with booking:", booking);
       let packageResult;
+      let reference;
+      let code;
       try {
-        packageResult = await createPackage(booking);
+        reference = await generatePaymentReference();
+        code = await generateUniqueCode();
+
+        packageResult = await createPackage(booking, code, reference);
+        
         console.log("[Payment] createPackage response:", packageResult);
       } catch (err) {
         console.error("[Payment] createPackage threw an exception:", err);
+        setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
         return;
       }
 
@@ -74,6 +92,16 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
           error: packageResult.error,
           value: packageResult.value,
         });
+
+        if (packageResult.error === "blop") {
+          setPaymentStatus({
+            type: "conflict",
+            message: "This booking is no longer available. Please refresh the page.",
+          });
+          return;
+        }
+
+        setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
         return;
       }
 
@@ -84,12 +112,14 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
         console.log("[Payment] Executing package closure with contact details...");
         try {
           await func({
+            // @ts-ignore
             name: value?.name || undefined,
             email: value.email,
             phone: value.phone,
           });
         } catch (err) {
           console.error("[Payment] Error running package function:", err);
+          setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
           return;
         }
       }
@@ -108,35 +138,65 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
       const paymentPayload = {
         data: {
           amount: amountInSubunits,
+          // @ts-ignore
+          name: value.name,
           email: value.email,
+          phone: value.phone,
+          reference,
+          code,
         },
       };
-
-      console.log("[Payment] Initializing payment with payload:", paymentPayload);
 
       let res;
       try {
         res = await initializePayment(paymentPayload);
-        console.log("[Payment] Received access_code:", res);
       } catch (err) {
         console.error("[Payment] initializePayment threw an error:", err);
+        setPaymentStatus({ type: "error", message: "Couldn't start the payment. Please try again." });
         return;
       }
 
       if (!res?.access_code) {
         console.error("[Payment] access_code is missing or falsy:", res);
+        setPaymentStatus({ type: "error", message: "Couldn't start the payment. Please try again." });
         return;
       }
 
       try {
-        console.log("[Payment] Instantiating PaystackPop...");
         const popup = new PaystackPop();
+        setIsPopupOpen(true);
 
-        console.log("[Payment] Resuming Paystack transaction with code:", res);
-        popup.resumeTransaction(res.access_code);
-        console.log("[Payment] Transaction resumed successfully");
+        popup.resumeTransaction(res.access_code, {
+          onSuccess: (transaction) => {
+            console.log("[Payment] Transaction successful:", transaction);
+            setIsPopupOpen(false);
+            setPaymentStatus({
+              type: "success",
+              message: "Payment successful! Your booking is confirmed.",
+            });
+            toggleModel()
+          },
+          onCancel: () => {
+            console.log("[Payment] Transaction cancelled by user");
+            setIsPopupOpen(false);
+            setPaymentStatus({
+              type: "cancelled",
+              message: "Payment was cancelled. You can try again whenever you're ready.",
+            });
+          },
+          onError: (error) => {
+            console.error("[Payment] Paystack transaction error:", error);
+            setIsPopupOpen(false);
+            setPaymentStatus({
+              type: "error",
+              message: error?.message || "Something went wrong with the payment.",
+            });
+          },
+        });
       } catch (err) {
         console.error("[Payment] PaystackPop execution failed:", err);
+        setIsPopupOpen(false);
+        setPaymentStatus({ type: "error", message: "Couldn't open the payment popup." });
       }
     },
   });
@@ -237,6 +297,7 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
             </form.Field>
 
             <div className="grid grid-cols-2 gap-4">
+              {/* @ts-ignore */}
               <form.Field name="name">
                 {(field) => (
                   <div className="space-y-1.5">
@@ -317,16 +378,54 @@ export function PaymentForm({ disabled = false, booking }: PaymentFormProps) {
 
           <div className="mt-6 border-t border-[var(--brand-navy)]/10 pt-4">
             <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-              {([canSubmit, isSubmitting]) => (
-                <Button
-                  type="submit"
-                  className="w-full bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)]/90"
-                  disabled={disabled || !canSubmit}
-                >
-                  {isSubmitting ? "Processing..." : "Pay now"}
-                </Button>
-              )}
+              {([canSubmit, isSubmitting]) => {
+                const isLocked = disabled || !canSubmit || isSubmitting || isLoading || isPopupOpen;
+                const isBusy = isSubmitting || isPopupOpen;
+
+                return (
+                  <Button
+                    type="submit"
+                    className="w-full bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)]/90 disabled:opacity-60"
+                    disabled={isLocked}
+                  >
+                    {isBusy ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        Processing...
+                      </span>
+                    ) : (
+                      "Pay now"
+                    )}
+                  </Button>
+                );
+              }}
             </form.Subscribe>
+
+            {paymentStatus && (
+              <div className="mt-3 text-center">
+                <p
+                  className={`text-sm font-medium ${
+                    paymentStatus.type === "success"
+                      ? "text-emerald-600"
+                      : paymentStatus.type === "cancelled" || paymentStatus.type === "conflict"
+                      ? "text-amber-600"
+                      : "text-destructive"
+                  }`}
+                >
+                  {paymentStatus.message}
+                </p>
+                {paymentStatus.type === "conflict" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-2 border-[var(--brand-navy)]/20 text-[var(--brand-navy)]"
+                    onClick={() => window.location.reload()}
+                  >
+                    Refresh page
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </fieldset>
 
