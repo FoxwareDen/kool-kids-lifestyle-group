@@ -394,6 +394,158 @@ export async function fetchBookingsByScheduleId(
   }
 }
 
+/**
+ * Fetch every booking in the system, cleaned for display.
+ *
+ * Dates are normalised to `YYYY-MM-DD` and times to 24-hour `HH:mm`, and the
+ * linked calendar schedule is expanded when available. Used by the admin
+ * dashboard to monitor all active bookings across every schedule.
+ *
+ * @param cookieHeader - Optional session cookie forwarded to PocketBase.
+ * @returns A {@link Result} with the cleaned booking records, or an error message.
+ */
+export async function fetchAllBookings(
+  cookieHeader?: string
+): Promise<Result<BookingResponse[], string>> {
+  const client = getPBSession(cookieHeader);
+  try {
+    const records = await client.collection("Bookings").getFullList<BookingResponse>({
+      sort: "date, start_time",
+      expand: "calendar_ref",
+    });
+    const cleaned = records.map((r) => ({
+      ...r,
+      date: r.date.split(" ")[0],
+      start_time: convertTo24Hour(r.start_time),
+      end_time: convertTo24Hour(r.end_time),
+    }));
+    return createResult(cleaned, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to fetch bookings");
+  }
+}
+
+/**
+ * Customer & payment details attached to a booking, sourced from the linked
+ * `Payments` record in the CMS.
+ */
+export interface BookingCustomer {
+  /** Customer's full name, when captured at checkout. */
+  name?: string;
+  /** Contact email used for the reservation. */
+  email: string;
+  /** Contact phone number used for the reservation. */
+  phone: string;
+  /** Human-friendly payment reference shown to the customer. */
+  reference: string;
+  /** Short confirmation/redemption code, when issued. */
+  code?: string;
+  /** Whether payment has been settled (`verified`) or is still outstanding (`due`). */
+  payment_status: "due" | "verified";
+}
+
+/**
+ * Schedule context attached to a booking, sourced from its linked
+ * `CalendarSchedules` record.
+ */
+export interface BookingSchedule {
+  id: string;
+  /** Display title of the schedule the booking belongs to. */
+  title: string;
+  /** Whether the schedule books intra-day time slots or multi-day stays. */
+  booking_type: SlotType;
+}
+
+/**
+ * A booking enriched with the CMS context an admin needs to act on it: the
+ * originating schedule and the customer/payment record. Times are normalised to
+ * 24-hour `HH:mm` and dates to `YYYY-MM-DD`.
+ */
+export interface DetailedBooking {
+  id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  duration: number;
+  unit_label: string;
+  unit_id: string;
+  status: Booking["status"];
+  created: string;
+  updated: string;
+  /** Schedule the booking was made against, when the relation resolves. */
+  schedule?: BookingSchedule;
+  /** Customer & payment info from the linked payment, when one exists. */
+  customer?: BookingCustomer;
+}
+
+/**
+ * Fetch every booking enriched with its schedule and customer/payment details.
+ *
+ * Bookings are joined to their `calendar_ref` schedule (via PocketBase
+ * `expand`) and to the `Payments` collection (matched on `booking_id`) so the
+ * admin monitor can show who booked, their contact details, and payment status
+ * — not just the raw slot. Dates/times are normalised for display.
+ *
+ * @param cookieHeader - Optional session cookie forwarded to PocketBase.
+ * @returns A {@link Result} with the enriched bookings, or an error message.
+ */
+export async function fetchBookingsDetailed(
+  cookieHeader?: string
+): Promise<Result<DetailedBooking[], string>> {
+  const client = getPBSession(cookieHeader);
+  try {
+    const [records, payments] = await Promise.all([
+      client.collection("Bookings").getFullList<BookingResponse & { expand?: { calendar_ref?: CalendarResponse } }>({
+        sort: "-date, start_time",
+        expand: "calendar_ref",
+      }),
+      client.collection("Payments").getFullList<PaymentResponse>({ batch: 200 }),
+    ]);
+
+    const paymentByBooking = new Map<string, PaymentResponse>();
+    for (const payment of payments) {
+      const bookingId = payment.booking_id as unknown as string;
+      if (bookingId) paymentByBooking.set(bookingId, payment);
+    }
+
+    const detailed: DetailedBooking[] = records.map((record) => {
+      const schedule = record.expand?.calendar_ref;
+      const payment = paymentByBooking.get(record.id);
+      return {
+        id: record.id,
+        date: record.date.split(" ")[0],
+        start_time: convertTo24Hour(record.start_time),
+        end_time: convertTo24Hour(record.end_time),
+        duration: record.duration,
+        unit_label: record.unit_label,
+        unit_id: record.unit_id,
+        status: record.status,
+        created: record.created,
+        updated: record.updated,
+        schedule: schedule
+          ? { id: schedule.id, title: schedule.title, booking_type: schedule.booking_type }
+          : undefined,
+        customer: payment
+          ? {
+              name: payment.name,
+              email: payment.email,
+              phone: payment.phone,
+              reference: payment.reference,
+              code: payment.code,
+              payment_status: payment.status,
+            }
+          : undefined,
+      };
+    });
+
+    return createResult(detailed, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to fetch detailed bookings");
+  }
+}
+
 export async function updateBooking(
   id: string,
   data: Partial<Omit<Booking, "id" | "created" | "updated">>,

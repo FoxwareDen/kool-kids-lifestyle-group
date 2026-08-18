@@ -59,7 +59,7 @@ export function StorySpotlight({
         </p>
 
         <a
-          href={href}
+          href="/heritage"
           className="group mt-7 inline-flex items-center gap-3 border border-[var(--brand-orange)] px-6 py-3 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline transition-colors hover:bg-[var(--brand-orange)] hover:!text-white"
         >
           {ctaLabel}

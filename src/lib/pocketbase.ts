@@ -142,6 +142,36 @@ export async function uploadAsset(
   }
 }
 
+export async function getAssets(): Promise<Result<Asset[],string>> {
+  try {
+    const records = await fetchCollection("assets");
+
+    if (!records.success || !records.value) {
+      return createResult(null, "Failed to get assets");
+    }
+    
+    return createResult(records.value, null);
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to get assets");
+  }
+}
+
+export async function deleteAsset(id: string): Promise<Result<boolean, string>> {
+  try {
+    const record = await deleteItemInCollection("assets", id);
+
+    if (!record.success || !record.value) {
+      return createResult(null, "Failed to delete image");
+    }
+
+    return createResult(record.value, null)
+  } catch (error) {
+    console.error(error);
+    return createResult(null, "Failed to delete image");
+  }
+}
+
 /** Infer asset type from the browser File MIME type */
 function inferType(file: File): "image" | "video" | "svg" {
   if (file.type === "image/svg+xml") return "svg";
