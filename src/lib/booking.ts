@@ -305,40 +305,18 @@ export async function checkBookingTaken(booking: Omit<Booking, "id" | "created" 
   
   try {
     const dateStr = booking.date
-    const startTime = booking.start_time
     const unitId = booking.unit_id
     const nextDay = format(addDays(new Date(dateStr), 1), "yyyy-MM-dd");
 
-    const filter = `date >= "${dateStr} 00:00:00" && date < "${nextDay} 00:00:00" && start_time = "${startTime}" && unit_id = "${unitId}" && status != "cancelled"`;
-    const records = await client.collection("Bookings").getFirstListItem(filter)
+    const filter = `date >= "${dateStr} 00:00:00" && date < "${nextDay} 00:00:00" && unit_id.id "${unitId}" `;
+    const record = await client.collection("Bookings").getFirstListItem(filter)
 
-    const isTaken = records.items.length > 0;
+    const isTaken = record.items.length > 0;
 
     return createResult(isTaken, null);
   } catch (error) {
     console.error(error);
     return createResult(null, "Failed to check if booking is taken")
-  }
-}
-
-export async function deleteBookingByMatches(booking: Omit<Booking, "id" | "created" | "updated" | "collectionId" | "collectionName">, cookieHeader?: string): Promise<Result<boolean, string>> {
-  const client = getPBSession(cookieHeader);
-
-  try {
-    const dateStr = booking.date
-    const startTime = booking.start_time
-    const unitId = booking.unit_id
-    const nextDay = format(addDays(new Date(dateStr), 1), "yyyy-MM-dd");
-
-    const filter = `date >= "${dateStr} 00:00:00" && date < "${nextDay} 00:00:00" && start_time = "${startTime}" && unit_id = "${unitId}" && status != "cancelled"`;
-    const record = await client.collection("Bookings").getFirstListItem(filter)
-
-    const res = await client.collection("Bookings").delete(record.id)
-
-    return createResult(res, null);
-  } catch (error) {
-    
-    return createResult(null, "Failed to create");
   }
 }
 
@@ -348,15 +326,15 @@ export async function createBooking(
 ): Promise<Result<BookingResponse, string>> {
   const client = getPBSession(cookieHeader);
   try {
-    const isTaken = await checkBookingTaken(data)
+    // // const isTaken = await checkBookingTaken(data)
 
-    if (!isTaken.value || !isTaken.success) {
-      return createResult(null, "Failed to something idont know")
-    }
+    // if (!isTaken.value || !isTaken.success) {
+    //   return createResult(null, "Failed to something idont know")
+    // }
 
-    if (isTaken.value) {
-      return createResult(null, "blop")
-    }
+    // if (isTaken.value) {
+    //   return createResult(null, "blop")
+    // }
 
     const record = await client.collection("Bookings").create<BookingResponse>(data);
     return createResult(record, null);
@@ -638,7 +616,8 @@ export interface PackageResponse extends Package {
 
 export type PaymentContinueFunc = (data: {name?: string, phone: string, email: string}) => Promise<Result<PackageResponse, string>>
 
-export async function createPackage(booking: Booking, code: string, reference: string, cookieHeader?: string): Promise<Result<PaymentContinueFunc, string>> {
+export async function createPackage(booking: Booking, code: string, reference: string, cookieHeader?: string): Promise<Result<[PaymentContinueFunc, BookingResponse], string>> {
+
   const bookingResult = await createBooking(booking, cookieHeader);
 
   if (!bookingResult.success || bookingResult.value == null) {
@@ -646,7 +625,8 @@ export async function createPackage(booking: Booking, code: string, reference: s
   }
 
   const bookingTemp = bookingResult.value;
-  return createResult(async function ({name, email, phone}: {name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
+  
+  return createResult([async function ({name, email, phone}: {name?: string, phone: string, email: string}): Promise<Result<PackageResponse, string>> {
     const result = await createPayment({phone, email, name, bookingId: bookingTemp.id, code, reference}, cookieHeader);
 
     if (!result.success || !result.value) {
@@ -668,7 +648,7 @@ export async function createPackage(booking: Booking, code: string, reference: s
       console.error(error);
       return createResult(null, "Failed to create package");
     }
-  }, null);
+  }, bookingTemp], null);
 }
 
 export async function fetchPackages(cookieHeader?: string) {

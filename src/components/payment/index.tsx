@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Booking } from "#/lib/system";
-import { createPackage, deleteBookingByMatches, fetchUnitTypes } from "#/lib/booking";
+import { createPackage, deleteBooking, fetchUnitTypes } from "#/lib/booking";
 import { useEffect, useState } from "react";
 import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
 import PaystackPop from "@paystack/inline-js";
@@ -105,24 +105,8 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         return;
       }
 
-      const func = packageResult.value;
+      const [func, booking_confirmed] = packageResult.value;
       console.log("[Payment] Extracted package value:", func);
-
-      if (typeof func === "function") {
-        console.log("[Payment] Executing package closure with contact details...");
-        try {
-          await func({
-            // @ts-ignore
-            name: value?.name || undefined,
-            email: value.email,
-            phone: value.phone,
-          });
-        } catch (err) {
-          console.error("[Payment] Error running package function:", err);
-          setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
-          return;
-        }
-      }
 
       const amountInSubunits = value.amount;
 
@@ -167,20 +151,46 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         setIsPopupOpen(true);
 
         popup.resumeTransaction(res.access_code, {
-          onSuccess: (transaction) => {
+          onSuccess: async (transaction) => {
             console.log("[Payment] Transaction successful:", transaction);
             setIsPopupOpen(false);
             setPaymentStatus({
               type: "success",
               message: "Payment successful! Your booking is confirmed.",
             });
+
+
+            if (typeof func === "function") {
+              console.log("[Payment] Executing package closure with contact details...");
+              try {
+                const res = await func({
+                  // @ts-ignore
+                  name: value?.name || undefined,
+                  email: value.email,
+                  phone: value.phone,
+                });
+
+                console.log(res);
+                
+              } catch (err) {
+                console.error("[Payment] Error running package function:", err);
+                setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
+                return;
+              }
+            }
+
             toggleModel()
           },
           onCancel: async () => {
-            const res = await deleteBookingByMatches(booking);
-            
-            if (!res) await deleteBookingByMatches(booking);
 
+            console.log("payment was canceled removing booking...");
+            
+            const res = await deleteBooking(booking_confirmed.id);
+
+            console.log(res);
+            
+            if (!res) await deleteBooking(booking_confirmed.id);
+            
             console.log("[Payment] Transaction cancelled by user");
             setIsPopupOpen(false);
             setPaymentStatus({
@@ -189,9 +199,13 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             });
           },
           onError: async (error) => {
-            const res = await deleteBookingByMatches(booking);
+            console.log("payment was failed removing booking...");
             
-            if (!res) await deleteBookingByMatches(booking);
+            const res = await deleteBooking(booking_confirmed.id);
+
+            console.log(res);
+            
+            if (!res) await deleteBooking(booking_confirmed.id);
             
             console.error("[Payment] Paystack transaction error:", error);
             setIsPopupOpen(false);
