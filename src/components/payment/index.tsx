@@ -197,6 +197,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               type: "cancelled",
               message: "Payment was cancelled. You can try again whenever you're ready.",
             });
+            toggleModel()
           },
           onError: async (error) => {
             console.log("payment was failed removing booking...");
@@ -213,6 +214,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               type: "error",
               message: error?.message || "Something went wrong with the payment.",
             });
+            toggleModel()
           },
         });
       } catch (err) {
