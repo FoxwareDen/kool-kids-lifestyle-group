@@ -42,6 +42,12 @@ export type VideoBlock = {
   title?: Translatable;
 };
 
+export type TempAsset = 
+  Asset & {
+    src: string,
+    type: "media"
+  }
+
 // What gets saved into the PocketBase JSON column
 export type StorageMediaBlock = {
   index: number;
@@ -57,8 +63,9 @@ export type StorageMediaBlock = {
 export type PageBlock =
   | HeaderBlock
   | ParagraphBlock
+  | TempAsset
   | Omit<ImageBlock, "id">
-  | Omit<VideoBlock, "id">;
+  | Omit<VideoBlock, "id">
 
 export type StoragePageBlock = HeaderBlock | ParagraphBlock | StorageMediaBlock;
 
@@ -519,5 +526,7 @@ export function createEmptyBlock(type: PageBlock["type"], index: number): PageBl
       return { ...base, type, file: null as unknown as File, alt: { default: "" } };
     case "video":
       return { ...base, type, file: null as unknown as File };
+    case "media":
+      return {...base , type, alt: "", collectionId: "", collectionName: "", file: "", id:"", name: "", src: ""}
   }
 }

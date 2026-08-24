@@ -30,6 +30,7 @@ const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 
 
 const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language }) => {
   const src = block.file ? URL.createObjectURL(block.file) : null
+  
   return (
     <figure className="flex flex-col gap-2">
       {src
@@ -75,7 +76,7 @@ export const BookingPageRenderer = ({ page, lang }: BookingPageRendererProps) =>
   <div className="w-full h-full overflow-y-auto bg-white">
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-6 py-10 md:px-10 md:py-14">
       {page.blocks.map((block) => {
-        switch (block.type) {
+        switch (block?.type) {
           case 'header':
             return <HeaderRenderer key={block.index} block={block} lang={lang} />
           case 'paragraph':
@@ -84,6 +85,8 @@ export const BookingPageRenderer = ({ page, lang }: BookingPageRendererProps) =>
             return <ImageRenderer key={block.index} block={block} lang={lang} />
           case 'video':
             return <VideoRenderer key={block.index} block={block} lang={lang} />
+          case "media":
+            return <div key={(block as any).index}>Oops component not found</div>
           default:
             return <div key={(block as any).index}>Oops component not found</div>
         }
