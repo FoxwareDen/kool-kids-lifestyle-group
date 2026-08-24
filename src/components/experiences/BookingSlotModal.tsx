@@ -32,17 +32,12 @@ export function BookingSlotModal({
   existingBookings,
 }: BookingSlotModalProps) {
   const schedule = useMemo<AvailableRange[]>(() => {
-    if (!calendarSchedule || !existingBookings) return []
-    console.log("calendarSchedule");
+    if (!calendarSchedule || !existingBookings || calendarSchedule.length === 0) return []   
     console.log(calendarSchedule);
-    console.log("existingBookings");
     console.log(existingBookings);
     const slots = generateSlots(calendarSchedule, existingBookings)
 
-    console.log("slots");
     console.log(slots);
-    
-
     return slots
   }, [calendarSchedule, existingBookings])
 
@@ -95,7 +90,7 @@ export function BookingSlotModal({
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
           <div className="min-w-0 flex-1 px-5 py-5 sm:px-6 sm:py-6 lg:overflow-y-auto">
-            <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
+            {schedule.length > 0 && <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
               <BookerStep name="unit_select">
                 <BookingUnitSelect />
               </BookerStep>
@@ -113,7 +108,7 @@ export function BookingSlotModal({
               </BookerStep>
 
               <BookingPagingButtonGroup />
-            </Booker>
+            </Booker>}
           </div>
 
           <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 px-5 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
