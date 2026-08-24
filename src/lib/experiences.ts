@@ -44,8 +44,9 @@ export type VideoBlock = {
 
 export type TempAsset = 
   Asset & {
-    src: string,
+    src?: string,
     type: "media"
+    assetType: "image"|"video"|"svg"
   }
 
 // What gets saved into the PocketBase JSON column
@@ -527,6 +528,6 @@ export function createEmptyBlock(type: PageBlock["type"], index: number): PageBl
     case "video":
       return { ...base, type, file: null as unknown as File };
     case "media":
-      return {...base , type, alt: "", collectionId: "", collectionName: "", file: "", id:"", name: "", src: ""}
+      return {...base , type, alt: "", collectionId: "", collectionName: "", file: "", id:"", name: "", assetType: "image"}
   }
 }

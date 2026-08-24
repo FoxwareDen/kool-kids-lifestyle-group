@@ -10,6 +10,7 @@ import type {
   HydratedVideoBlock 
 } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
+import { buildImageUrl } from '#/lib/pocketbase';
 
 // ============================================================
 // EXISTING RENDERERS (Left exactly as they were)
@@ -67,6 +68,34 @@ const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'vid
   )
 }
 
+const MediaRenderer = ({ block, lang}: { block: Extract<PageBlock, { type: "media"}>, lang: Language }) => {
+  return (
+    <figure className="flex flex-col gap-2">
+      {
+         block.src ?
+          block.assetType === "image" ? (
+            <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+          ): 
+          block.assetType === "svg" ? (
+            <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+          ): (
+            <video src={block.src} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+          )
+        :
+        (<div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No image uploaded</span>
+          </div>
+          )
+      }
+      {block.name && (
+        <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
+          {block.name}
+        </figcaption>
+      )} 
+    </figure>
+  )
+}
+
 type BookingPageRendererProps = {
   page: Pick<BookingPage, 'blocks'>
   lang: Language
@@ -86,7 +115,7 @@ export const BookingPageRenderer = ({ page, lang }: BookingPageRendererProps) =>
           case 'video':
             return <VideoRenderer key={block.index} block={block} lang={lang} />
           case "media":
-            return <div key={(block as any).index}>Oops component not found</div>
+            return <MediaRenderer key={block.collectionId} block={block} lang={lang} />
           default:
             return <div key={(block as any).index}>Oops component not found</div>
         }

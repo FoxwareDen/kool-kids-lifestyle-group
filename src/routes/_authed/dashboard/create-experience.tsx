@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_authed/dashboard/create-experience')({
 
 type SkeletonPageData = Omit<BookingPage, 'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug'>
 
-const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video', "media"]
+const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', "media"]
 
 function useObjectUrl(file: File | null | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null)
@@ -146,7 +146,8 @@ function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, 
       collectionId: data.collectionId,
       collectionName: data.collectionName,
       src: data.src,
-      type: "media"
+      type: "media",
+      assetType: mode
     })
   }
 
