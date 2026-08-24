@@ -6,6 +6,8 @@ import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 import { Button, SectionCard, SelectField, controlClass } from '#/components/dashboard/form-controls'
 import { Trash2 } from 'lucide-react'
 import { setTranslated } from '#/lib/utils'
+import MediaModel from '#/components/mediaModel'
+import type { Asset } from '#/lib/pocketbase'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
@@ -16,7 +18,7 @@ export const Route = createFileRoute('/_authed/dashboard/create-experience')({
 
 type SkeletonPageData = Omit<BookingPage, 'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug'>
 
-const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video']
+const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', "media"]
 
 function useObjectUrl(file: File | null | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null)
@@ -126,6 +128,46 @@ function ImageBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock,
   )
 }
 
+type MediaBlockEditorAcceptedTypes = "image"|"video"
+
+function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, { type: "media" }>, lang: Language, onChange: (b: Extract<PageBlock, {type: string}>) => void}) {
+  const [mode, setMode] = useState<MediaBlockEditorAcceptedTypes>("image")
+  const [open, setOpen] = useState(false)
+
+  const toggleModel = () => setOpen(prev=>!prev);
+
+  const bindOnChange = (data: Asset & { src: string}) => {
+    onChange({ 
+      ...block,
+      id: data.id,
+      alt: data.alt,
+      file: data.file,
+      name: data.name,
+      collectionId: data.collectionId,
+      collectionName: data.collectionName,
+      src: data.src,
+      type: "media",
+      assetType: mode
+    })
+  }
+
+  return (
+    <div className="flex flex-row gap-3">
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)] capitalize">{mode}</span>
+        <MediaModel open={open} toggleOpen={toggleModel} onClick={bindOnChange} accept={mode} />
+        <Button onClick={toggleModel}>open</Button>
+        </label>
+      <label className="block capitalize">
+          <SelectField label="mode" value={mode} onChange={(e) => setMode(e.target.value as MediaBlockEditorAcceptedTypes) } className="w-32">
+            <option value="image">Image</option>
+            <option value="video">Video</option>
+          </SelectField>
+      </label>
+    </div>
+  )
+}
+
 function VideoBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock, { type: 'video' }>; lang: Language; onChange: (b: Extract<PageBlock, { type: 'video' }>) => void }) {
   const previewUrl = useObjectUrl(block.file)
   const [error, setError] = useState<string | null>(null)
@@ -162,6 +204,7 @@ function BlockEditor({ block, lang, onChange, onDelete }: { block: PageBlock; la
       </div>
       {block.type === 'header' && <HeaderBlockEditor block={block} lang={lang} onChange={onChange} />}
       {block.type === 'paragraph' && <ParagraphBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === "media" && <MediaBlockEditor block={block} lang={lang} onChange={onChange} /> }
       {block.type === 'image' && <ImageBlockEditor block={block} lang={lang} onChange={onChange} />}
       {block.type === 'video' && <VideoBlockEditor block={block} lang={lang} onChange={onChange} />}
     </div>
@@ -204,6 +247,11 @@ function RouteComponent() {
     if (!field) return ''
     return resolveTranslatable(field, lang)
   }
+
+  useEffect(()=>{
+    console.log(blocks);
+    
+  },[blocks])
 
   const handleSubmit = async () => {
     setSubmitError(null)

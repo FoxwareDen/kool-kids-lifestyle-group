@@ -42,6 +42,13 @@ export type VideoBlock = {
   title?: Translatable;
 };
 
+export type TempAsset = 
+  Asset & {
+    src?: string,
+    type: "media"
+    assetType: "image"|"video"|"svg"
+  }
+
 // What gets saved into the PocketBase JSON column
 export type StorageMediaBlock = {
   index: number;
@@ -57,8 +64,9 @@ export type StorageMediaBlock = {
 export type PageBlock =
   | HeaderBlock
   | ParagraphBlock
+  | TempAsset
   | Omit<ImageBlock, "id">
-  | Omit<VideoBlock, "id">;
+  | Omit<VideoBlock, "id">
 
 export type StoragePageBlock = HeaderBlock | ParagraphBlock | StorageMediaBlock;
 
@@ -149,16 +157,16 @@ export type UpdateBookingPageInput = Omit<BookingPage, "id" | "createdAt" | "upd
 
 export async function createBookingPage(input: CreateBookingPageInput): Promise<Result<HydratedBookingPage, string>> {
   try {
-    const fCover = await uploadAsset(input.coverImage, {
+    const coverUploadResult = await uploadAsset(input.coverImage, {
       name: `${input.title.default}-cover`,
       type: "image"
     });
 
-    if (!fCover.success) {
+    if (!coverUploadResult.success) {
       return createResult(null, "Failed to upload cover image");
     }
 
-    const blockToBe = input.blocks.map(async (block, index) => {
+    const blockUploadPromises = input.blocks.map(async (block, index) => {
       if (["image", "video"].includes(block.type)) {
         // @ts-ignore
         if (!block.file) throw new Error(`Block at index ${index} has no file`);
@@ -169,18 +177,18 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       }
     });
 
-    const mal = await Promise.all(blockToBe);
+    const blockUploadResults = await Promise.all(blockUploadPromises);
 
-    const flatPack: StoragePageBlock[] = mal.map((rk) => {
-      const [bb, index, originalBlock] = rk;
-      if (bb instanceof Result) {
-        if (bb.success) {
-          const f = bb.value as Asset;
+    const storageBlocks: StoragePageBlock[] = blockUploadResults.map((blockUploadResult) => {
+      const [uploadResultOrBlock, index, originalBlock] = blockUploadResult;
+      if (uploadResultOrBlock instanceof Result) {
+        if (uploadResultOrBlock.success) {
+          const uploadedAsset = uploadResultOrBlock.value as Asset;
           return {
             type: originalBlock.type,
-            asset_id: f.id,
-            asset_collectionId: f.collectionId,
-            asset_file: f.file, // Captured from your Asset response
+            asset_id: uploadedAsset.id,
+            asset_collectionId: uploadedAsset.collectionId,
+            asset_file: uploadedAsset.file,
             index: index,
             alt: originalBlock.type === "image" ? (originalBlock as ImageBlock).alt : undefined,
             caption: originalBlock.type === "image" ? (originalBlock as ImageBlock).caption : undefined,
@@ -190,7 +198,7 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
           throw new Error("Failed to upload asset based block");
         }
       } else {
-        return bb as StoragePageBlock;
+        return uploadResultOrBlock as StoragePageBlock;
       }
     });
 
@@ -199,8 +207,8 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       description: input.description ? JSON.stringify(input.description) : undefined,
       category: input.category,
       enabledLanguages: input.enabledLanguages,
-      coverImage: fCover.value!.id,
-      blocks: flatPack,
+      coverImage: coverUploadResult.value!.id,
+      blocks: storageBlocks,
       status: input.status,
     });
 
@@ -209,11 +217,11 @@ export async function createBookingPage(input: CreateBookingPageInput): Promise<
       slug: input.slug,
       title: input.title,
       description: input.description,
-      coverImage: fCover.value!.id,
+      coverImage: coverUploadResult.value!.id,
       category: input.category,
       defaultLanguage: input.defaultLanguage,
       enabledLanguages: input.enabledLanguages,
-      blocks: hydrateBlocks(flatPack),
+      blocks: hydrateBlocks(storageBlocks),
       status: input.status,
       createdAt: new Date(result.created),
       updatedAt: new Date(result.updated),
@@ -519,5 +527,7 @@ export function createEmptyBlock(type: PageBlock["type"], index: number): PageBl
       return { ...base, type, file: null as unknown as File, alt: { default: "" } };
     case "video":
       return { ...base, type, file: null as unknown as File };
+    case "media":
+      return {...base , type, alt: "", collectionId: "", collectionName: "", file: "", id:"", name: "", assetType: "image"}
   }
 }
