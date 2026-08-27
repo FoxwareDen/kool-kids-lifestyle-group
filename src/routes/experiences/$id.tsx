@@ -7,20 +7,18 @@ import {
 } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
-import { ExperienceContent } from '#/components/experiences/ExperienceContent'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
-import { createServerFn } from '@tanstack/react-start'
-import { fetchCalendarScheduleByExperiencesIds } from '#/lib/booking'
 import { FlatPageRenderer } from '#/components/BookingPageRenderer'
+import { fetchBookingsByScheduleId, fetchCalendarScheduleByExperiencesIds, type Booking, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
 
 export const Route = createFileRoute('/experiences/$id')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? 'en',
   }),
-  loaderDeps: ({ search: {lang} }) => ({lang}),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
   component: RouteComponent,
 })
 
@@ -54,16 +52,50 @@ function RouteComponent() {
     },
     staleTime: 5 * 60 * 1000,
   })
+  const [scheduleData, setScheduleData] = useState<TransformedCalendarSchedule[] | null>(null);
+  const [existingBookings, setExistingBookings] = useState<BookingResponse[] | null>(null);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+  const [scheduleDataLoading, setScheduleDataLoading] = useState(true);
 
-  const { data: scheduleData, isLoading: isScheduleDataLoading, isError: isScheduleDataError } = useQuery({
-    queryKey: ["schedules", id],
-    queryFn: async () => {
-      const result = await fetchCalendarScheduleByExperiencesIds(id);
-      if (!result.success || !result.value) return null
-      return result.value
-    },
-    staleTime: 5 * 60 * 1000,
-  })
+  useEffect(() => {
+    (async () => {
+      try {
+        setScheduleDataLoading(true);
+
+        const result = await fetchCalendarScheduleByExperiencesIds(id);
+
+        if (!result.success) {
+          throw new Error("failed to fetch schedule");
+        }
+
+        if (!result.value) {
+          throw new Error("No schedules found");
+        }
+        
+        // @ts-ignore
+        const bookings: BookingResponse[] = (
+          await Promise.all(
+            result.value.map((schedule) =>
+              fetchBookingsByScheduleId(schedule.id)
+            )
+          )
+        )
+          .filter((booking) => booking.success && booking.value != null)
+          .flatMap((booking) => booking.value);
+
+        console.log("bookings//", bookings);
+
+        setExistingBookings(bookings);
+
+        setScheduleData(result.value);
+      } catch (error) {
+        console.error(error)
+        setScheduleError("Failed to get schedule data")
+      } finally {
+        setScheduleDataLoading(false);
+      }
+    })()
+  }, [id])
 
   if (isLoading) {
     return (
@@ -94,7 +126,6 @@ function RouteComponent() {
     )
   }
 
-  console.log(scheduleData)
 
   const title = resolveTranslatable(data.title, lang)
   const description = data.description ? resolveTranslatable(data.description, lang) : ''
@@ -169,7 +200,7 @@ function RouteComponent() {
                   <div className='pl-5 w-full'>
                     <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>Options:</span>
                     <ul className='pl-5 mt-1 list-disc flex flex-col gap-1'>
-                      {isScheduleDataLoading ? (
+                      {scheduleDataLoading ? (
                         <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">Loading options…</li>
                       ) : scheduleData && scheduleData[0]?.units ? (
                         scheduleData[0].units.map((unit) => (
@@ -207,8 +238,11 @@ function RouteComponent() {
       <BookingSlotModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
-        experienceId={data.id}
         experienceTitle={title}
+        calendarSchedule={scheduleData}
+        existingBookings={existingBookings}
+        loading={scheduleDataLoading}
+        error={scheduleError}
       />
     </main>
   )

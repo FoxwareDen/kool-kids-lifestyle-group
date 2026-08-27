@@ -4,6 +4,7 @@ import {
   FilePlus2,
   CalendarDays,
   CalendarPlus,
+  CalendarCheck2,
   HomeIcon,
   Newspaper,
   ViewIcon,
@@ -50,6 +51,13 @@ export const DASHBOARD_NAV: DashboardNavItem[] = [
     description: 'Overview and how-to guides',
     to: '/dashboard/',
     icon: LayoutDashboard,
+    exact: true,
+  },
+  {
+    label: 'Active Bookings',
+    description: 'Monitor all current active bookings',
+    to: '/dashboard/bookings',
+    icon: CalendarCheck2,
     exact: true,
   },
   {

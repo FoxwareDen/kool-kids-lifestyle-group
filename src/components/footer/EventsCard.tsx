@@ -87,7 +87,7 @@ export function EventsCard({
       </div>
 
       <a
-        href={ctaHref}
+        href="/events"
         className="group relative mx-auto mt-6 inline-flex items-center gap-3 bg-[var(--brand-navy)] px-6 py-3 text-xs font-bold uppercase tracking-widest !text-white no-underline transition-colors hover:bg-[var(--brand-orange)]"
       >
         {ctaLabel}

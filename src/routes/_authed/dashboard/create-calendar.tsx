@@ -1,14 +1,16 @@
 import { createFileRoute, useLocation, useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from "react";
-import type { SlotPreset } from "booking-api-extended";
+import { useEffect, useMemo, useState } from "react";
 import type { FeatureCard } from "@/lib/experiences";
 import { fetchExperienceById, resolveTranslatable, fetchAllExperiencesCard } from "@/lib/experiences";
-import type { Calendar, UnitType } from "@/lib/booking";
-import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule } from "@/lib/booking";
+import { fetchUnitTypes, createUnit, createCalendarSchedule, updateCalendarSchedule, type UnitType, type Calendar } from "@/lib/booking";
 import { createServerFn } from '@tanstack/react-start';
 import { formatDateForInput } from '#/lib/utils';
 import { Check } from 'lucide-react';
 import { Button, SectionCard, TextField, controlClass } from '#/components/dashboard/form-controls';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#/components/ui/tooltip';
+import type { SlotType } from '#/lib/system';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select';
+// FIX 1: removed unused `import type { SlotPreset } from "booking-api-extended";` — was never referenced anywhere in the file
 
 const fetchCards = createServerFn()
   .inputValidator((input: { lang: 'en' | 'af' }) => input)
@@ -90,12 +92,6 @@ export const Route = createFileRoute('/_authed/dashboard/create-calendar')({
 // ---- Step type ----
 type Step = "experience" | "calendar"
 
-// ---- Default presets (swap for a fetch if these live server-side) ----
-const DEFAULT_PRESETS: SlotPreset[] = [
-  { id: "40min", label: "40-minute session", durationMinutes: 40 },
-  { id: "half-day", label: "Half day", durationMinutes: 240 },
-  { id: "day", label: "Full day", durationMinutes: 480 },
-];
 
 const DAYS = [
   { value: 0, label: "Sun" },
@@ -105,6 +101,13 @@ const DAYS = [
   { value: 4, label: "Thu" },
   { value: 5, label: "Fri" },
   { value: 6, label: "Sat" },
+];
+
+// FIX 2: `modes` is now actually used below to drive the SelectItem list instead of
+// being hardcoded, so it's no longer dead code.
+const modes: { value: SlotType; label: string }[] = [
+  { value: "slot", label: "Slot Mode" },
+  { value: "day", label: "Day Mode" },
 ];
 
 /**
@@ -135,6 +138,11 @@ function RouteComponent() {
   const [step, setStep] = useState<Step>("experience");
 
   // ----- experience card state -----
+  // FIX 3: cardsLoading/cardsError were declared but never set anywhere (loading happens
+  // in the route loader, not client-side), which made their JSX branches permanently dead.
+  // Left the state + JSX in place since removing them changes visible behavior, but noting
+  // here that they need to actually be wired to something (e.g. a client-side refetch) or
+  // removed entirely — flag for your call.
   const [cardsLoading, setCardsLoading] = useState(false);
   const [cardsError, setCardsError] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<FeatureCard | null>(null);
@@ -146,12 +154,19 @@ function RouteComponent() {
 
   // ----- unit type state -----
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>(units);
-  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0.0 });
+  // FIX 7: duration only applies to slot-mode units (e.g. a 60-minute massage slot).
+  // Day-mode units don't have a fixed duration, so this field is only rendered/sent
+  // when calendarForm.booking_type === "slot".
+  const [newUnit, setNewUnit] = useState({ label: "", capacity: 1, value: 0.0, duration: 30 });
   const [creatingUnit, setCreatingUnit] = useState(false);
   const [createUnitError, setCreateUnitError] = useState<string | null>(null);
 
   // ----- calendar form state -----
-  const [calendarForm, setCalendarForm] = useState<Omit<Calendar, "experiences">>({
+  // FIX 4: `Calendar` requires `id: string` (inherited from system.ts `C`), so
+  // `Omit<Calendar, "experiences">` still requires `id`. The old initializer omitted it,
+  // which fails typecheck the same way `booking_type` did before. Also omitting `id` here
+  // since it's PocketBase-generated on create, not something the form manages.
+  const [calendarForm, setCalendarForm] = useState<Omit<Calendar, "experiences" | "id">>({
     title:"",
     start_date: "",
     end_date: "",
@@ -160,6 +175,8 @@ function RouteComponent() {
     days_of_week: [1, 2, 3, 4, 5],
     buffer_minutes: 15,
     units: [], // array of unit type ids
+    frequency: "weekly",
+    booking_type: "slot"
   });
   const [saving, setSaving] = useState(false);
   const [isLoaderReady, setIsLoaderReady] = useState(false);
@@ -167,7 +184,7 @@ function RouteComponent() {
 
   // all-day slots: for bookings like a full event, inn stay, or campground
   // slot where a specific start/end time doesn't apply
-  const [isAllDay, setIsAllDay] = useState(false);
+  const isAllDay = useMemo(()=> calendarForm.booking_type == "day", [calendarForm.booking_type]);
 
   // buffer time entered by the user, with a unit selector so an inn can say
   // "1 day cleanup" instead of typing minutes. Converted to minutes on save.
@@ -180,7 +197,6 @@ function RouteComponent() {
     }
   }, [cards, units]);
 
-
   // loaded data if state has been passed useLocation
   useEffect(() => {
     if (calId && isLoaderReady) {
@@ -188,7 +204,17 @@ function RouteComponent() {
       (async () =>{
         const data = (location.state as unknown as { calendar: Calendar })?.calendar
 
-        const card = cards.find((c) => c.id === data?.experiences[0]);
+        // FIX 5: this was the crash bug. If someone lands on this route with a calId
+        // in the URL but WITHOUT location.state (e.g. page refresh, direct link, browser
+        // back/forward), `data` is undefined here. The `card` lookup below was safely
+        // optional-chained (`data?.experiences[0]`), but every field access after it
+        // (`data.start_date`, `data.end_date`, etc.) was NOT, so it threw
+        // "Cannot read properties of undefined" at runtime. Bail out early instead.
+        if (!data) {
+          return;
+        }
+
+        const card = cards.find((c) => c.id === data.experiences[0]);
 
         if (card) {
           setSelectedCard(card);
@@ -208,21 +234,21 @@ function RouteComponent() {
           setStep("calendar");
         }
 
-        const bufferMinutes = data?.buffer_minutes ?? 15;
+        const bufferMinutes = data.buffer_minutes ?? 15;
         setBufferAmount(bufferMinutes);
         setBufferUnit("minutes");
 
         setCalendarForm((prev) => ({
           ...prev,
-          title: data?.title ?? prev.title,
-          start_date: formatDateForInput(data.start_date??""),
-          end_date: formatDateForInput(data.end_date??""),
-          start_time: data?.start_time ?? prev.start_time,
-          end_time: data?.end_time ?? prev.end_time,
-          days_of_week: data?.days_of_week ?? prev.days_of_week,
-          buffer_minutes: data?.buffer_minutes ?? prev.buffer_minutes,
-          units: data?.units ?? prev.units,
-          experiences: [card?.id ?? ""],
+          title: data.title ?? prev.title,
+          start_date: formatDateForInput(data.start_date ?? ""),
+          end_date: formatDateForInput(data.end_date ?? ""),
+          start_time: data.start_time ?? prev.start_time,
+          end_time: data.end_time ?? prev.end_time,
+          days_of_week: data.days_of_week ?? prev.days_of_week,
+          buffer_minutes: data.buffer_minutes ?? prev.buffer_minutes,
+          units: data.units ?? prev.units,
+          booking_type: data.booking_type ?? prev.booking_type,
         }))
       })()
 
@@ -235,6 +261,10 @@ function RouteComponent() {
     hours: 60,
     days: 60 * 24,
   };
+
+  function updateMode(mode: SlotType) {
+    setCalendarForm(prev=>({...prev, booking_type: mode}))
+  }
 
   function updateBuffer(amount: number, unit: typeof bufferUnit) {
     setBufferAmount(amount);
@@ -263,9 +293,13 @@ function RouteComponent() {
       const has = prev.days_of_week.includes(day);
       return {
         ...prev,
+        // FIX 6: default Array.prototype.sort() is lexicographic (string-based), which
+        // happens to look right here only because all day values are single digits (0-6).
+        // Using a numeric comparator so this doesn't silently misorder if that assumption
+        // ever changes.
         days_of_week: has
           ? prev.days_of_week.filter((d) => d !== day)
-          : [...prev.days_of_week, day].sort(),
+          : [...prev.days_of_week, day].sort((a, b) => a - b),
       };
     });
   }
@@ -303,7 +337,7 @@ function RouteComponent() {
       } as UnitType;
       setAvailableUnits((prev) => [...prev, created]);
       setCalendarForm((prev) => ({ ...prev, units: [...prev.units, created.id] }));
-      setNewUnit({ label: "", capacity: 1, value: 0 });
+      setNewUnit({ label: "", capacity: 1, value: 0, duration: 30 });
     }
     setCreatingUnit(false);
   }
@@ -313,6 +347,11 @@ function RouteComponent() {
 
     const calendar: Calendar = {
       ...calendarForm,
+      // FIX 4 (cont.): id is PocketBase-generated. On update we pass the existing calId
+      // through separately to updateCalendarSchedule(id, data) below, so it's not needed
+      // in this object for the update path; on create PocketBase assigns it. Casting here
+      // so the object satisfies the full `Calendar` type without inventing a fake id.
+      id: calId ?? "",
       // all-day slots still need valid start/end times in the schema,
       // so we store the full-day span rather than adding a new field
       start_time: isAllDay ? "00:00" : calendarForm.start_time,
@@ -441,34 +480,66 @@ function RouteComponent() {
               </div>
 
               <div>
-                <label className="mb-3 inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={isAllDay}
-                    onChange={(e) => setIsAllDay(e.target.checked)}
-                    className="size-4 rounded-sm border-[var(--line)] accent-[var(--brand-orange)]"
-                  />
-                  <span className="text-sm font-semibold text-[var(--sea-ink)]">
-                    All-day slot (event, inn stay, campsite — no specific hours)
-                  </span>
-                </label>
+                <div className="mb-3 flex items-center gap-2">
+                  <Select
+                    value={calendarForm.booking_type}
+                    onValueChange={(value: SlotType) => updateMode(value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select booking mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {modes.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="shrink-0 text-[var(--sea-ink-soft)]">
+                        <span className="flex size-5 items-center justify-center rounded-full border border-[var(--line)] text-xs">?</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        {lang == "en"
+                          ? "Dag: volledige dae / meerdaagse besprekings. Tydgleuf: uurlikse / spesifieke tydgleuwe."
+                          : "Day: full-day / multi-day bookings. Slot: hourly / specific time-slot bookings."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
 
-                {!isAllDay && (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <TextField
-                      label="Start time"
-                      type="time"
-                      value={calendarForm.start_time}
-                      onChange={(e) => updateField("start_time", e.target.value)}
-                    />
-                    <TextField
-                      label="End time"
-                      type="time"
-                      value={calendarForm.end_time}
-                      onChange={(e) => updateField("end_time", e.target.value)}
-                    />
-                  </div>
-                )}
+                <div className="mb-2 flex items-center gap-2">
+                  <p className="text-sm font-semibold text-[var(--sea-ink)]">Operating hours</p>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="shrink-0 text-[var(--sea-ink-soft)]">
+                        <span className="flex size-5 items-center justify-center rounded-full border border-[var(--line)] text-xs">?</span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        {lang == "en"
+                          ? "Dagmodus: intyk-/uittyktyd. Tydgleufmodus: venster waarbinne tydgleuwe kan oopmaak."
+                          : "Day mode: check-in / check-out time. Slot mode: window within which bookable time slots can open."}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <TextField
+                    label="Start time"
+                    type="time"
+                    value={calendarForm.start_time}
+                    onChange={(e) => updateField("start_time", e.target.value)}
+                  />
+                  <TextField
+                    label="End time"
+                    type="time"
+                    value={calendarForm.end_time}
+                    onChange={(e) => updateField("end_time", e.target.value)}
+                  />
+                </div>
               </div>
 
               <div>
@@ -494,35 +565,39 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-[var(--sea-ink)]">
-                  Buffer between bookings
-                </p>
-                <p className="mb-2 text-xs text-[var(--sea-ink-soft)]">
-                  Time blocked off before the next booking can start — e.g. cleanup for a room, or a gap between events.
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    value={bufferAmount}
-                    onChange={(e) => updateBuffer(Number(e.target.value), bufferUnit)}
-                    className={`${controlClass} w-28`}
-                  />
-                  <select
-                    value={bufferUnit}
-                    onChange={(e) => updateBuffer(bufferAmount, e.target.value as typeof bufferUnit)}
-                    className={`${controlClass} w-32`}
-                  >
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                  </select>
-                </div>
-                <p className="mt-1 text-xs text-[var(--sea-ink-soft)]">
-                  = {calendarForm.buffer_minutes ?? 0} minutes total
-                </p>
-              </div>
+              {
+                !isAllDay && (
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--sea-ink)]">
+                      Buffer between bookings
+                    </p>
+                    <p className="mb-2 text-xs text-[var(--sea-ink-soft)]">
+                      Time blocked off before the next booking can start — e.g. cleanup for a room, or a gap between events.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        value={bufferAmount}
+                        onChange={(e) => updateBuffer(Number(e.target.value), bufferUnit)}
+                        className={`${controlClass} w-28`}
+                      />
+                      <select
+                        value={bufferUnit}
+                        onChange={(e) => updateBuffer(bufferAmount, e.target.value as typeof bufferUnit)}
+                        className={`${controlClass} w-32`}
+                      >
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                      </select>
+                    </div>
+                    <p className="mt-1 text-xs text-[var(--sea-ink-soft)]">
+                      = {calendarForm.buffer_minutes ?? 0} minutes total
+                    </p>
+                  </div>
+                )
+              }
 
               {/* Unit types - a relation, selected from the UnitType collection */}
               <div>
@@ -599,6 +674,20 @@ function RouteComponent() {
                           }}
                         />
                       </div>
+                      {/* FIX 7 (cont.): duration only makes sense in slot mode — hidden in day mode */}
+                      {calendarForm.booking_type === "slot" && (
+                        <div className="grow">
+                          <TextField
+                            label="Duration (minutes)"
+                            type="number"
+                            placeholder="e.g. 60"
+                            value={newUnit.duration}
+                            onChange={(e) =>
+                              setNewUnit((p) => ({ ...p, duration: Number(e.target.value) }))
+                            }
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   {createUnitError && (

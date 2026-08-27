@@ -1,35 +1,26 @@
-// app/routes/_authed/dashboard/create-post.tsx
+import type { PageBlock, BookingPage, Translatable, Language } from '#/lib/experiences'
+import { resolveTranslatable, createEmptyBlock, createBookingPage, parseCategories, serializeCategories, type ExperienceStatus } from '#/lib/experiences'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState, useCallback, useEffect, type ChangeEvent, type ReactNode, useMemo } from 'react'
-import type {
-  PageBlock,
-  HeaderBlock,
-  ParagraphBlock,
-  ImageBlock,
-  VideoBlock,
-  Translatable,
-  Language,
-} from '#/lib/experiences'
-import {
-  resolveTranslatable,
-  createEmptyBlock,
-} from '#/lib/experiences'
-import { setTranslated } from '#/lib/utils'
-import { createBlogPage, createEvent } from '#/lib/blog'
+import { useState, useCallback, useEffect, useMemo, type ChangeEvent } from 'react'
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
+import { Button, SectionCard, SelectField, controlClass } from '#/components/dashboard/form-controls'
+import { Trash2 } from 'lucide-react'
 
-// Max sizes (same as example)
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
 
-// ---------- useObjectUrl hook (copied from example) ----------
+export const Route = createFileRoute('/_authed/dashboard/create-post')({
+  component: RouteComponent,
+})
+
+type SkeletonPageData = Omit<BookingPage, 'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug'>
+
+const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video']
+
 function useObjectUrl(file: File | null | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null)
   useEffect(() => {
-    if (!file) {
-      setUrl(null)
-      return
-    }
+    if (!file) { setUrl(null); return }
     const objectUrl = URL.createObjectURL(file)
     setUrl(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
@@ -37,221 +28,200 @@ function useObjectUrl(file: File | null | undefined): string | null {
   return url
 }
 
-// ---------- Field & input classes (same as example) ----------
-const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">{label}</label>
-    {children}
-  </div>
-)
-
-const inputCls =
-  "w-full rounded-md border border-[var(--brand-navy)]/15 bg-white px-3 py-2 text-sm text-[var(--brand-navy)] outline-none transition-colors placeholder:text-[var(--brand-navy)]/40 focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/20"
-
-// ---------- Block Editors (exactly as in example, all w-full) ----------
-const HeaderBlockEditor = ({ block, lang, onChange }: { block: HeaderBlock; lang: Language; onChange: (b: HeaderBlock) => void }) => (
-  <div className="flex flex-col gap-3 w-full">
-    <Field label="Level">
-      <select
-        className={inputCls}
-        value={block.level}
-        onChange={(e) => onChange({ ...block, level: parseInt(e.target.value, 10) as 1 | 2 | 3 })}
-      >
-        <option value="1">H1</option>
-        <option value="2">H2</option>
-        <option value="3">H3</option>
-      </select>
-    </Field>
-    <Field label="Text">
-      <input
-        className={inputCls}
-        value={resolveTranslatable(block.text, lang)}
-        placeholder="Heading text…"
-        onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })}
-      />
-    </Field>
-  </div>
-)
-
-const ParagraphBlockEditor = ({ block, lang, onChange }: { block: ParagraphBlock; lang: Language; onChange: (b: ParagraphBlock) => void }) => (
-  <Field label="Text">
-    <textarea
-      className={`${inputCls} min-h-20 resize-y`}
-      value={resolveTranslatable(block.text, lang)}
-      placeholder="Paragraph text…"
-      onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })}
-    />
-  </Field>
-)
-
-const ImageBlockEditor = ({ block, lang, onChange }: { block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void }) => {
-  const previewUrl = useObjectUrl(block.file)
-  const [error, setError] = useState<string | null>(null)
-
-  return (
-    <div className="flex flex-col gap-3 w-full">
-      <Field label="Image">
-        <input
-          type="file"
-          accept="image/*"
-          className={inputCls}
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-            if (file.size > MAX_SIZE) {
-              setError('Image exceeds the maximum allowed size of 5MB.')
-              e.target.value = ''
-              return
-            }
-            setError(null)
-            onChange({ ...block, file })
-          }}
-        />
-        {error && <p className="mt-1 text-xs font-medium text-[var(--brand-orange-deep)]">{error}</p>}
-        {previewUrl && !error && (
-          <img src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-48 object-cover w-full" />
-        )}
-      </Field>
-    </div>
-  )
-}
-
-const VideoBlockEditor = ({ block, lang, onChange }: { block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void }) => {
-  const previewUrl = useObjectUrl(block.file)
-  const [error, setError] = useState<string | null>(null)
-
-  return (
-    <div className="flex flex-col gap-3 w-full">
-      <Field label="Video">
-        <input
-          type="file"
-          accept="video/*"
-          className={inputCls}
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (!file) return
-            if (file.size > MAX_VIDEO_SIZE) {
-              setError('Video exceeds the maximum allowed size of 50MB.')
-              e.target.value = ''
-              return
-            }
-            setError(null)
-            onChange({ ...block, file })
-          }}
-        />
-        {error && <p className="mt-1 text-xs font-medium text-[var(--brand-orange-deep)]">{error}</p>}
-        {previewUrl && !error && (
-          <video src={previewUrl} controls className="mt-1 rounded-md max-h-48 w-full" />
-        )}
-      </Field>
-    </div>
-  )
-}
-
-// ---------- BlockEditor wrapper (full width, same styling) ----------
-const BlockEditor = ({
-  block,
-  lang,
-  onChange,
-  onDelete,
-}: {
-  block: PageBlock
-  lang: Language
-  onChange: (u: PageBlock) => void
-  onDelete: () => void
-}) => (
-  <div className="flex flex-col gap-3 rounded-lg border border-[var(--brand-navy)]/15 bg-white p-3.5 shadow-sm shadow-[var(--brand-navy)]/5 w-full">
-    <div className="flex items-center justify-between border-b border-[var(--brand-navy)]/10 pb-2.5">
-      <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-orange)]">{block.type}</span>
-      <button type="button" onClick={onDelete} className="text-xs text-[var(--brand-navy)]/30 hover:text-[var(--brand-orange)]">
-        ✕
-      </button>
-    </div>
-
-    {block.type === 'header' && <HeaderBlockEditor block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'paragraph' && <ParagraphBlockEditor block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'image' && <ImageBlockEditor block={block} lang={lang} onChange={onChange} />}
-    {block.type === 'video' && <VideoBlockEditor block={block} lang={lang} onChange={onChange} />}
-  </div>
-)
-
-// ---------- useBlocks hook (same) ----------
 function useBlocks() {
   const [entries, setEntries] = useState<{ id: string; block: PageBlock }[]>([])
-
   const addBlock = useCallback((type: PageBlock['type']) => {
     setEntries((prev) => [...prev, { id: crypto.randomUUID(), block: createEmptyBlock(type, prev.length) }])
   }, [])
-
   const updateBlock = useCallback((id: string, updated: PageBlock) => {
     setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, block: updated } : e)))
   }, [])
-
   const deleteBlock = useCallback((id: string) => {
     setEntries((prev) => prev.filter((e) => e.id !== id))
   }, [])
-
   const blocks = useMemo(() => entries.map((e) => e.block), [entries])
-
   const serialize = useCallback((): PageBlock[] => entries.map((e, i) => ({ ...e.block, index: i })), [entries])
-
   return { entries, blocks, addBlock, updateBlock, deleteBlock, serialize }
 }
 
-// ---------- Route ----------
-export const Route = createFileRoute('/_authed/dashboard/create-post')({
-  component: RouteComponent,
-})
+function useCategories(
+  pageData: SkeletonPageData,
+  setPageData: React.Dispatch<React.SetStateAction<SkeletonPageData>>,
+) {
+  const [input, setInput] = useState('')
+  const categories = parseCategories(pageData.category)
+  const add = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    const val = input.trim()
+    if (!val) return
+    setPageData((prev) => {
+      const existing = parseCategories(prev.category)
+      if (existing.includes(val)) return prev
+      return { ...prev, category: serializeCategories([...existing, val]) }
+    })
+    setInput('')
+  }, [input, setPageData])
+  const remove = useCallback((val: string) => {
+    setPageData((prev) => ({
+      ...prev,
+      category: serializeCategories(parseCategories(prev.category).filter((c) => c !== val)),
+    }))
+  }, [setPageData])
+  return { categories, input, setInput, add, remove }
+}
 
-const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video']
+function HeaderBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language; onChange: (b: Extract<PageBlock, { type: 'header' }>) => void }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <SelectField label="Level" value={block.level} onChange={(e) => onChange({ ...block, level: parseInt(e.target.value, 10) as 1 | 2 | 3 })}>
+        <option value={1}>H1</option>
+        <option value={2}>H2</option>
+        <option value={3}>H3</option>
+      </SelectField>
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Text</span>
+        <input className={controlClass} value={resolveTranslatable(block.text, lang)} placeholder="Heading text…" onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })} />
+      </label>
+    </div>
+  )
+}
+
+function ParagraphBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock, { type: 'paragraph' }>; lang: Language; onChange: (b: Extract<PageBlock, { type: 'paragraph' }>) => void }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Text</span>
+      <textarea className={`${controlClass} min-h-20 resize-y`} value={resolveTranslatable(block.text, lang)} placeholder="Paragraph text…" onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })} />
+    </label>
+  )
+}
+
+function ImageBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language; onChange: (b: Extract<PageBlock, { type: 'image' }>) => void }) {
+  const previewUrl = useObjectUrl(block.file)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Image</span>
+        <input type="file" accept="image/*" className={controlClass} onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (!file) return
+          if (file.size > MAX_SIZE) { setError('Image exceeds 5MB.'); e.target.value = ''; return }
+          setError(null)
+          onChange({ ...block, file })
+        }} />
+        {error && <span className="mt-1 block text-xs text-[var(--destructive)]">{error}</span>}
+        {previewUrl && !error && <img src={previewUrl} alt="preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Alt text</span>
+        <input className={controlClass} value={resolveTranslatable(block.alt, lang)} placeholder="Alt text…" onChange={(e) => onChange({ ...block, alt: setTranslated(block.alt, lang, e.target.value) })} />
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Caption</span>
+        <input className={controlClass} value={block.caption ? resolveTranslatable(block.caption, lang) : ''} placeholder="Caption (optional)…" onChange={(e) => onChange({ ...block, caption: setTranslated(block.caption ?? { default: '' }, lang, e.target.value) })} />
+      </label>
+    </div>
+  )
+}
+
+function VideoBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock, { type: 'video' }>; lang: Language; onChange: (b: Extract<PageBlock, { type: 'video' }>) => void }) {
+  const previewUrl = useObjectUrl(block.file)
+  const [error, setError] = useState<string | null>(null)
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Video</span>
+        <input type="file" accept="video/*" className={controlClass} onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (!file) return
+          if (file.size > MAX_VIDEO_SIZE) { setError('Video exceeds 50MB.'); e.target.value = ''; return }
+          setError(null)
+          onChange({ ...block, file })
+        }} />
+        {error && <span className="mt-1 block text-xs text-[var(--destructive)]">{error}</span>}
+        {previewUrl && !error && <video src={previewUrl} controls className="mt-1 rounded-sm max-h-36 w-full" />}
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Title</span>
+        <input className={controlClass} value={block.title ? resolveTranslatable(block.title, lang) : ''} placeholder="Video title (optional)…" onChange={(e) => onChange({ ...block, title: setTranslated(block.title ?? { default: '' }, lang, e.target.value) })} />
+      </label>
+    </div>
+  )
+}
+
+function BlockEditor({ block, lang, onChange, onDelete }: { block: PageBlock; lang: Language; onChange: (u: PageBlock) => void; onDelete: () => void }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-sm border border-[var(--line)] bg-[var(--surface-strong)] p-3.5">
+      <div className="flex items-center justify-between border-b border-[var(--line)] pb-2.5">
+        <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-orange)]">{block.type}</span>
+        <button type="button" onClick={onDelete} className="text-[var(--sea-ink-soft)] hover:text-[var(--destructive)]">
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
+      {block.type === 'header' && <HeaderBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === 'paragraph' && <ParagraphBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === 'image' && <ImageBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === 'video' && <VideoBlockEditor block={block} lang={lang} onChange={onChange} />}
+    </div>
+  )
+}
 
 function RouteComponent() {
   const navigate = useNavigate()
   const [lang, setLang] = useState<Language>('en')
-  const [postType, setPostType] = useState<'blog' | 'event'>('blog')
+  const [status, setStatus] = useState<ExperienceStatus>('Published')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const [title, setTitle] = useState<Translatable>({ default: '' })
-  const [startDate, setStartDate] = useState<Date | null>(null)
-  const [endDate, setEndDate] = useState<Date | null>(null)
+  const [pageData, setPageData] = useState<SkeletonPageData>({
+    defaultLanguage: 'en',
+    enabledLanguages: ['en'],
+    category: '',
+    coverImage: undefined as unknown as File,
+    title: { default: '' },
+    description: { default: '' },
+    status: 'Published',
+  })
 
   const { entries, blocks, addBlock, updateBlock, deleteBlock, serialize } = useBlocks()
+  const categories = useCategories(pageData, setPageData)
+  const coverPreviewUrl = useObjectUrl(pageData.coverImage)
 
-  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setTitle((prev) => setTranslated(prev, lang, value))
+  const handleMetaChange = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    const fieldLang: Language = (e.target.dataset.lang as Language) ?? 'en'
+    if (name !== 'title' && name !== 'description') return
+    setPageData((prev) => ({
+      ...prev,
+      [name]: setTranslated(prev[name] as Translatable, fieldLang, value),
+    }))
+  }, [])
+
+  const getMetaValue = (key: 'title' | 'description'): string => {
+    const field = pageData[key]
+    if (!field) return ''
+    return resolveTranslatable(field, lang)
   }
-
-  const getTitle = (): string => resolveTranslatable(title, lang)
 
   const handleSubmit = async () => {
     setSubmitError(null)
-    if (!getTitle().trim()) {
-      setSubmitError('Title is required.')
-      return
-    }
-    if (postType === 'event') {
-      if (!startDate || !endDate) {
-        setSubmitError('Start and end dates are required for events.')
-        return
-      }
-      if (endDate < startDate) {
-        setSubmitError('End date must be after start date.')
-        return
-      }
-    }
+    if (!pageData.coverImage) { setSubmitError('Cover image is required.'); return }
+    if (!pageData.title.default.trim()) { setSubmitError('Title is required.'); return }
 
     setSubmitting(true)
-    const serializedBlocks = serialize()
-    let result
-    if (postType === 'blog') {
-      result = await createBlogPage({ title, content: serializedBlocks })
-    } else {
-      result = await createEvent({ title, content: serializedBlocks, startDate: startDate!, endDate: endDate! })
-    }
+    const result = await createBookingPage({
+      slug: pageData.title.default.toLowerCase().replace(/\s+/g, '-'),
+      title: pageData.title,
+      description: pageData.description,
+      coverImage: pageData.coverImage,
+      category: pageData.category,
+      defaultLanguage: pageData.defaultLanguage,
+      enabledLanguages: pageData.enabledLanguages,
+      status,
+      blocks: serialize(),
+    })
     setSubmitting(false)
-
     if (!result.success) {
       setSubmitError(result.error ?? 'Something went wrong.')
     } else {
@@ -260,112 +230,96 @@ function RouteComponent() {
   }
 
   return (
-  <div className="flex w-full h-full bg-[#f1ede6]">
-    {/* Left: preview */}
-    <div className="flex-2 flex justify-center min-h-0 border-r border-[var(--brand-navy)]/15 p-6 overflow-y-auto">
-      <div className="w-11/12 overflow-hidden rounded-2xl border border-[var(--brand-navy)]/10 shadow-2xl shadow-[var(--brand-navy)]/15">
-        <BookingPageRenderer
-          page={{ blocks }}
-          lang={lang}
-        />
-      </div>
-    </div>
-
-    {/* Right: editor */}
-    <div className="flex-[1.2] p-5 flex flex-col gap-4 overflow-y-auto bg-white">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">Dashboard</p>
-        <h1 className="display-title mt-1.5 text-2xl font-medium text-[var(--brand-navy)]">Create Post</h1>
+    <div className="flex h-full w-full bg-[var(--dash-canvas)]">
+      {/* Preview */}
+      <div className="flex-2 flex min-h-0 justify-center overflow-y-auto border-r border-[var(--line)] p-6">
+        <div className="w-11/12 overflow-hidden rounded-sm border border-[var(--line)] shadow-lg shadow-black/10">
+          <BookingPageRenderer page={{ blocks }} lang={lang} />
+        </div>
       </div>
 
-      <div className="flex gap-4">
-        <label className="flex items-center gap-1.5 text-sm text-[var(--brand-navy)]/80 cursor-pointer">
-          <input type="radio" name="postType" value="blog" checked={postType === 'blog'} onChange={() => setPostType('blog')} className="accent-[var(--brand-orange)]" />
-          Blog
-        </label>
-        <label className="flex items-center gap-1.5 text-sm text-[var(--brand-navy)]/80 cursor-pointer">
-          <input type="radio" name="postType" value="event" checked={postType === 'event'} onChange={() => setPostType('event')} className="accent-[var(--brand-orange)]" />
-          Event
-        </label>
-      </div>
+      {/* Editor */}
+      <div className="flex-1 flex flex-col gap-5 overflow-y-auto bg-[var(--surface-strong)] p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">Dashboard</p>
+            <h1 className="mt-1 text-2xl font-bold text-[var(--sea-ink)]">Create Experience</h1>
+          </div>
+          <SelectField label="Language" value={lang} onChange={(e) => setLang(e.target.value as Language)} className="w-32 cursor-pointer">
+            <option value="en">English</option>
+            <option value="af">Afrikaans</option>
+          </SelectField>
+        </div>
 
-      <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Language</span>
-        <div className="flex gap-4">
-          {(['en', 'af'] as const).map((l) => (
-            <label key={l} className="flex items-center gap-1.5 text-sm text-[var(--brand-navy)]/80 cursor-pointer">
-              <input type="radio" name="lang_group" value={l} checked={lang === l} className="accent-[var(--brand-orange)]" onChange={() => setLang(l)} />
-              {l === 'en' ? 'English' : 'Afrikaans'}
+        <SectionCard title="Experience details">
+          <div className="flex flex-col gap-4">
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Cover Image</span>
+              <input type="file" accept="image/*" className={controlClass} onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                if (file.size > MAX_SIZE) { setSubmitError('Cover image exceeds 5MB.'); e.target.value = ''; return }
+                setSubmitError(null)
+                setPageData((prev) => ({ ...prev, coverImage: file }))
+              }} />
+              {coverPreviewUrl && <img src={coverPreviewUrl} alt="Cover preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
             </label>
-          ))}
-        </div>
+
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Categories</span>
+              <input className={controlClass} value={categories.input} onChange={(e) => categories.setInput(e.target.value)} onKeyDown={categories.add} placeholder="Type a category and press Enter…" />
+              {categories.categories.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {categories.categories.map((c) => (
+                    <span key={c} className="inline-flex items-center gap-1 rounded-sm bg-[color-mix(in_oklab,var(--brand-orange)_16%,transparent)] py-0.5 pl-2.5 pr-1.5 text-xs font-semibold text-[var(--brand-orange-deep)]">
+                      {c}
+                      <button type="button" onClick={() => categories.remove(c)} className="leading-none text-[var(--brand-orange-deep)]/60 hover:text-[var(--destructive)]">✕</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Title</span>
+              <input name="title" data-lang={lang} className={controlClass} value={getMetaValue('title')} onChange={handleMetaChange} placeholder="Page title" />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Description</span>
+              <textarea name="description" data-lang={lang} className={`${controlClass} min-h-16 resize-y`} value={getMetaValue('description')} onChange={handleMetaChange} placeholder="Short description…" />
+            </label>
+
+            <SelectField label="Status" value={status} onChange={(e) => setStatus(e.target.value as ExperienceStatus)}>
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+            </SelectField>
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Content blocks">
+          <div className="flex flex-col gap-3">
+            {entries.map(({ id, block }) => (
+              <BlockEditor key={id} block={block} lang={lang} onChange={(u) => updateBlock(id, u)} onDelete={() => deleteBlock(id)} />
+            ))}
+            <div className="flex flex-wrap gap-2">
+              {BLOCK_TYPES.map((type) => (
+                <button key={type} type="button" onClick={() => addBlock(type)} className="rounded-sm border border-[var(--line)] px-2.5 py-1 text-xs font-semibold text-[var(--sea-ink-soft)] transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange)]">
+                  + {type}
+                </button>
+              ))}
+            </div>
+          </div>
+        </SectionCard>
+
+        {submitError && (
+          <p className="rounded-sm bg-[color-mix(in_oklab,var(--destructive)_10%,transparent)] px-3 py-2 text-sm text-[var(--destructive)]">{submitError}</p>
+        )}
+
+        <Button variant="primary" onClick={handleSubmit} disabled={submitting} className="self-start">
+          {submitting ? 'Creating…' : 'Create Experience'}
+        </Button>
       </div>
-
-      <Field label="Title">
-        <input className={inputCls} value={getTitle()} onChange={handleTitleChange} placeholder="Post title" />
-      </Field>
-
-      {postType === 'event' && (
-        <div className="flex gap-4">
-          <Field label="Start Date">
-            <input
-              type="date"
-              className={inputCls}
-              value={startDate ? startDate.toISOString().split('T')[0] : ''}
-              onChange={(e) => setStartDate(e.target.value ? new Date(e.target.value) : null)}
-            />
-          </Field>
-          <Field label="End Date">
-            <input
-              type="date"
-              className={inputCls}
-              value={endDate ? endDate.toISOString().split('T')[0] : ''}
-              onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : null)}
-            />
-          </Field>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">Content Blocks</span>
-        {entries.map(({ id, block }) => (
-          <BlockEditor
-            key={id}
-            block={block}
-            lang={lang}
-            onChange={(updated) => updateBlock(id, updated)}
-            onDelete={() => deleteBlock(id)}
-          />
-        ))}
-        <div className="flex gap-1 flex-wrap mt-1">
-          {BLOCK_TYPES.map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => addBlock(type)}
-              className="rounded-md border border-[var(--brand-navy)]/15 px-2.5 py-1 text-xs font-semibold text-[var(--brand-navy)]/70 transition-colors hover:border-[var(--brand-orange)] hover:text-[var(--brand-orange)]"
-            >
-              + {type}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {submitError && (
-        <p className="rounded-md bg-[var(--brand-orange)]/10 px-3 py-2 text-xs font-medium text-[var(--brand-orange-deep)]">
-          {submitError}
-        </p>
-      )}
-
-      <button
-        type="button"
-        disabled={submitting}
-        onClick={handleSubmit}
-        className="mt-auto inline-flex items-center justify-center gap-2 bg-[var(--brand-orange)] px-7 py-3 text-xs font-bold uppercase tracking-widest !text-white shadow-lg shadow-black/10 transition-colors hover:bg-[var(--brand-orange-deep)] disabled:opacity-50"
-      >
-        {submitting ? 'Creating…' : `Create ${postType === 'blog' ? 'Blog' : 'Event'}`}
-      </button>
     </div>
-  </div>
-)
+  )
 }

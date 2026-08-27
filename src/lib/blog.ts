@@ -9,6 +9,12 @@ import type {
 } from "./experiences";
 
 // ============================================================
+// STATUS
+// ============================================================
+
+export type PostStatus = "Published" | "Draft";
+
+// ============================================================
 // BLOCK TYPES (no SelectableBlock)
 // ============================================================
 
@@ -28,6 +34,7 @@ export type BlogPage = {
   id: string;
   title: Translatable;
   content: BlogPageBlock[];
+  status: PostStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -36,6 +43,7 @@ export type HydratedBlogPage = {
   id: string;
   title: Translatable;
   content: FlatBlogPageBlock[];
+  status: PostStatus;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -58,6 +66,7 @@ export type Event = {
   id: string;
   title: Translatable;
   content: EventBlock[];
+  status: PostStatus;
   startDate: Date;
   endDate: Date;
   createdAt: Date;
@@ -68,6 +77,7 @@ export type HydratedEvent = {
   id: string;
   title: Translatable;
   content: FlatEventBlock[];
+  status: PostStatus;
   startDate: Date;
   endDate: Date;
   createdAt: Date;
@@ -90,12 +100,14 @@ export async function createBlogPage(
       title: JSON.stringify(input.title),
       content: flatContent,
       type: "blog",
+      status: input.status,
     });
 
     return createResult<HydratedBlogPage, string>({
       id: result.id,
       title: input.title,
       content: flatContent,
+      status: input.status,
       createdAt: new Date(result.created),
       updatedAt: new Date(result.updated),
     }, null);
@@ -115,12 +127,14 @@ export async function updateBlogPage(
       title: JSON.stringify(input.title),
       content: flatContent,
       type: "blog",
+      status: input.status,
     });
 
     return createResult<HydratedBlogPage, string>({
       id: result.id,
       title: input.title,
       content: flatContent,
+      status: input.status,
       createdAt: new Date(result.created),
       updatedAt: new Date(result.updated),
     }, null);
@@ -175,12 +189,14 @@ export async function createEvent(
       start_date: input.startDate.toISOString(),
       end_date: input.endDate.toISOString(),
       type: "event",
+      status: input.status,
     });
 
     return createResult<HydratedEvent, string>({
       id: result.id,
       title: input.title,
       content: flatContent,
+      status: input.status,
       startDate: new Date(result.start_date),
       endDate: new Date(result.end_date),
       createdAt: new Date(result.created),
@@ -204,12 +220,14 @@ export async function updateEvent(
       start_date: input.startDate.toISOString(),
       end_date: input.endDate.toISOString(),
       type: "event",
+      status: input.status,
     });
 
     return createResult<HydratedEvent, string>({
       id: result.id,
       title: input.title,
       content: flatContent,
+      status: input.status,
       startDate: new Date(result.start_date),
       endDate: new Date(result.end_date),
       createdAt: new Date(result.created),
@@ -293,6 +311,7 @@ function hydrateBlogRecord(record: Record<string, any>): HydratedBlogPage {
     id: record.id,
     title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
     content: record.content ?? [],
+    status: (record.status as PostStatus) ?? "Draft",
     createdAt: new Date(record.created),
     updatedAt: new Date(record.updated),
   };
@@ -303,6 +322,7 @@ function hydrateEventRecord(record: Record<string, any>): HydratedEvent {
     id: record.id,
     title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
     content: record.content ?? [],
+    status: (record.status as PostStatus) ?? "Draft",
     startDate: new Date(record.start_date),
     endDate: new Date(record.end_date),
     createdAt: new Date(record.created),
