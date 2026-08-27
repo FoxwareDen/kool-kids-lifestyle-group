@@ -2,7 +2,7 @@ import { addDays, format } from "date-fns";
 import { createBookingPage } from "./experiences";
 import { createPayment } from "./payment";
 import { buildImageUrl, create, createResult, deleteItemInCollection, fetchCollection, getPBSession, Result, type MetaData } from "./pocketbase";
-import { type Unit as U, type Calendar as C, type Booking as B, type AvailableRange, generateAvailableSlots } from "@/lib/system";
+import { type Unit as U, type Calendar as C, type Booking as B, type AvailableRange, generateAvailableSlots, type SlotType } from "@/lib/system";
 
 export type UnitType = U & {
   value: number;
