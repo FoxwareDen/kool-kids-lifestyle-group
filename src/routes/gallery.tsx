@@ -41,9 +41,9 @@ function GalleryPage() {
 
   return (
     <main>
-      <GalleryHero lang={lang} />
-      <GalleryShowcase />
-      <GalleryCta />
+      <GalleryHero lang={lang ?? 'en'} />
+      <GalleryShowcase lang={lang ?? 'en'} />
+      <GalleryCta lang={lang ?? 'en'} />
     </main>
   )
 }

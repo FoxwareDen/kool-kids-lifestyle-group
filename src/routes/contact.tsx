@@ -25,6 +25,10 @@ export const Route = createFileRoute('/contact')({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
   component: ContactPage,
 })
 
@@ -34,12 +38,14 @@ export const Route = createFileRoute('/contact')({
  * @returns {JSX.Element} The rendered page.
  */
 function ContactPage() {
+  const { lang } = Route.useLoaderDeps()
+
   return (
     <main>
-      <ContactHero />
-      <ContactSection />
-      <LocationMap />
-      <ContactCta />
+      <ContactHero lang={lang ?? 'en'} />
+      <ContactSection lang={lang ?? 'en'} />
+      <LocationMap lang={lang ?? 'en'} />
+      <ContactCta lang={lang ?? 'en'} />
     </main>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CalendarClock,
   ChevronDown,
@@ -20,6 +20,8 @@ import { BookingStatusBadge } from './BookingStatusBadge'
 import { PaymentStatusBadge } from './PaymentStatusBadge'
 import { Button } from './form-controls'
 import { formatBookingDate, formatBookingDuration, formatDateTime } from './booking-utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { findPaymentByReference, updatePaymentStatus, type PaymentStatus } from '#/lib/payment'
 
 /** Shared desktop grid template so the header and rows stay aligned. */
 export const ROW_GRID = 'md:grid-cols-[1.4fr_1.4fr_1fr_1fr_0.8fr_1.2fr]'
@@ -38,18 +40,50 @@ function DetailItem({
   label,
   value,
 }: {
-  icon: typeof Clock
+  icon: React.ComponentType<{ className?: string }>
   label: string
   value?: string
 }) {
+  const [copied, setCopied] = useState(false)
+  const isLong = (value?.length ?? 0) > 37
+  const displayValue = value || '—'
+
+  const handleCopy = async () => {
+    if (!value || !navigator.clipboard) return
+
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
+  }
+
   return (
-    <div className="flex items-start gap-2">
-      <Icon className="mt-0.5 size-4 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />
-      <div className="min-w-0">
-        <p className="text-xs text-[var(--sea-ink-soft)]">{label}</p>
-        <p className="truncate text-sm font-medium text-[var(--sea-ink)]">{value || '—'}</p>
-      </div>
-    </div>
+    <TooltipProvider>
+      <Tooltip open={copied || isLong ? undefined : false}>
+        <TooltipTrigger asChild>
+          <div className="flex items-start gap-2">
+            <Icon className="mt-0.5 size-4 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="text-xs text-[var(--sea-ink-soft)]">{label}</p>
+              <p
+                onClick={handleCopy}
+                className={`truncate text-sm font-medium text-[var(--sea-ink)] ${
+                  value ? "cursor-pointer hover:opacity-80 active:scale-[0.98] transition-all" : ""
+                } ${copied ? "text-emerald-700":""}`}
+              >
+                {displayValue}
+              </p>
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <span>{copied ? "Copied to clipboard!" : displayValue}</span>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -61,12 +95,18 @@ function DetailItem({
  * pending. All actions are disabled while a change is in flight.
  */
 function BookingActions({
+  status,
   booking,
-  onStatusChange,
   pending,
+  disabled,
+  onStatusChange,
+  onPaymentStatusChange,
 }: {
+  status: PaymentStatus
+  disabled: boolean
   booking: DetailedBooking
   onStatusChange: StatusChangeHandler
+  onPaymentStatusChange: (status: PaymentStatus) => void
   pending: boolean
 }) {
   const [confirmingCancel, setConfirmingCancel] = useState(false)
@@ -96,14 +136,21 @@ function BookingActions({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <fieldset 
+      disabled={disabled} 
+      className="m-0 border-0 p-0 min-w-0 flex flex-wrap items-center gap-2 disabled:opacity-50"
+    >
+      <button className="px-3 py-1.5" disabled={disabled}>
+        <PaymentStatusBadge status={status} onChange={onPaymentStatusChange} />
+      </button>
+      
       {isActive ? (
         <>
           <Button variant="primary" className="px-3 py-1.5" onClick={() => onStatusChange(booking.id, 'completed')}>
             <CheckCircle2 className="size-4" aria-hidden="true" />
             Mark completed
           </Button>
-          <Button variant="danger" className="px-3 py-1.5" onClick={() => setConfirmingCancel(true)}>
+          <Button variant="danger" className="px-3 py-1.5" onClick={() => onStatusChange(booking.id, 'cancelled')}>
             <XCircle className="size-4" aria-hidden="true" />
             Cancel
           </Button>
@@ -114,7 +161,7 @@ function BookingActions({
           Reactivate
         </Button>
       )}
-    </div>
+    </fieldset>
   )
 }
 
@@ -142,6 +189,40 @@ export function ActiveBookingRow({
   const [open, setOpen] = useState(false)
   const scheduleTitle = booking.schedule?.title
   const customerName = booking.customer?.name || booking.customer?.email || 'Guest'
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(
+    booking.customer?.payment_status ?? 'due',
+  )
+  const [paymentPending, setPaymentPending] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+
+  const handlePaymentStatusChange = async (newStatus: PaymentStatus) => {
+    const reference = booking.customer?.reference
+    if (!reference) return
+
+    const previous = paymentStatus
+    setPaymentStatus(newStatus)
+    setPaymentPending(true)
+    setPaymentError(null)
+
+    try {
+      const paymentResult = await findPaymentByReference(reference)
+
+      if (!paymentResult.success || paymentResult.value == null) {
+        throw new Error('Payment record not found for this reference.')
+      }
+
+      const updateResult = await updatePaymentStatus(paymentResult.value.id, newStatus)
+
+      if (!updateResult.success) {
+        throw new Error('Failed to update payment status.')
+      }
+    } catch (err) {
+      setPaymentStatus(previous)
+      setPaymentError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setPaymentPending(false)
+    }
+  }
 
   return (
     <div className="border-t border-[var(--line)] first:border-t-0">
@@ -228,19 +309,30 @@ export function ActiveBookingRow({
               value={`${booking.start_time} – ${booking.end_time}`}
             />
             <DetailItem icon={Timer} label="Duration" value={formatBookingDuration(booking)} />
-            <DetailItem icon={CalendarClock} label="Booked on" value={formatDateTime(booking.created)} />
+            <DetailItem
+              icon={CalendarClock}
+              label="Booked on"
+              value={formatDateTime(booking.created)}
+            />
           </div>
 
+          {paymentError && (
+            <p className="mt-3 flex items-center gap-1.5 text-xs text-red-600">
+              <XCircle className="size-3.5 shrink-0" aria-hidden="true" />
+              {paymentError}
+            </p>
+          )}
+
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] pt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--sea-ink-soft)]">Payment:</span>
-              {booking.customer ? (
-                <PaymentStatusBadge status={booking.customer.payment_status} />
-              ) : (
-                <span className="text-xs text-[var(--sea-ink-soft)]">No payment on record</span>
-              )}
-            </div>
-            <BookingActions booking={booking} onStatusChange={onStatusChange} pending={pending} />
+            <div className="flex items-center gap-2" />
+            <BookingActions
+              status={paymentStatus}
+              booking={booking}
+              onStatusChange={onStatusChange}
+              pending={pending}
+              disabled={paymentPending}
+              onPaymentStatusChange={handlePaymentStatusChange}
+            />
           </div>
         </div>
       )}

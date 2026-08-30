@@ -1,3 +1,4 @@
+import { resolveTranslatable, type Language, type Translatable } from '#/lib/experiences';
 import { Quote } from 'lucide-react'
 
 /**
@@ -28,10 +29,12 @@ export function TestimonialsCard({
   eyebrow,
   title,
   testimonials,
+  lang
 }: {
-  eyebrow: string
+  lang: Language
   title: string
-  testimonials: { quote: string; author: string }[]
+  eyebrow: string
+  testimonials: { quote: Translatable; author: string }[]
 }) {
   const active = testimonials[0]
 
@@ -50,7 +53,7 @@ export function TestimonialsCard({
       />
 
       <blockquote className="mt-3 max-w-sm text-sm leading-relaxed text-white/75">
-        {active.quote}
+        {resolveTranslatable(active.quote, lang)}
       </blockquote>
       <p className="mt-5 text-sm font-semibold text-white">{`– ${active.author}`}</p>
 

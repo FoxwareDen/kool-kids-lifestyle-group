@@ -13,6 +13,11 @@ const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
 
 export const Route = createFileRoute('/_authed/dashboard/create-experience')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({ deps: { lang } }) => ({ lang }),
   component: RouteComponent,
 })
 
@@ -130,7 +135,7 @@ function ImageBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock,
 
 type MediaBlockEditorAcceptedTypes = "image"|"video"
 
-function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, { type: "media" }>, lang: Language, onChange: (b: Extract<PageBlock, {type: string}>) => void}) {
+export function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, { type: "media" }>, lang: Language, onChange: (b: Extract<PageBlock, {type: string}>) => void}) {
   const [mode, setMode] = useState<MediaBlockEditorAcceptedTypes>("image")
   const [open, setOpen] = useState(false)
 

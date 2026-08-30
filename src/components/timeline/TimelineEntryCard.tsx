@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import type { TimelineEntry } from '#/lib/timeline'
 import { TimelineBadge } from './TimelineBadge'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * Formats an ISO date string as a readable long-form date (e.g. "5 March 2025").
@@ -56,15 +57,18 @@ function getDateLabel(entry: TimelineEntry): string {
 export function TimelineEntryCard({
   entry,
   isLast = false,
+  lang = 'en',
 }: {
   entry: TimelineEntry
   isLast?: boolean
+  lang?: Language
 }) {
   const dateLabel = getDateLabel(entry)
   const detailLink =
     entry.kind === 'event'
       ? { to: '/events/$eventId', params: { eventId: entry.id } }
       : { to: '/blogs/$blogId', params: { blogId: entry.id } }
+  const readMore = resolveTranslatable({ default: 'Read more', translations: { af: 'Lees meer' } }, lang)
 
   return (
     <li className="relative flex gap-6 pb-12 last:pb-0">
@@ -90,7 +94,7 @@ export function TimelineEntryCard({
               {dateLabel}
             </time>
           )}
-          <TimelineBadge kind={entry.kind} />
+          <TimelineBadge kind={entry.kind} lang={lang} />
         </div>
 
         <h3 className="display-title mt-3 text-balance text-xl font-medium leading-snug text-[var(--brand-navy)] sm:text-2xl">
@@ -107,7 +111,7 @@ export function TimelineEntryCard({
           {...detailLink}
           className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline hover:!text-[var(--brand-orange-deep)]"
         >
-          Read more
+          {readMore}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </article>

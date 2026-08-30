@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { useForm } from "@tanstack/react-form";
-import { Lock } from "lucide-react";
+import { Lock, CheckCircle2, Download, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,15 +20,15 @@ const payloadSchema = z.object({
 type PaymentFormValues = z.infer<typeof payloadSchema>;
 
 interface PaymentFormProps {
-  /** True until the booking step is complete — locks and dims the form. */
   disabled?: boolean;
   booking: Booking | null;
-  toggleModel: () => void
+  toggleModel: () => void;
 }
 
 type PaymentStatus = {
   type: "success" | "error" | "cancelled" | "conflict";
   message: string;
+  reference?: string;
 };
 
 const fieldLabelClass =
@@ -37,12 +37,88 @@ const fieldLabelClass =
 const inputClass =
   "border-[var(--brand-navy)]/15 focus-visible:border-[var(--brand-orange)] focus-visible:ring-[var(--brand-orange)]/30";
 
+function BookingConfirmation({ reference, onClose }: { reference: string; onClose: () => void }) {
+  const handleDownload = () => {
+    const content = [
+      "BOOKING CONFIRMATION",
+      "====================",
+      "",
+      `Payment Reference: ${reference}`,
+      "",
+      "Your payment has been received and is being verified.",
+      "A confirmation email will be sent to you shortly.",
+      "",
+      "====================",
+    ].join("\n");
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `booking-${reference}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-5 py-6 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
+        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+      </div>
+
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand-orange)]">
+          Confirmed
+        </p>
+        <h3 className="mt-0.5 text-xl font-medium text-[var(--brand-navy)]">
+          Booking confirmed!
+        </h3>
+        <p className="mt-1 text-sm text-[var(--brand-navy)]/60">
+          Your payment was successful.
+        </p>
+      </div>
+
+      <div className="w-full rounded-lg border border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/[0.02] px-4 py-3 text-left">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-navy)]/50">
+          Payment Reference
+        </p>
+        <p className="mt-1 font-mono text-sm font-semibold text-[var(--brand-navy)]">
+          {reference}
+        </p>
+      </div>
+
+      <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-left">
+        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <p className="text-xs text-amber-700">
+          Expect a confirmation email once your payment has been verified. Please keep your reference number handy.
+        </p>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full gap-2 border-[var(--brand-navy)]/20 text-[var(--brand-navy)]"
+        onClick={handleDownload}
+      >
+        <Download className="h-4 w-4" />
+        Download reference
+      </Button>
+
+      <Button
+        type="button"
+        className="w-full bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)]/90"
+        onClick={onClose}
+      >
+        Done
+      </Button>
+    </div>
+  );
+}
+
 export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAmountError, setIsAmountError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
-  // Tracks the Paystack popup lifecycle separately from form.state.isSubmitting,
-  // since onSubmit returns as soon as the popup opens, not when it resolves.
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const form = useForm({
@@ -79,7 +155,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         code = await generateUniqueCode();
 
         packageResult = await createPackage(booking, code, reference);
-        
+
         console.log("[Payment] createPackage response:", packageResult);
       } catch (err) {
         console.error("[Payment] createPackage threw an exception:", err);
@@ -154,11 +230,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
           onSuccess: async (transaction) => {
             console.log("[Payment] Transaction successful:", transaction);
             setIsPopupOpen(false);
-            setPaymentStatus({
-              type: "success",
-              message: "Payment successful! Your booking is confirmed.",
-            });
-
 
             if (typeof func === "function") {
               console.log("[Payment] Executing package closure with contact details...");
@@ -171,7 +242,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                 });
 
                 console.log(res);
-                
               } catch (err) {
                 console.error("[Payment] Error running package function:", err);
                 setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
@@ -179,42 +249,46 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               }
             }
 
-            toggleModel()
+            setPaymentStatus({
+              type: "success",
+              message: "Payment successful! Your booking is confirmed.",
+              reference,
+            });
           },
           onCancel: async () => {
-
             console.log("payment was canceled removing booking...");
-            
+
             const res = await deleteBooking(booking_confirmed.id);
 
             console.log(res);
-            
+
             if (!res) await deleteBooking(booking_confirmed.id);
-            
+
             console.log("[Payment] Transaction cancelled by user");
             setIsPopupOpen(false);
             setPaymentStatus({
               type: "cancelled",
               message: "Payment was cancelled. You can try again whenever you're ready.",
+              reference,
             });
-            toggleModel()
+            // toggleModel()
           },
           onError: async (error) => {
             console.log("payment was failed removing booking...");
-            
+
             const res = await deleteBooking(booking_confirmed.id);
 
             console.log(res);
-            
+
             if (!res) await deleteBooking(booking_confirmed.id);
-            
+
             console.error("[Payment] Paystack transaction error:", error);
             setIsPopupOpen(false);
             setPaymentStatus({
               type: "error",
               message: error?.message || "Something went wrong with the payment.",
             });
-            toggleModel()
+            toggleModel();
           },
         });
       } catch (err) {
@@ -260,6 +334,10 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
       }
     })();
   }, [booking]);
+
+  if (paymentStatus?.type === "success") {
+    return <BookingConfirmation reference={paymentStatus.reference!} onClose={toggleModel} />;
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -429,9 +507,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               <div className="mt-3 text-center">
                 <p
                   className={`text-sm font-medium ${
-                    paymentStatus.type === "success"
-                      ? "text-emerald-600"
-                      : paymentStatus.type === "cancelled" || paymentStatus.type === "conflict"
+                    paymentStatus.type === "cancelled" || paymentStatus.type === "conflict"
                       ? "text-amber-600"
                       : "text-destructive"
                   }`}

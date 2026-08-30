@@ -1,9 +1,10 @@
-import { generatePaymentReference, generateUniqueCode } from '#/server/utils';
-import { create, createResult, getPBSession, Result, type MetaData } from '@/lib/pocketbase';
+import { create, createResult, getPBSession, Result, updateItemInCollection, type MetaData } from '@/lib/pocketbase';
 import { z } from "zod";
 
+export type PaymentStatus = 'due' | 'verified'
+
 export interface Payment {
-  status: "due" | "verified",
+  status: PaymentStatus,
   email: string,
   name?: string,
   phone: string,
@@ -56,4 +57,21 @@ export async function createPayment({
   };
 
   return await create("Payments", data, cookieHeader);
+}
+
+export async function findPaymentByReference(reference: string): Promise<Result<PaymentResponse, string>> {
+  const client = getPBSession()
+
+  try {
+    const record = await client.collection("Payments").getFirstListItem(`reference = "${reference}"`)
+    return createResult(record, null)
+  } catch (error) {
+    console.error("findPaymentByReference failed:", error)
+    return createResult(null, "failed to fetch matching record")
+  }
+}
+
+
+export async function updatePaymentStatus(id: string, status: PaymentStatus) {
+  return await updateItemInCollection("Payments", id, {status})
 }
