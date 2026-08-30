@@ -14,11 +14,9 @@
  * @returns {JSX.Element} The rendered gallery item.
  */
 export function GalleryItem({
-  image,
   imageAlt,
   href = '#',
 }: {
-  image: string
   imageAlt: string
   href?: string
 }) {
@@ -28,7 +26,7 @@ export function GalleryItem({
       className="group relative block aspect-square overflow-hidden"
     >
       <img
-        src={image || '/placeholder.svg'}
+        src={href || '/placeholder.svg'}
         alt={imageAlt}
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
       />
