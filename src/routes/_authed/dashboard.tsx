@@ -5,6 +5,9 @@ import { DashboardTopbar } from '#/components/dashboard/DashboardTopbar'
 import { getActiveNavLabel } from '#/components/dashboard/nav-config'
 
 export const Route = createFileRoute('/_authed/dashboard')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   component: DashboardComponent,
 })
 

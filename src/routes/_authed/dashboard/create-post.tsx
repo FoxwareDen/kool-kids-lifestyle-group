@@ -11,6 +11,9 @@ const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
 
 export const Route = createFileRoute('/_authed/dashboard/create-post')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   component: RouteComponent,
 })
 

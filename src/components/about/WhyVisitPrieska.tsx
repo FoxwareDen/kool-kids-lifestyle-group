@@ -1,6 +1,7 @@
 import { SectionHeading } from '#/components/sections/SectionHeading'
 import type { Content } from '#/lib/pocketbase';
 import { mapIcon } from '#/lib/utils';
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * A single reason-to-visit rendered in the {@link WhyVisitPrieska} grid.
@@ -66,16 +67,18 @@ interface WhyVisitPrieska {
  *
  * @returns {JSX.Element} The rendered why-visit section.
  */
-export function WhyVisitPrieska({data}:{data: Content<Partial<WhyVisitPrieska>>}) {
+export function WhyVisitPrieska({data, lang = 'en'}:{data: Content<Partial<WhyVisitPrieska>>; lang?: Language}) {
   const {content: {kicker, title, reasons}} = data;
+  const defaultKicker = resolveTranslatable({ default: 'A Destination Like No Other', translations: { af: 'n Bestemming soos Geene Ander' } }, lang)
+  const defaultTitle = resolveTranslatable({ default: 'Why Visit Prieska', translations: { af: 'Waarom Prieska Besoek?' } }, lang)
 
 
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow={kicker?kicker:"A Destination Like No Other"}
-          title={title?title:"Why Visit Prieska"}
+          eyebrow={kicker ? kicker : defaultKicker}
+          title={title ? title : defaultTitle}
           theme="dark"
         />
 

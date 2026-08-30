@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The page hero for the "Heritage" route. Displays a full-width heritage
@@ -8,7 +9,13 @@ import { ChevronRight } from 'lucide-react'
  *
  * @returns {JSX.Element} The rendered heritage hero section.
  */
-export function HeritageHero() {
+export function HeritageHero({ lang = 'en' }: { lang?: Language }) {
+  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
+  const current = resolveTranslatable({ default: 'Heritage', translations: { af: 'Erfenis' } }, lang)
+  const kickerText = resolveTranslatable({ default: 'Our Roots & Legacy', translations: { af: 'Ons Wortels & Nalatenskap' } }, lang)
+  const titleText = resolveTranslatable({ default: 'The Living Heritage of Prieska', translations: { af: 'Die Lewende Erfenis van Prieska' } }, lang)
+  const subText = resolveTranslatable({ default: 'Stories carried by the river and the stone.', translations: { af: 'Verhale gedra deur die rivier en die klip.' } }, lang)
+
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
@@ -32,24 +39,24 @@ export function HeritageHero() {
           <ol className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             <li>
               <a href="/" className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]">
-                Home
+                {home}
               </a>
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
             <li className="text-[var(--brand-orange)]" aria-current="page">
-              Heritage
+              {current}
             </li>
           </ol>
         </nav>
 
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-          Our Roots & Legacy
+          {kickerText}
         </p>
         <h1 className="display-title mt-3 max-w-3xl text-balance text-4xl font-medium leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem]">
-          The Living Heritage of Prieska
+          {titleText}
         </h1>
         <p className="script-title mt-2 text-2xl font-semibold text-[var(--brand-orange)] sm:text-3xl">
-          Stories carried by the river and the stone.
+          {subText}
         </p>
       </div>
     </section>

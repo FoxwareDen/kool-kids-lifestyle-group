@@ -4,6 +4,7 @@ import churchImg from '../../images/church-2.jpeg'
 import riverImg from '../../images/orange-river.jpeg'
 import koppieImg from '../../images/koppie.jpeg'
 import trailImg from '../../images/trail.jpeg'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * A heritage site shown in the {@link HeritageSites} grid.
@@ -57,13 +58,15 @@ const SITES: { image: string; name: string; description: string; location: strin
  *
  * @returns {JSX.Element} The rendered heritage sites section.
  */
-export function HeritageSites() {
+export function HeritageSites({ lang = 'en' }: { lang?: Language }) {
+  const eyebrow = resolveTranslatable({ default: 'Landmarks Worth the Journey', translations: { af: 'Landmerke Waard om te Reis' } }, lang)
+  const title = resolveTranslatable({ default: 'Heritage Sites to Explore', translations: { af: 'Erfenisplekke om te Verken' } }, lang)
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Landmarks Worth the Journey"
-          title="Heritage Sites to Explore"
+          eyebrow={eyebrow}
+          title={title}
           theme="light"
         />
 

@@ -23,15 +23,15 @@ import { TimelineRenderer } from '#/components/timeline/TimelineRenderer'
  * @param {BlogRendererProps} props - Component props.
  * @returns {JSX.Element} The rendered timeline page for the active section.
  */
-function BlogRenderer({ slug }: { slug: string }) {
+function BlogRenderer({ slug, lang = 'en' }: { slug: string; lang?: 'en' | 'af' }) {
   const kind = kindFromSlug(slug)
 
   const { data: entries = [], isLoading } = useQuery({
-    queryKey: ['timeline', kind],
-    queryFn: () => fetchTimelineEntries(kind),
+    queryKey: ['timeline', kind, lang],
+    queryFn: () => fetchTimelineEntries(kind, lang),
   })
 
-  return <TimelineRenderer section={kind} entries={entries} isLoading={isLoading} />
+  return <TimelineRenderer section={kind} entries={entries} isLoading={isLoading} lang={lang} />
 }
 
 export default BlogRenderer

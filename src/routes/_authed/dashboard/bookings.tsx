@@ -22,6 +22,9 @@ const getBookings = createServerFn()
   })
 
 export const Route = createFileRoute('/_authed/dashboard/bookings')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   loader: async () => await getBookings(),
   component: RouteComponent,
 })

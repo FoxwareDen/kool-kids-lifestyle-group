@@ -1,6 +1,7 @@
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ContactInfoItem } from './ContactInfoItem'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The contact detail entries rendered as {@link ContactInfoItem} rows.
@@ -53,26 +54,37 @@ const SOCIAL_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
  *
  * @returns {JSX.Element} The rendered contact details panel.
  */
-export function ContactDetails() {
+export function ContactDetails({ lang = 'en' }: { lang?: Language }) {
+  const labels = {
+    title: resolveTranslatable({ default: 'Contact Information', translations: { af: 'Kontak Inligting' } }, lang),
+    subtitle: resolveTranslatable({ default: 'Reach Out Directly', translations: { af: 'Kom Direk In Kontak' } }, lang),
+    intro: resolveTranslatable({ default: 'Whether you\'re planning a visit, booking a tour or just have a question, our friendly team is here to help you make the most of Prieska.', translations: { af: 'Of jy ’n besoek beplan, ’n toer bespreek of bloot ’n vraag het, ons vriendelike span is hier om jou te help om die beste van Prieska te kry.' } }, lang),
+    follow: resolveTranslatable({ default: 'Follow Us', translations: { af: 'Volg Ons' } }, lang),
+    details: [
+      resolveTranslatable({ default: 'Visit Us', translations: { af: 'Besoek Ons' } }, lang),
+      resolveTranslatable({ default: 'Call Us', translations: { af: 'Bel Ons' } }, lang),
+      resolveTranslatable({ default: 'Email Us', translations: { af: 'E-pos Ons' } }, lang),
+      resolveTranslatable({ default: 'Office Hours', translations: { af: 'Kantoorure' } }, lang),
+    ],
+  }
   return (
     <div>
       <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-        Contact Information
+        {labels.title}
       </p>
       <h2 className="display-title mt-2 text-2xl font-medium text-[var(--brand-navy)] sm:text-3xl">
-        Reach Out Directly
+        {labels.subtitle}
       </h2>
       <p className="mt-3 max-w-md text-pretty leading-relaxed text-[var(--brand-navy)]/70">
-        Whether you&apos;re planning a visit, booking a tour or just have a
-        question, our friendly team is here to help you make the most of Prieska.
+        {labels.intro}
       </p>
 
       <div className="mt-8 space-y-6">
-        {CONTACT_DETAILS.map((detail) => (
+        {CONTACT_DETAILS.map((detail, index) => (
           <ContactInfoItem
             key={detail.label}
             icon={detail.icon}
-            label={detail.label}
+            label={labels.details[index] ?? detail.label}
             lines={detail.lines}
             href={detail.href}
           />
@@ -81,7 +93,7 @@ export function ContactDetails() {
 
       <div className="mt-9">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55">
-          Follow Us
+          {labels.follow}
         </p>
         <div className="mt-3 flex items-center gap-3">
           {SOCIAL_LINKS.map((social) => (
