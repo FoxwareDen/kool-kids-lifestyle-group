@@ -5,6 +5,7 @@ import { useState, useCallback, useEffect, useMemo, type ChangeEvent } from 'rea
 import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 import { Button, SectionCard, SelectField, controlClass } from '#/components/dashboard/form-controls'
 import { Trash2 } from 'lucide-react'
+import { MediaBlockEditor } from './create-experience'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/_authed/dashboard/create-post')({
 
 type SkeletonPageData = Omit<BookingPage, 'blocks' | 'createdAt' | 'updatedAt' | 'id' | 'slug'>
 
-const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'image', 'video']
+const BLOCK_TYPES: PageBlock['type'][] = ['header', 'paragraph', 'media']
 
 function useObjectUrl(file: File | null | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null)
@@ -161,8 +162,7 @@ function BlockEditor({ block, lang, onChange, onDelete }: { block: PageBlock; la
       </div>
       {block.type === 'header' && <HeaderBlockEditor block={block} lang={lang} onChange={onChange} />}
       {block.type === 'paragraph' && <ParagraphBlockEditor block={block} lang={lang} onChange={onChange} />}
-      {block.type === 'image' && <ImageBlockEditor block={block} lang={lang} onChange={onChange} />}
-      {block.type === 'video' && <VideoBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === 'media'     && <MediaBlockEditor     block={block} lang={lang} onChange={onChange} />}
     </div>
   )
 }

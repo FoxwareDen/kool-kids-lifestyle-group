@@ -41,6 +41,9 @@ const getDashboardStats = createServerFn()
   })
 
 export const Route = createFileRoute('/_authed/dashboard/')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   loader: async () => await getDashboardStats(),
   component: RouteComponent,
 })

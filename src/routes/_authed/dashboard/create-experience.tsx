@@ -130,7 +130,7 @@ function ImageBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock,
 
 type MediaBlockEditorAcceptedTypes = "image"|"video"
 
-function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, { type: "media" }>, lang: Language, onChange: (b: Extract<PageBlock, {type: string}>) => void}) {
+export function MediaBlockEditor({ block, lang, onChange }: {block: Extract<PageBlock, { type: "media" }>, lang: Language, onChange: (b: Extract<PageBlock, {type: string}>) => void}) {
   const [mode, setMode] = useState<MediaBlockEditorAcceptedTypes>("image")
   const [open, setOpen] = useState(false)
 
