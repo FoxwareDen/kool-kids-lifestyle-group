@@ -9,6 +9,7 @@ import {
   Newspaper,
   ViewIcon,
 } from 'lucide-react'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * A single navigation entry rendered in the dashboard sidebar.
@@ -22,90 +23,71 @@ export type DashboardNavItem = {
   to: string
   /** Icon component rendered on the left of the label. */
   icon: LucideIcon
-  /**
-   * When `true` the link is only active on an exact path match.
-   * Use for index routes so parent links do not stay highlighted.
-   */
   exact?: boolean
-  /** Optional search params required by the destination route. */
   search?: Record<string, unknown>
 }
 
-/**
- * Primary navigation for the admin dashboard.
- *
- * Each entry maps directly to a real dashboard route so the sidebar always
- * reflects a page that actually exists. Keeping this in one place makes it
- * trivial to add, reorder, or relabel sections without touching UI code.
- */
-export const DASHBOARD_NAV: DashboardNavItem[] = [
-  {
-    label: 'Home',
-    description: 'Back to user side',
-    to: '/',
-    icon: HomeIcon,
-    exact: true,
-  },
-  {
-    label: 'Dashboard',
-    description: 'Overview and how-to guides',
-    to: '/dashboard/',
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    label: 'Active Bookings',
-    description: 'Monitor all current active bookings',
-    to: '/dashboard/bookings',
-    icon: CalendarCheck2,
-    exact: true,
-  },
-  {
-    label: 'Schedules',
-    description: 'Overview of the existing schedules',
-    to: '/dashboard/calendars',
-    icon: CalendarDays,
-    exact: true,
-  },
-  {
-    label: 'Create Schedule',
-    description: 'Create Schedule for experiences',
-    to: '/dashboard/create-calendar',
-    icon: CalendarPlus,
-    exact: true,
-  },
-  {
-    label: 'Create Posts',
-    description: 'Publish a new Blog or Event page',
-    to: '/dashboard/create-post',
-    icon: Newspaper,
-  },
-  {
-    label: 'Create Experience',
-    description: 'Publish a new experience page',
-    to: '/dashboard/create-experience',
-    icon: FilePlus2,
-  },
-  {
-    label: 'Experiences',
-    description: 'Publish a new experience page',
-    to: '/dashboard/experiences',
-    icon: ViewIcon,
-  },
-]
+export function getDashboardNav(lang: Language = 'en'): DashboardNavItem[] {
+  return [
+    {
+      label: resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang),
+      description: resolveTranslatable({ default: 'Back to user side', translations: { af: 'Terug na die gebruikerskant' } }, lang),
+      to: '/',
+      icon: HomeIcon,
+      exact: true,
+    },
+    {
+      label: resolveTranslatable({ default: 'Dashboard', translations: { af: 'Paneel' } }, lang),
+      description: resolveTranslatable({ default: 'Overview and how-to guides', translations: { af: 'Oorsig en gidses' } }, lang),
+      to: '/dashboard/',
+      icon: LayoutDashboard,
+      exact: true,
+    },
+    {
+      label: resolveTranslatable({ default: 'Active Bookings', translations: { af: 'Aktiewe Besprekings' } }, lang),
+      description: resolveTranslatable({ default: 'Monitor all current active bookings', translations: { af: 'Monitor alle huidige aktiewe besprekinge' } }, lang),
+      to: '/dashboard/bookings',
+      icon: CalendarCheck2,
+      exact: true,
+    },
+    {
+      label: resolveTranslatable({ default: 'Schedules', translations: { af: 'Skedules' } }, lang),
+      description: resolveTranslatable({ default: 'Overview of the existing schedules', translations: { af: 'Oorsig van die bestaande skedules' } }, lang),
+      to: '/dashboard/calendars',
+      icon: CalendarDays,
+      exact: true,
+    },
+    {
+      label: resolveTranslatable({ default: 'Create Schedule', translations: { af: 'Skep Skedule' } }, lang),
+      description: resolveTranslatable({ default: 'Create Schedule for experiences', translations: { af: 'Skep ’n skedule vir ervarings' } }, lang),
+      to: '/dashboard/create-calendar',
+      icon: CalendarPlus,
+      exact: true,
+    },
+    {
+      label: resolveTranslatable({ default: 'Create Posts', translations: { af: 'Skep Plasings' } }, lang),
+      description: resolveTranslatable({ default: 'Publish a new Blog or Event page', translations: { af: 'Publiseer ’n nuwe Blog- of Gebeurtenisbladsy' } }, lang),
+      to: '/dashboard/create-post',
+      icon: Newspaper,
+    },
+    {
+      label: resolveTranslatable({ default: 'Create Experience', translations: { af: 'Skep Ervaring' } }, lang),
+      description: resolveTranslatable({ default: 'Publish a new experience page', translations: { af: 'Publiseer ’n nuwe ervaringsbladsy' } }, lang),
+      to: '/dashboard/create-experience',
+      icon: FilePlus2,
+    },
+    {
+      label: resolveTranslatable({ default: 'Experiences', translations: { af: 'Ervarings' } }, lang),
+      description: resolveTranslatable({ default: 'Review and manage experience pages', translations: { af: 'Bestudeer en bestuur ervaringsbladse' } }, lang),
+      to: '/dashboard/experiences',
+      icon: ViewIcon,
+    },
+  ]
+}
 
-/**
- * Resolve the label of the nav item that best matches a pathname.
- *
- * Used by the top bar to show the current section. Falls back to the first
- * item (Dashboard) when nothing matches.
- *
- * @param pathname - The current location pathname (e.g. `/dashboard/calendars`).
- * @returns The matching nav item's label.
- */
-export function getActiveNavLabel(pathname: string): string {
-  // Prefer the most specific (longest) matching route.
-  const match = [...DASHBOARD_NAV]
+export function getActiveNavLabel(pathname: string, lang: Language = 'en'): string {
+  const nav = getDashboardNav(lang)
+  const match = [...nav]
     .filter((item) => {
       const base = item.to.replace(/\/$/, '')
       if (item.exact) return pathname.replace(/\/$/, '') === base
@@ -113,5 +95,5 @@ export function getActiveNavLabel(pathname: string): string {
     })
     .sort((a, b) => b.to.length - a.to.length)[0]
 
-  return match?.label ?? DASHBOARD_NAV[0].label
+  return match?.label ?? nav[0].label
 }

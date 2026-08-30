@@ -14,6 +14,8 @@ export const Route = createFileRoute('/_authed/dashboard/create-post')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({ deps: { lang } }) => ({ lang }),
   component: RouteComponent,
 })
 
