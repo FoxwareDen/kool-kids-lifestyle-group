@@ -51,8 +51,8 @@ export const Route = createFileRoute('/')({
         <StoriesSection data={pageData.components["stories_section"]!} />
         <ExperiencesSection data={{...pageData.components["experiences_section"], list: featuredList||[]}} lang={lang} />
         <PlanYourVisitSection lang={lang}/>
-        <GallerySection />
-        <PreFooterSection />
+        <GallerySection lang={lang} />
+        <PreFooterSection lang={lang} />
       </main>
     )
   },

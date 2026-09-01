@@ -26,6 +26,9 @@ export const Route = createFileRoute('/heritage')({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   component: HeritagePage,
 })
 
@@ -35,14 +38,16 @@ export const Route = createFileRoute('/heritage')({
  * @returns {JSX.Element} The rendered page.
  */
 function HeritagePage() {
+  const { lang } = Route.useLoaderDeps()
+
   return (
     <main>
-      <HeritageHero />
-      <HeritageIntro />
-      <HeritageTimeline />
-      <HeritageSites />
-      <CulturalTraditions />
-      <HeritageCta />
+      <HeritageHero lang={lang ?? 'en'} />
+      <HeritageIntro lang={lang ?? 'en'} />
+      <HeritageTimeline lang={lang ?? 'en'} />
+      <HeritageSites lang={lang ?? 'en'} />
+      <CulturalTraditions lang={lang ?? 'en'} />
+      <HeritageCta lang={lang ?? 'en'} />
     </main>
   )
 }

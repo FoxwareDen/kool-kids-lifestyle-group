@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Send, CheckCircle2 } from 'lucide-react'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * Shared Tailwind classes for the form text inputs and textarea so every field
@@ -17,8 +18,25 @@ const FIELD_CLASSES =
  *
  * @returns {JSX.Element} The rendered contact form.
  */
-export function ContactForm() {
+export function ContactForm({ lang = 'en' }: { lang?: Language }) {
   const [submitted, setSubmitted] = useState(false)
+  const labels = {
+    heading: resolveTranslatable({ default: 'Send a Message', translations: { af: 'Stuur ’n Boodskap' } }, lang),
+    subheading: resolveTranslatable({ default: 'Drop Us a Line', translations: { af: 'Stuur Ons ’n Boodskap' } }, lang),
+    success: resolveTranslatable({ default: 'Thank you!', translations: { af: 'Baie dankie!' } }, lang),
+    successMessage: resolveTranslatable({ default: 'Your message has been received. Our team will get back to you within one business day.', translations: { af: 'Jou boodskap is ontvang. Ons span sal binne een besigheidsdag terugkom.' } }, lang),
+    name: resolveTranslatable({ default: 'Full Name', translations: { af: 'Volle Naam' } }, lang),
+    email: resolveTranslatable({ default: 'Email Address', translations: { af: 'E-posadres' } }, lang),
+    subject: resolveTranslatable({ default: 'Subject', translations: { af: 'Onderwerp' } }, lang),
+    message: resolveTranslatable({ default: 'Message', translations: { af: 'Boodskap' } }, lang),
+    button: resolveTranslatable({ default: 'Send Message', translations: { af: 'Stuur Boodskap' } }, lang),
+    placeholder: {
+      name: resolveTranslatable({ default: 'Jane Doe', translations: { af: 'Jan van der Merwe' } }, lang),
+      email: resolveTranslatable({ default: 'jane@example.com', translations: { af: 'jan@example.com' } }, lang),
+      subject: resolveTranslatable({ default: 'Booking enquiry, tour information…', translations: { af: 'Besprekingsnavraag, toerinligting…' } }, lang),
+      message: resolveTranslatable({ default: 'Tell us how we can help…', translations: { af: 'Vertel ons hoe ons kan help…' } }, lang),
+    },
+  }
 
   /**
    * Handles the form submission. Prevents the default page reload and toggles
@@ -35,10 +53,10 @@ export function ContactForm() {
   return (
     <div className="bg-white p-7 shadow-xl shadow-[var(--brand-navy)]/5 sm:p-9">
       <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-        Send a Message
+        {labels.heading}
       </p>
       <h2 className="display-title mt-2 text-2xl font-medium text-[var(--brand-navy)] sm:text-3xl">
-        Drop Us a Line
+        {labels.subheading}
       </h2>
 
       {submitted ? (
@@ -48,11 +66,10 @@ export function ContactForm() {
         >
           <CheckCircle2 className="h-12 w-12 text-[var(--brand-orange)]" aria-hidden="true" />
           <h3 className="display-title text-xl font-medium text-[var(--brand-navy)]">
-            Thank you!
+            {labels.success}
           </h3>
           <p className="max-w-sm text-sm leading-relaxed text-[var(--brand-navy)]/70">
-            Your message has been received. Our team will get back to you within
-            one business day.
+            {labels.successMessage}
           </p>
         </div>
       ) : (
@@ -63,7 +80,7 @@ export function ContactForm() {
                 htmlFor="contact-name"
                 className="mb-1.5 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55"
               >
-                Full Name
+                {labels.name}
               </label>
               <input
                 id="contact-name"
@@ -71,7 +88,7 @@ export function ContactForm() {
                 type="text"
                 required
                 autoComplete="name"
-                placeholder="Jane Doe"
+                placeholder={labels.placeholder.name}
                 className={FIELD_CLASSES}
               />
             </div>
@@ -80,7 +97,7 @@ export function ContactForm() {
                 htmlFor="contact-email"
                 className="mb-1.5 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55"
               >
-                Email Address
+                {labels.email}
               </label>
               <input
                 id="contact-email"
@@ -88,7 +105,7 @@ export function ContactForm() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="jane@example.com"
+                placeholder={labels.placeholder.email}
                 className={FIELD_CLASSES}
               />
             </div>
@@ -99,14 +116,14 @@ export function ContactForm() {
               htmlFor="contact-subject"
               className="mb-1.5 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55"
             >
-              Subject
+              {labels.subject}
             </label>
             <input
               id="contact-subject"
               name="subject"
               type="text"
               required
-              placeholder="Booking enquiry, tour information…"
+              placeholder={labels.placeholder.subject}
               className={FIELD_CLASSES}
             />
           </div>
@@ -116,14 +133,14 @@ export function ContactForm() {
               htmlFor="contact-message"
               className="mb-1.5 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--brand-navy)]/55"
             >
-              Message
+              {labels.message}
             </label>
             <textarea
               id="contact-message"
               name="message"
               required
               rows={5}
-              placeholder="Tell us how we can help…"
+              placeholder={labels.placeholder.message}
               className={`${FIELD_CLASSES} resize-y`}
             />
           </div>
@@ -132,7 +149,7 @@ export function ContactForm() {
             type="submit"
             className="group inline-flex w-full items-center justify-center gap-3 bg-[var(--brand-orange)] px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white shadow-lg shadow-black/10 transition-colors hover:bg-[var(--brand-orange-deep)] sm:w-auto"
           >
-            Send Message
+            {labels.button}
             <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </button>
         </form>
