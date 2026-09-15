@@ -16,7 +16,7 @@ const CONTACT_DETAILS: {
   {
     icon: MapPin,
     label: 'Visit Us',
-    lines: ['Victoria Street', 'Prieska, 8940', 'Northern Cape, South Africa'],
+    lines: ['18 Steward Street', 'Prieska, 8940', 'Northern Cape, South Africa'],
   },
   {
     icon: Phone,
@@ -27,8 +27,8 @@ const CONTACT_DETAILS: {
   {
     icon: Mail,
     label: 'Email Us',
-    lines: ['hello@visitprieska.co.za'],
-    href: 'mailto:hello@visitprieska.co.za',
+    lines: ['360experiences1@gmail.com'],
+    href: 'mailto:360experiences1@gmail.com',
   },
   {
     icon: Clock,
