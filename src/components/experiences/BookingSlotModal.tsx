@@ -44,7 +44,17 @@ export function BookingSlotModal({
   const [isError, setIsError] = useState<string|null>(null);
   const paymentContinueFunc = useRef<PaymentContinueFunc | null>(null)
   const currentStep = useBookerStore((state) => state.sepCounter)
+  const resetBooker = useBookerStore((state) => state.reset)
   const totalSteps = schedule[0]?.type === 'day' ? 3 : 4
+
+  const handleClose = () => {
+    setIsBookingComplete(false)
+    setBooking(null)
+    setIsLoading(false)
+    setIsError(null)
+    resetBooker()
+    onClose()
+  }
 
   const bookingFormCompletion = async (booking: Booking) => {
     setBooking(booking)
@@ -59,7 +69,7 @@ export function BookingSlotModal({
       role="dialog"
       aria-modal="true"
       aria-label={`Book ${experienceTitle}`}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         className="flex w-full max-h-[92svh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl lg:max-w-4xl"
@@ -77,7 +87,7 @@ export function BookingSlotModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             aria-label="Close booking"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
           >
@@ -110,9 +120,9 @@ export function BookingSlotModal({
             </Booker>}
           </div>
 
-          {isBookingComplete && (
+          {isBookingComplete && booking && currentStep === totalSteps - 1 && (
             <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 bg-[var(--foam)]/45 px-4 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
-              <PaymentForm toggleModel={onClose} disabled={false} booking={booking} />
+              <PaymentForm toggleModel={handleClose} disabled={false} booking={booking} />
             </div>
           )}
         </div>
