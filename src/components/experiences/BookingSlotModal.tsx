@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { generateSlots, type Booking, type BookingResponse, type PaymentContinueFunc, type TransformedCalendarSchedule } from '#/lib/booking'
 import { type AvailableRange } from '#/lib/system'
 import {
@@ -10,6 +10,7 @@ import {
   BookingTimeSelect,
   BookingView,
   BookingPagingButtonGroup,
+  useBookerStore,
 } from '@/components/booking/calendar'
 import { PaymentForm } from '../payment'
 
@@ -33,12 +34,7 @@ export function BookingSlotModal({
 }: BookingSlotModalProps) {
   const schedule = useMemo<AvailableRange[]>(() => {
     if (!calendarSchedule || !existingBookings || calendarSchedule.length === 0) return []   
-    console.log(calendarSchedule);
-    console.log(existingBookings);
-    const slots = generateSlots(calendarSchedule, existingBookings)
-
-    console.log(slots);
-    return slots
+    return generateSlots(calendarSchedule, existingBookings)
   }, [calendarSchedule, existingBookings])
 
   const [isBookingComplete, setIsBookingComplete] = useState(false);
@@ -47,6 +43,8 @@ export function BookingSlotModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState<string|null>(null);
   const paymentContinueFunc = useRef<PaymentContinueFunc | null>(null)
+  const currentStep = useBookerStore((state) => state.sepCounter)
+  const totalSteps = schedule[0]?.type === 'day' ? 3 : 4
 
   const bookingFormCompletion = async (booking: Booking) => {
     setBooking(booking)
@@ -89,31 +87,34 @@ export function BookingSlotModal({
 
         {/* Body */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
-          <div className="min-w-0 flex-1 px-5 py-5 sm:px-6 sm:py-6 lg:overflow-y-auto">
+          <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:overflow-y-auto">
+            <div className="mb-5 flex items-center justify-between gap-4 rounded-xl bg-[var(--foam)] px-4 py-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--sea-ink-soft)]">Booking progress</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--sea-ink)]">Step {isBookingComplete ? totalSteps : currentStep + 1} of {totalSteps}</p>
+              </div>
+              <div className="flex gap-1.5" aria-label={`Step ${isBookingComplete ? totalSteps : currentStep + 1} of ${totalSteps}`}>
+                {Array.from({ length: totalSteps }, (_, index) => {
+                  const complete = isBookingComplete || index < currentStep
+                  const active = !isBookingComplete && index === currentStep
+                  return <span key={index} className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${complete ? 'bg-[var(--brand-orange)] text-white' : active ? 'border-2 border-[var(--brand-orange)] text-[var(--brand-orange)]' : 'bg-white text-[var(--sea-ink-soft)]'}`}>{complete ? <Check className="size-3.5" /> : index + 1}</span>
+                })}
+              </div>
+            </div>
             {schedule.length > 0 && <Booker schedule={schedule} type={schedule[0].type} onSubmit={bookingFormCompletion}>
-              <BookerStep name="unit_select">
-                <BookingUnitSelect />
-              </BookerStep>
-
-              <BookerStep name="calendar">
-                <BookingCalendar />
-              </BookerStep>
-
-              <BookerStep name="time_picker">
-                <BookingTimeSelect />
-              </BookerStep>
-
-              <BookerStep name="view_booking">
-                <BookingView />
-              </BookerStep>
-
+              <BookerStep name="unit_select"><BookingUnitSelect /></BookerStep>
+              <BookerStep name="calendar"><BookingCalendar /></BookerStep>
+              <BookerStep name="time_picker"><BookingTimeSelect /></BookerStep>
+              <BookerStep name="view_booking"><BookingView /></BookerStep>
               <BookingPagingButtonGroup />
             </Booker>}
           </div>
 
-          <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 px-5 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
-            <PaymentForm toggleModel={onClose} disabled={!isBookingComplete} booking={booking} />
-          </div>
+          {isBookingComplete && (
+            <div className="min-w-0 flex-1 border-t border-[var(--brand-navy)]/10 bg-[var(--foam)]/45 px-4 py-5 sm:px-6 sm:py-6 lg:border-l lg:border-t-0 lg:overflow-y-auto">
+              <PaymentForm toggleModel={onClose} disabled={false} booking={booking} />
+            </div>
+          )}
         </div>
       </div>
     </div>

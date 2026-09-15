@@ -117,7 +117,7 @@ export function Booker({
   }, [type, setSlot]);
 
   return (
-    <div className={cn("w-fit rounded-xl border bg-card p-4 text-card-foreground shadow-sm flex flex-col gap-4", className)}>
+    <div className={cn("w-full rounded-xl border border-[var(--brand-navy)]/10 bg-white p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
       {children}
     </div>
   );
@@ -139,7 +139,7 @@ export function BookerStep({
   if (currentStepName !== name) return null;
 
   return (
-    <div className={cn("w-full flex justify-center items-center min-h-96 min-w-96", className)}>
+    <div className={cn("flex min-h-[18rem] w-full items-center justify-center", className)}>
       {name === "calendar" ? <ClientOnly>{children}</ClientOnly> : children}
     </div>
   );
@@ -422,7 +422,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
         </CardHeader>
 
         <CardContent className="p-0">
-          <ScrollArea className="h-[400px] w-full px-4 py-3">
+          <ScrollArea className="h-[min(52svh,400px)] w-full px-3 py-3 sm:px-4">
             {slots.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 No available time slots on this date.
