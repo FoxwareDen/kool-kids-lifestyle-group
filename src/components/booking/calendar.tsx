@@ -49,7 +49,6 @@ interface BookerState {
   setSelectedSchedule: (slot: AvailableRange) => void;
   setBooking: (booking: Booking) => void;
   setOnSubmit: (fn: (booking: Booking) => void) => void;
-  reset: () => void;
 }
 
 export const useBookerStore = create<BookerState>((set) => ({
@@ -94,25 +93,6 @@ export const useBookerStore = create<BookerState>((set) => ({
   setSelectedSchedule: () => {},
   setBooking: (booking: Booking) => set(prev => ({ ...prev, booking })),
   setOnSubmit: (fn) => set({ onSubmit: fn }),
-  reset: () => set({
-    booking: {
-      calendar_ref: "",
-      date: "",
-      duration: 0,
-      start_time: "",
-      end_time: "",
-      unit_id: "",
-      unit_label: "",
-      status: "pending",
-      id: "",
-    },
-    filteredSchedules: [],
-    selectedSchedule: null,
-    selectedUnit: undefined,
-    sepCounter: 0,
-    date: new Date(),
-    duration: 1,
-  }),
 }));
 
 export function Booker({
@@ -134,7 +114,7 @@ export function Booker({
     setSlot(type);
     populateSchedule(schedule);
     if (onSubmit) setOnSubmit(onSubmit);
-  }, [type, schedule, onSubmit, setSlot, populateSchedule, setOnSubmit]);
+  }, [type, setSlot]);
 
   return (
     <div className={cn("w-full rounded-xl border border-[var(--brand-navy)]/10 bg-white p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>

@@ -600,11 +600,7 @@ export function generateSlots(
 ): AvailableRange[] {
   const calendars = schedules.map(toCalendar);
   const mappedBookings = bookings.map(toBooking);
-  const availableSlots = calendars.flatMap((calendar) =>
-    generateAvailableSlots(calendar, mappedBookings, { minAdvanceDays: 0 })
-  );
-  
-  return availableSlots.sort((a, b) => {
+  return generateAvailableSlots(calendars[0], mappedBookings, { minAdvanceDays: 0 }).sort((a, b) => {
     const dateA = new Date(`${a.start_date}T${a.start_time}`);
     const dateB = new Date(`${b.start_date}T${b.start_time}`);
     return dateA.getTime() - dateB.getTime();
