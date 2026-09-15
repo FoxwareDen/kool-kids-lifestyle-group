@@ -134,7 +134,7 @@ export function Booker({
     setSlot(type);
     populateSchedule(schedule);
     if (onSubmit) setOnSubmit(onSubmit);
-  }, [type, setSlot]);
+  }, [type, schedule, onSubmit, setSlot, populateSchedule, setOnSubmit]);
 
   return (
     <div className={cn("w-full rounded-xl border border-[var(--brand-navy)]/10 bg-white p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
@@ -305,7 +305,17 @@ export function BookingCalendar({ className }: { className?: string }) {
         mode="single"
         selected={date}
         onSelect={handleChange}
-        className={cn("w-full rounded-md border border-[var(--brand-navy)]/15 text-[var(--brand-navy)]", className)}
+        className={cn("w-full rounded-md border border-[var(--brand-navy)]/15 bg-white text-[var(--brand-navy)]", className)}
+        classNames={{
+          caption_label: "text-[var(--brand-navy)]",
+          weekday: "text-[var(--brand-navy)]/70",
+          day: "text-[var(--brand-navy)]",
+          today: "bg-[var(--foam)] text-[var(--brand-navy)]",
+          selected: "bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)] hover:text-white",
+          range_start: "bg-[var(--brand-navy)] text-white",
+          range_middle: "bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]",
+          range_end: "bg-[var(--brand-navy)] text-white",
+        }}
         required
         disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
       />
@@ -315,7 +325,17 @@ export function BookingCalendar({ className }: { className?: string }) {
   return (
     <Calendar
       mode="range"
-      className={cn("w-full rounded-md border border-[var(--brand-navy)]/15 text-[var(--brand-navy)]", className)}
+      className={cn("w-full rounded-md border border-[var(--brand-navy)]/15 bg-white text-[var(--brand-navy)]", className)}
+      classNames={{
+        caption_label: "text-[var(--brand-navy)]",
+        weekday: "text-[var(--brand-navy)]/70",
+        day: "text-[var(--brand-navy)]",
+        today: "bg-[var(--foam)] text-[var(--brand-navy)]",
+        selected: "bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)] hover:text-white",
+        range_start: "bg-[var(--brand-navy)] text-white",
+        range_middle: "bg-[var(--brand-navy)]/10 text-[var(--brand-navy)]",
+        range_end: "bg-[var(--brand-navy)] text-white",
+      }}
       selected={currentRange}
       onSelect={handleRangeChange}
       disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
