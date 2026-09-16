@@ -65,7 +65,7 @@ export function BookingSlotModal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[calc(100svh-0.75rem)] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:max-h-[min(92svh,760px)] sm:rounded-2xl lg:max-w-4xl"
+        className="flex max-h-[calc(100svh-0.75rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:max-h-[min(92svh,900px)] sm:max-w-3xl sm:rounded-2xl lg:max-w-6xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 bg-[var(--brand-navy)] px-5 pb-5 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5">
