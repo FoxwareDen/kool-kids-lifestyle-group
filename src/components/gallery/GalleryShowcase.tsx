@@ -4,6 +4,7 @@ import { GalleryFilter } from './GalleryFilter'
 import { GalleryPhotoTile } from './GalleryPhotoTile'
 import { GalleryLightbox } from './GalleryLightbox'
 import { GALLERY_PHOTOS, type GalleryCategory } from './gallery-data'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The main gallery experience: a centered {@link SectionHeading}, a
@@ -17,9 +18,11 @@ import { GALLERY_PHOTOS, type GalleryCategory } from './gallery-data'
  *
  * @returns {JSX.Element} The rendered gallery showcase section.
  */
-export function GalleryShowcase() {
+export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
   const [activeCategory, setActiveCategory] = useState<GalleryCategory>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const eyebrow = resolveTranslatable({ default: 'Explore the Collection', translations: { af: 'Verken die Versameling' } }, lang)
+  const title = resolveTranslatable({ default: 'A Town Captured in Light', translations: { af: 'n Dorpie Vasgevang in Lig' } }, lang)
 
   const visiblePhotos = useMemo(
     () =>
@@ -55,8 +58,8 @@ export function GalleryShowcase() {
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Explore the Collection"
-          title="A Town Captured in Light"
+          eyebrow={eyebrow}
+          title={title}
           theme="light"
         />
 

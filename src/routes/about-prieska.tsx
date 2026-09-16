@@ -72,18 +72,17 @@ export const Route = createFileRoute('/about-prieska')({
  */
 function AboutPrieskaPage() {
   const { pageData } = Route.useLoaderData()
+  const { lang } = Route.useLoaderDeps()
 
   return (
     <main>
-      <AboutHero data={pageData.components["about_hero"]}  />
-      <AboutIntro data={pageData.components["about_intro"]} /> 
-      {/* 
-      */}
+      <AboutHero data={pageData.components["about_hero"]} lang={lang ?? 'en'} />
+      <AboutIntro data={pageData.components["about_intro"]} lang={lang ?? 'en'} />
       <StatsBand />
-      <MissionVisionValues data={pageData.components["mission_vision_values"]} />
-      <OurStory data={pageData.components["our_story"]} />
-      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]}/>
-      <AboutCta data={pageData.components["about_cta"]} />
+      <MissionVisionValues data={pageData.components["mission_vision_values"]} lang={lang ?? 'en'} />
+      <OurStory data={pageData.components["our_story"]} lang={lang ?? 'en'} />
+      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]} lang={lang ?? 'en'} />
+      <AboutCta data={pageData.components["about_cta"]} lang={lang ?? 'en'} />
     </main>
   )
 }

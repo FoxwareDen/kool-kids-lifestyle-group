@@ -7,9 +7,11 @@ import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 
 export const Route = createFileRoute('/events/$eventId')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language) ?? 'en',
+    lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({params}) =>{
+    return {eventId: params.eventId}
+  },
   component: RouteComponent,
 })
 

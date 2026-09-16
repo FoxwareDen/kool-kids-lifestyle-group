@@ -1,4 +1,4 @@
-import PocketBase, { type RecordOptions } from 'pocketbase';
+import PocketBase, { type RecordFullListOptions, type RecordOptions } from 'pocketbase';
 import { environmentManager } from '@tanstack/react-query';
 
 // ============= Client (singleton) =============
@@ -23,7 +23,7 @@ export async function create<T, R>(collectionName: string, data: T, cookieHeader
   }
 }
 
-export async function fetchCollection<R>(collectionName: string, options?: RecordOptions, cookieHeader?: string): Promise<Result<R[], string>> {
+export async function fetchCollection<R>(collectionName: string, options?: RecordFullListOptions, cookieHeader?: string): Promise<Result<R[], string>> {
   const client = getPBSession(cookieHeader);
 
   try {

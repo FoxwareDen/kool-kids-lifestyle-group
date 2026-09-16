@@ -110,17 +110,16 @@ function RouteComponent() {
     return (
       <main className="flex min-h-[70svh] flex-col items-center justify-center gap-4 bg-[#f4efe7] px-6 text-center">
         <h1 className="display-title text-2xl font-medium text-[var(--brand-navy)]">
-          Experience not found
+          {text.notFoundTitle}
         </h1>
         <p className="max-w-md text-sm text-[var(--brand-navy)]/60">
-          We couldn&apos;t find the experience you were looking for. It may have been moved or is no
-          longer available.
+          {text.notFoundText}
         </p>
         <a
           href="/experiences"
           className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-sm font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-[var(--brand-orange-deep)]"
         >
-          Browse all experiences
+          {text.browseAll}
         </a>
       </main>
     )
@@ -131,15 +130,73 @@ function RouteComponent() {
   const description = data.description ? resolveTranslatable(data.description, lang) : ''
   const tags = parseCategories(data.category).filter((c) => c.toLowerCase() !== 'featured')
 
+  const translations: Record<Language, {
+    breadcrumb: string
+    defaultEyebrow: string
+    defaultSubtitle: string
+    ready: string
+    title: string
+    chooseDate: string
+    unitLabel: string
+    options: string
+    noOptions: string
+    location: string
+    book: string
+    loading: string
+    noSchedule: string
+    notFoundTitle: string
+    notFoundText: string
+    browseAll: string
+  }> = {
+    en: {
+      breadcrumb: 'Experiences',
+      defaultEyebrow: 'Experience',
+      defaultSubtitle: 'An unforgettable Karoo adventure awaits.',
+      ready: 'Ready to go?',
+      title: 'Book this experience',
+      chooseDate: 'Choose any available date',
+      unitLabel: 'Multiple unit options',
+      options: 'Options:',
+      noOptions: 'No options available',
+      location: 'Prieska, Northern Cape',
+      book: 'Book now',
+      loading: 'Loading options…',
+      noSchedule: 'No options available',
+      notFoundTitle: 'Experience not found',
+      notFoundText: 'We couldn&apos;t find the experience you were looking for. It may have been moved or is no longer available.',
+      browseAll: 'Browse all experiences',
+    },
+    af: {
+      breadcrumb: 'Ervarings',
+      defaultEyebrow: 'Ervaring',
+      defaultSubtitle: 'n Onvergeetlike Karoo-avontuur wag vir jou.',
+      ready: 'Gereed om te gaan?',
+      title: 'Bespreek hierdie ervaring',
+      chooseDate: 'Kies enige beskikbare datum',
+      unitLabel: 'Veelvuldige eenheidsopsies',
+      options: 'Opsies:',
+      noOptions: 'Geen opsies beskikbaar nie',
+      location: 'Prieska, Noord-Kaap',
+      book: 'Bespreek nou',
+      loading: 'Laai opsies…',
+      noSchedule: 'Geen opsies beskikbaar nie',
+      notFoundTitle: 'Ervaring nie gevind nie',
+      notFoundText: 'Ons kon nie die ervaring vind wat jy soek nie. Dit kan verskuif gewees het of is nie meer beskikbaar nie.',
+      browseAll: 'Blaai deur alle ervarings',
+    },
+  }
+
+  const text = translations[lang ?? 'en']
+
   return (
     <main className="bg-[#f4efe7]">
       <ExperiencesHero
-        eyebrow={tags[0] ? categoryLabel(tags[0]) : 'Experience'}
+        eyebrow={tags[0] ? categoryLabel(tags[0]) : text.defaultEyebrow}
         title={title}
-        subtitle={description ? '' : 'An unforgettable Karoo adventure awaits.'}
+        subtitle={description ? '' : text.defaultSubtitle}
         image={data.coverImage}
         crumbs={[
-          { label: 'Experiences', href: '/experiences' },
+          { label: text.breadcrumb, href: '/experiences' },
           { label: title },
         ]}
       />
@@ -180,41 +237,41 @@ function RouteComponent() {
             <div className="flex flex-col gap-5 border border-[var(--brand-navy)]/10 bg-white p-6 shadow-lg shadow-[var(--brand-navy)]/5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--brand-orange)]">
-                  Ready to go?
+                  {text.ready}
                 </p>
                 <h2 className="display-title mt-1 text-xl font-medium text-[var(--brand-navy)]">
-                  Book this experience
+                  {text.title}
                 </h2>
               </div>
 
               <ul className="flex flex-col gap-3 text-sm text-[var(--brand-navy)]/70">
                 <li className="flex items-center gap-3">
                   <CalendarDays className="h-4 w-4 text-[var(--brand-orange)]" />
-                  Choose any available date
+                  {text.chooseDate}
                 </li>
                 <li className="flex flex-col items-start gap-3">
                   <span className='flex items-center gap-3'>
                     <Users className="h-4 w-4 text-[var(--brand-orange)]" />
-                    Multiple unit options
+                    {text.unitLabel}
                   </span>
                   <div className='pl-5 w-full'>
-                    <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>Options:</span>
+                    <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>{text.options}</span>
                     <ul className='pl-5 mt-1 list-disc flex flex-col gap-1'>
                       {scheduleDataLoading ? (
-                        <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">Loading options…</li>
+                        <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">{text.loading}</li>
                       ) : scheduleData && scheduleData[0]?.units ? (
                         scheduleData[0].units.map((unit) => (
                           <li key={unit.id} className="text-xs">{unit.label}</li>
                         ))
                       ) : (
-                        <li className="text-xs text-[var(--brand-navy)]/40 list-none">No options available</li>
+                        <li className="text-xs text-[var(--brand-navy)]/40 list-none">{text.noOptions}</li>
                       )}
                     </ul>
                   </div>
                 </li>
                 <li className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-[var(--brand-orange)]" />
-                  Prieska, Northern Cape
+                  {text.location}
                 </li>
               </ul>
 

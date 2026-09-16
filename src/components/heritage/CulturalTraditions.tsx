@@ -6,6 +6,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { SectionHeading } from '#/components/sections/SectionHeading'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * A cultural tradition rendered in the {@link CulturalTraditions} grid.
@@ -54,13 +55,15 @@ const TRADITIONS: { icon: LucideIcon; title: string; description: string }[] = [
  *
  * @returns {JSX.Element} The rendered cultural traditions section.
  */
-export function CulturalTraditions() {
+export function CulturalTraditions({ lang = 'en' }: { lang?: Language }) {
+  const eyebrow = resolveTranslatable({ default: 'The Soul of Our Town', translations: { af: 'Die Siel van Ons Dorpie' } }, lang)
+  const title = resolveTranslatable({ default: 'Culture & Living Traditions', translations: { af: 'Kultuur & Lewende Tradisies' } }, lang)
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="The Soul of Our Town"
-          title="Culture & Living Traditions"
+          eyebrow={eyebrow}
+          title={title}
           theme="dark"
         />
 

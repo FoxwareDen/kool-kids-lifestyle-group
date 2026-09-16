@@ -2,6 +2,7 @@ import { SectionHeading } from '#/components/sections/SectionHeading'
 import { TimelineItem } from './TimelineItem'
 import heritageImg from '../../images/church.jpeg'
 import type { Content } from '#/lib/pocketbase';
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The milestones rendered in the story timeline. Replace with CMS-driven
@@ -54,9 +55,12 @@ interface OurStory {
  *
  * @returns {JSX.Element} The rendered story section.
  */
-export function OurStory({data}: {data: Content<Partial<OurStory>>}) {
+export function OurStory({data, lang = 'en'}: {data: Content<Partial<OurStory>>; lang?: Language}) {
   const { content: { kicker, title, image_badge_kicker, image_badge_subtitle, timeline }, media } = data;
-  
+  const defaultBadgeTop = resolveTranslatable({ default: 'Since the river first ran', translations: { af: 'Sedert die rivier die eerste keer gevloei het' } }, lang)
+  const defaultBadgeBottom = resolveTranslatable({ default: 'Heritage of the Northern Cape', translations: { af: 'Erfenis van die Noord-Kaap' } }, lang)
+  const defaultKicker = resolveTranslatable({ default: 'Our Story', translations: { af: 'Ons Verhaal' } }, lang)
+  const defaultTitle = resolveTranslatable({ default: 'A Journey Rooted in Place', translations: { af: 'n Reis Gewortel in Plek' } }, lang)
 
   return (
     <section className="bg-[#f1ede6] py-20">
@@ -69,16 +73,16 @@ export function OurStory({data}: {data: Content<Partial<OurStory>>}) {
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"
           />
           <span className="absolute bottom-0 left-0 bg-[var(--brand-navy)] px-6 py-4 text-white">
-            <span className="script-title block text-2xl text-[var(--brand-orange)]">{image_badge_subtitle?image_badge_subtitle : "Since the river first ran"}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/70">{image_badge_kicker? image_badge_kicker : "Heritage of the Northern Cape"}</span>
+            <span className="script-title block text-2xl text-[var(--brand-orange)]">{image_badge_subtitle ? image_badge_subtitle : defaultBadgeTop}</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">{image_badge_kicker ? image_badge_kicker : defaultBadgeBottom}</span>
           </span>
         </div>
 
         {/* Timeline */}
         <div>
           <SectionHeading
-            eyebrow={kicker?kicker:"Our Story"}
-            title={title?title:"A Journey Rooted in Place"}
+            eyebrow={kicker ? kicker : defaultKicker}
+            title={title ? title : defaultTitle}
             theme="light"
             align="left"
           />

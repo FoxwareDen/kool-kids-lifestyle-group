@@ -2,6 +2,7 @@ import { Check } from "lucide-react"
 import riverImg from "../../images/orange-river.jpeg"
 import trailImg from "../../images/trail.jpeg"
 import type { Asset } from "#/lib/pocketbase"
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * Short bullet points highlighting what makes the destination distinctive.
@@ -40,8 +41,13 @@ interface AboutIntro {
  *
  * @returns {JSX.Element} The rendered intro section.
  */
-export function AboutIntro({data}:{data: AboutIntro}) {
+export function AboutIntro({data, lang = 'en'}:{data: AboutIntro; lang?: Language}) {
   const {content: {features, title, kicker, badge, body_1, body_2, image_order} , media} = data;
+  const defaultBadge = resolveTranslatable({ default: '10+', translations: { af: '10+' } }, lang)
+  const defaultKicker = resolveTranslatable({ default: 'Welcome to Prieska', translations: { af: 'Welkom by Prieska' } }, lang)
+  const defaultTitle = resolveTranslatable({ default: 'A Tourism & Recreation Company Built on Place and People', translations: { af: 'n Toerisme- en Ontspanningsmaatskappy Gebou op Plek en Mense' } }, lang)
+  const defaultBody1 = resolveTranslatable({ default: '360 Experiences is a tourism and recreational company dedicated to showcasing the very best of Prieska and the wider Northern Cape. From the life-giving Orange River to the wide, open Karoo, we craft experiences that connect visitors with the landscapes, heritage and warm hospitality that define our region.', translations: { af: '360 Experiences is ’n toerisme- en ontspanningsmaatskappy wat daaraan toewy is om die beste van Prieska en die groter Noord-Kaap uit te lig. Van die lewensbringende Oranjerivier tot die wye, oop Karoo, skep ons ervarings wat besoekers verbind met die landskappe, erfenis en warm gasvryheid wat ons streek kenmerk.' } }, lang)
+  const defaultBody2 = resolveTranslatable({ default: 'Whether you are seeking adventure, relaxation, culture or discovery, our team brings local knowledge and professional care to every journey we guide.', translations: { af: 'Of jy avontuur, ontspanning, kultuur of ontdekking soek, ons span bring plaaslike kennis en professionele sorg na elke reis wat ons lei.' } }, lang)
 
   return (
     <section id="about-intro" className="bg-[#f1ede6] py-20">
@@ -60,27 +66,27 @@ export function AboutIntro({data}:{data: AboutIntro}) {
           />
           <span className="absolute -left-4 top-8 hidden bg-[var(--brand-orange)] px-5 py-4 text-white shadow-lg lg:block">
             <span className="display-title block text-3xl font-semibold leading-none">{
-              badge.split(" ")[0].trim().length > 0 ? badge.split(" ")[0].trim(): "10+"
-              }</span>
+              badge?.split(" ")[0]?.trim().length ? badge.split(" ")[0].trim() : defaultBadge
+            }</span>
             <span className="text-[0.65rem] font-bold uppercase tracking-[0.18em]">{
-              badge.slice(3, badge.length).length > 0 ? badge.slice(3, badge.length) :"Years of Experiences"
-              }</span>
+              badge?.slice(3, badge.length).length ? badge.slice(3, badge.length) : resolveTranslatable({ default: 'Years of Experiences', translations: { af: 'Jare van Ervarings' } }, lang)
+            }</span>
           </span>
         </div>
 
         {/* Copy */}
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-            {kicker ? kicker : "Welcome to Prieska"}
+            {kicker ? kicker : defaultKicker}
           </p>
           <h2 className="display-title mt-3 text-balance text-3xl font-medium leading-[1.15] text-[var(--brand-navy)] sm:text-4xl">
-            {title ? title : "A Tourism &amp; Recreation Company Built on Place and People"}
+            {title ? title : defaultTitle}
           </h2>
           <p className="mt-5 text-pretty leading-relaxed text-[var(--brand-navy)]/75">
-            {body_1 ? body_1 : "360 Experiences is a tourism and recreational company dedicated to showcasing the very best of Prieska and the wider Northern Cape. From the life-giving Orange River to the wide, open Karoo, we craft experiences that connect visitors with the landscapes, heritage and warm hospitality that define our region."}
+            {body_1 ? body_1 : defaultBody1}
           </p>
           <p className="mt-4 text-pretty leading-relaxed text-[var(--brand-navy)]/75">
-            {body_2 ? body_2 : "Whether you are seeking adventure, relaxation, culture or discovery, our team brings local knowledge and professional care to every journey we guide."}
+            {body_2 ? body_2 : defaultBody2}
           </p>
 
           <ul className="mt-7 grid gap-3 sm:grid-cols-2">

@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The page hero for the "Contact" route. Displays a full-width river
@@ -8,7 +9,13 @@ import { ChevronRight } from 'lucide-react'
  *
  * @returns {JSX.Element} The rendered contact hero section.
  */
-export function ContactHero() {
+export function ContactHero({ lang = 'en' }: { lang?: Language }) {
+  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
+  const current = resolveTranslatable({ default: 'Contact', translations: { af: 'Kontak' } }, lang)
+  const kickerText = resolveTranslatable({ default: 'We’d Love to Hear From You', translations: { af: 'Ons Wil Van Jou Hoor' } }, lang)
+  const titleText = resolveTranslatable({ default: 'Get in Touch With Us', translations: { af: 'Kom In Kontak Met Ons' } }, lang)
+  const subText = resolveTranslatable({ default: 'Let’s plan your Prieska adventure.', translations: { af: 'Laat ons jou Prieska-avontuur beplan.' } }, lang)
+
   return (
     <section className="relative flex min-h-[55svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
@@ -31,24 +38,24 @@ export function ContactHero() {
           <ol className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             <li>
               <a href="/" className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]">
-                Home
+                {home}
               </a>
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
             <li className="text-[var(--brand-orange)]" aria-current="page">
-              Contact
+              {current}
             </li>
           </ol>
         </nav>
 
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">
-          We&apos;d Love to Hear From You
+          {kickerText}
         </p>
         <h1 className="display-title mt-3 max-w-3xl text-balance text-4xl font-medium leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem]">
-          Get in Touch With Us
+          {titleText}
         </h1>
         <p className="script-title mt-2 text-2xl font-semibold text-[var(--brand-orange)] sm:text-3xl">
-          Let&apos;s plan your Prieska adventure.
+          {subText}
         </p>
       </div>
     </section>

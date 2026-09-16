@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * Props for the {@link TimelineHero} component.
@@ -24,13 +25,17 @@ export function TimelineHero({
   eyebrow,
   title,
   subtitle,
+  lang = 'en',
 }: {
   crumbLabel: string
   crumbHref: string
   eyebrow: string
   title: string
   subtitle: string
+  lang?: Language
 }) {
+  const homeLabel = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
+  const timelineLabel = resolveTranslatable({ default: 'Timeline', translations: { af: 'Tydlyn' } }, lang)
   return (
     <section className="relative flex min-h-[55svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
@@ -55,7 +60,7 @@ export function TimelineHero({
                 href="/"
                 className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
               >
-                Home
+                {homeLabel}
               </a>
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
@@ -69,7 +74,7 @@ export function TimelineHero({
             </li>
             <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
             <li className="text-[var(--brand-orange)]" aria-current="page">
-              Timeline
+              {timelineLabel}
             </li>
           </ol>
         </nav>

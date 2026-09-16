@@ -10,7 +10,7 @@ import {
 
 /**
  * Represents a discrete, bookable resource or physical unit within a schedule.
- * 
+ *
  * @example
  * ```ts
  * const room: Unit = {
@@ -91,40 +91,40 @@ export interface Booking {
 
 /**
  * Represents an unreserved, bookable range of operating time or contiguous calendar days.
- * 
+ *
  * ### Field Semantics by `type`:
  * - **`type === "day"` (Multi-day stays / rentals)**:
  *   - `start_date` & `end_date`: Define the contiguous block of available dates (e.g., `"2026-08-01"` to `"2026-08-05"`).
  *   - `start_time` & `end_time`: Represent daily operational bounds like Check-in time (`start_time`) and Check-out time (`end_time`).
- * 
+ *
  * - **`type === "slot"` (Intra-day time windows)**:
  *   - `start_date` & `end_date`: Anchor to the exact same single date (e.g., `"2026-08-01"`).
  *   - `start_time` & `end_time`: Define the start and end of the free, unreserved time window carved out on that day (e.g., `"09:00"` to `"11:30"`).
  */
 export interface AvailableRange {
   calendar_ref: string;
-  /** 
+  /**
    * Starting date in `"YYYY-MM-DD"` format.
    * - **`"day"`**: First date of a contiguous multi-day stay block.
    * - **`"slot"`**: The single date on which this time window occurs.
    */
   start_date: string;
 
-  /** 
+  /**
    * Ending date in `"YYYY-MM-DD"` format.
    * - **`"day"`**: Final date of the contiguous multi-day stay block.
    * - **`"slot"`**: Identical to `start_date`.
    */
   end_date: string;
 
-  /** 
+  /**
    * Opening boundary time in 24-hour `"HH:mm"` format.
    * - **`"day"`**: Daily schedule opening or Check-in time (e.g., `"14:00"`).
    * - **`"slot"`**: The exact start of an open time window on `start_date` (e.g., `"09:00"`).
    */
-  start_time: string; 
+  start_time: string;
 
-  /** 
+  /**
    * Closing boundary time in 24-hour `"HH:mm"` format.
    * - **`"day"`**: Daily schedule closing or Check-out time (e.g., `"10:00"`).
    * - **`"slot"`**: The exact end of an open time window on `start_date` (e.g., `"11:30"`).
@@ -143,7 +143,7 @@ export interface AvailableRange {
  *
  * @param t - The time string to convert (e.g., `"14:30"`).
  * @returns Total minutes from midnight (e.g., `870`).
- * 
+ *
  * @internal
  */
 const timeToMinutes = (t: string): number => {
@@ -156,7 +156,7 @@ const timeToMinutes = (t: string): number => {
  *
  * @param m - Minutes elapsed from midnight (e.g., `870`).
  * @returns Formatted time string (e.g., `"14:30"`).
- * 
+ *
  * @internal
  */
 const minutesToTime = (m: number): string => {
@@ -168,11 +168,11 @@ const minutesToTime = (m: number): string => {
  *
  * ### Operating Modes:
  * 1. **Day Mode (`"day"`)**:
- *    Iterates unit-by-unit across the calendar horizon, coalescing unbroken sequences of available 
+ *    Iterates unit-by-unit across the calendar horizon, coalescing unbroken sequences of available
  *    days into single contiguous `AvailableRange` blocks (`start_date` $\rightarrow$ `end_date`).
  *
  * 2. **Slot Mode (`"slot"`)**:
- *    Iterates day-by-day and unit-by-unit, using chronological interval carving to slice open time 
+ *    Iterates day-by-day and unit-by-unit, using chronological interval carving to slice open time
  *    windows between existing bookings while strictly enforcing pre- and post-booking buffer padding.
  *
  * @param schedule - Configuration object containing calendar limits, operating hours, buffer, and units.
@@ -187,13 +187,13 @@ const minutesToTime = (m: number): string => {
  * ```
  */
 export function generateAvailableSlots(
-  schedule: Calendar, 
-  bookings: Booking[], 
+  schedule: Calendar,
+  bookings: Booking[],
   config: { minAdvanceDays: number }
 ): AvailableRange[] {
   // Store all calculated available range objects to return
   const availableSlots: AvailableRange[] = [];
-  
+
   // Normalize today's date to midnight so advance-day calculations remain standard
   const today = startOfDay(new Date());
 
@@ -219,7 +219,7 @@ export function generateAvailableSlots(
   // BRANCH 1: DAY-BASED BOOKINGS (Contiguous Range Coalescing)
   // =========================================================================
   if (schedule.booking_type === "day") {
-    
+
     // Evaluate unit-by-unit to track individual contiguous active ranges independently
     for (const unit of schedule.units) {
 
@@ -244,17 +244,19 @@ export function generateAvailableSlots(
           return date.getTime() >= bStartDate.getTime() && date.getTime() < bEndDate.getTime();
         }).length;
 
-        // Rule Check 3: Also check next day isn't booked (since stay runs into next morning)
-        const nextDate = addDays(date, 1);
-        const nextDayBookedCount = bookings.filter((b) => {
-          if (b.status === "cancelled") return false;
-          if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
-          const bStartDate = parseISO(b.date);
-          const bEndDate = addDays(bStartDate, b.duration);
-          return nextDate.getTime() >= bStartDate.getTime() && nextDate.getTime() < bEndDate.getTime();
-        }).length;
+        // // Rule Check 3: Also check next day isn't booked (since stay runs into next morning)
+        // const nextDate = addDays(date, 1);
+        // const nextDayBookedCount = bookings.filter((b) => {
+        //   if (b.status === "cancelled") return false;
+        //   if (b.unit_id !== unit.id && b.unit_label !== unit.label) return false;
+        //   const bStartDate = parseISO(b.date);
+        //   const bEndDate = addDays(bStartDate, b.duration);
+        //   return nextDate.getTime() >= bStartDate.getTime() && nextDate.getTime() < bEndDate.getTime();
+        // }).length;
 
-        const isAvailable = isWorkingDay && bookedCount < unit.capacity && nextDayBookedCount < unit.capacity;
+        // const isAvailable = isWorkingDay && bookedCount < unit.capacity && nextDayBookedCount < unit.capacity;
+
+        const isAvailable = isWorkingDay && bookedCount < unit.capacity;
 
         if (isAvailable) {
           if (!activeRange) {
@@ -315,39 +317,64 @@ export function generateAvailableSlots(
           (b) => b.unit_id === unit.id || b.unit_label === unit.label
         );
 
-        let windowStart = opStart;
+        // BUGFIX (capacity > 1): the old code walked bookings one-by-one and
+        // advanced `windowStart` past every booking unconditionally, which
+        // treats every unit as if unit.capacity === 1. Instead, build a
+        // buffered occupancy interval per booking so we can count how many
+        // bookings actually overlap a given moment, and only mark that
+        // moment unavailable once the count reaches unit.capacity.
+        const occupiedIntervals = unitBookings
+          .map((b): [number, number] => {
+            const bStart = timeToMinutes(b.start_time);
+            const bEnd = timeToMinutes(b.end_time);
+
+            // Deduct mandatory buffer time from the available window prior to the booking
+            // (and, symmetrically, after it) — same buffer semantics as before,
+            // just applied per-interval instead of via a running `windowStart`.
+            const bufferedStart = Math.max(opStart, bStart);
+            const bufferedEnd = Math.min(opEnd, bEnd + schedule.buffer_minutes);
+            return [bufferedStart, bufferedEnd];
+          })
+          .filter(([s, e]) => e > s);
+
+        // Every point in time where the overlap count could change
+        const boundaryPoints = Array.from(
+          new Set([opStart, opEnd, ...occupiedIntervals.flat()])
+        ).sort((a, b) => a - b);
+
+        let windowStart: number | null = null;
 
         // Sort bookings chronologically to process time gaps in order
-        const sortedBookings = [...unitBookings].sort(
-          (a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time)
-        );
+        for (let i = 0; i < boundaryPoints.length - 1; i++) {
+          const segStart = boundaryPoints[i];
+          const segEnd = boundaryPoints[i + 1];
+          if (segEnd <= segStart) continue;
 
-        for (const b of sortedBookings) {
-          const bStart = timeToMinutes(b.start_time);
-          const bEnd = timeToMinutes(b.end_time);
-
-          // Deduct mandatory buffer time from the available window prior to the booking
-          const availEndBeforeBooking = bStart - schedule.buffer_minutes;
+          // Count how many buffered bookings overlap this micro-segment
+          const midpoint = (segStart + segEnd) / 2;
+          const occupied = occupiedIntervals.filter(
+            ([s, e]) => midpoint >= s && midpoint < e
+          ).length;
 
           // Save free window prior to this booking if sufficient gap exists
-          if (availEndBeforeBooking > windowStart) {
+          if (occupied < unit.capacity) {
+            if (windowStart === null) windowStart = segStart;
+          } else if (windowStart !== null) {
             availableSlots.push({
               calendar_ref: schedule.id,
               start_date: formattedDate,
               end_date: formattedDate,
               start_time: minutesToTime(windowStart),
-              end_time: minutesToTime(availEndBeforeBooking),
+              end_time: minutesToTime(segStart),
               units: [unit],
               type: schedule.booking_type,
             });
+            windowStart = null;
           }
-
-          // Advance next free window start past the current booking and its trailing buffer
-          windowStart = Math.max(windowStart, bEnd + schedule.buffer_minutes);
         }
 
         // Capture remaining unreserved operating window up to end-of-day
-        if (windowStart < opEnd) {
+        if (windowStart !== null) {
           availableSlots.push({
             calendar_ref: schedule.id,
             start_date: formattedDate,
@@ -367,14 +394,14 @@ export function generateAvailableSlots(
 
 
 const units2: Unit[] = [
-  { id: "u2id", label: "2 Bedroom", capacity: 1, duration:0 }
+  { id: "u2id", label: "2 Bedroom", capacity: 1, duration: 0 }
 ];
 
 const calendar: Calendar = {
   id: "this-is-a-test",
   booking_type: "day",
   buffer_minutes: 1,
-  days_of_week: [0,1,2,3,4,5,6],
+  days_of_week: [0, 1, 2, 3, 4, 5, 6],
   start_date: "2026-08-20",
   end_date: "2026-08-23",
   start_time: "09:00",
@@ -400,5 +427,5 @@ const bookings: Booking[] = [
 //   const slots = generateAvailableSlots(calendar, bookings, { minAdvanceDays: 0 });
 //   console.log(`slots generated`);
 //   console.log(slots);
-  
+
 // })()

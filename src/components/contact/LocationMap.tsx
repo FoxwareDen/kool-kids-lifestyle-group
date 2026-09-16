@@ -1,5 +1,6 @@
 import { MapPin, ExternalLink } from 'lucide-react'
 import { SectionHeading } from '#/components/sections/SectionHeading'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
  * The location / map section. Renders a section heading above an embedded
@@ -10,13 +11,20 @@ import { SectionHeading } from '#/components/sections/SectionHeading'
  *
  * @returns {JSX.Element} The rendered location section.
  */
-export function LocationMap() {
+export function LocationMap({ lang = 'en' }: { lang?: Language }) {
+  const heading = resolveTranslatable({ default: 'Find Us', translations: { af: 'Vind Ons' } }, lang)
+  const title = resolveTranslatable({ default: 'Where to Find Prieska', translations: { af: 'Waar om Prieska te Vind' } }, lang)
+  const cta = resolveTranslatable({ default: 'View on Google Maps', translations: { af: 'Beskou op Google Maps' } }, lang)
+  const place = resolveTranslatable({ default: 'Prieska, Northern Cape', translations: { af: 'Prieska, Noord-Kaap' } }, lang)
+  const addressLine1 = resolveTranslatable({ default: 'Victoria Street, Prieska, 8940', translations: { af: 'Victoriaweg, Prieska, 8940' } }, lang)
+  const addressLine2 = resolveTranslatable({ default: 'On the banks of the Orange River, South Africa.', translations: { af: 'Aan die oewers van die Oranjerivier, Suid-Afrika.' } }, lang)
+
   return (
     <section className="bg-white py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Find Us"
-          title="Where to Find Prieska"
+          eyebrow={heading}
+          title={title}
           theme="light"
         />
 
@@ -27,12 +35,12 @@ export function LocationMap() {
               <MapPin className="h-6 w-6" aria-hidden="true" />
             </span>
             <h3 className="display-title mt-5 text-xl font-medium text-[var(--brand-navy)]">
-              Prieska, Northern Cape
+              {place}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-[var(--brand-navy)]/70">
-              Victoria Street, Prieska, 8940
+              {addressLine1}
               <br />
-              On the banks of the Orange River, South Africa.
+              {addressLine2}
             </p>
             <a
               href="https://www.google.com/maps/place/Prieska"
@@ -40,7 +48,7 @@ export function LocationMap() {
               rel="noopener noreferrer"
               className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline transition-colors hover:!text-[var(--brand-orange-deep)]"
             >
-              View on Google Maps
+              {cta}
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
             </a>
           </div>

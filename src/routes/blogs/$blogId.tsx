@@ -7,9 +7,13 @@ import { TimelineHero } from '#/components/timeline/TimelineHero'
 
 export const Route = createFileRoute('/blogs/$blogId')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language) ?? 'en',
+    lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({params}) =>{
+    return {
+      blogId: params.blogId
+    }
+  },
   component: RouteComponent,
 })
 

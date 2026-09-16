@@ -8,11 +8,17 @@ import { setTranslated } from '#/lib/utils'
 import type { Asset } from '#/lib/pocketbase'
 import MediaModel from '#/components/MediaModel'
 import { createBlogPage, createEvent, type BlogPageBlock } from '#/lib/blog'
+import { MediaBlockEditor } from './create-experience'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
 
 export const Route = createFileRoute('/_authed/dashboard/create-post')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({ deps: { lang } }) => ({ lang }),
   component: RouteComponent,
 })
 
@@ -195,9 +201,7 @@ function BlockEditor({ block, lang, onChange, onDelete }: { block: PageBlock; la
       </div>
       {block.type === 'header' && <HeaderBlockEditor block={block} lang={lang} onChange={onChange} />}
       {block.type === 'paragraph' && <ParagraphBlockEditor block={block} lang={lang} onChange={onChange} />}
-      {block.type === "media" && <MediaBlockEditor block={block} lang={lang} onChange={onChange} />}
-      {block.type === 'image' && <ImageBlockEditor block={block} lang={lang} onChange={onChange} />}
-      {block.type === 'video' && <VideoBlockEditor block={block} lang={lang} onChange={onChange} />}
+      {block.type === 'media'     && <MediaBlockEditor     block={block} lang={lang} onChange={onChange} />}
     </div>
   )
 }

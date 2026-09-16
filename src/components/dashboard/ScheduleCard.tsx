@@ -1,16 +1,23 @@
 import { Link } from '@tanstack/react-router'
 import { CalendarClock, Clock, Timer } from 'lucide-react'
 import type { UnitType } from '#/lib/booking'
-import { resolveTranslatable } from '#/lib/experiences'
+import { resolveTranslatable, type Language } from '#/lib/experiences'
 import { Button, Pill } from './form-controls'
 import { UnitTypeTile } from './UnitTypeTile'
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const DAY_NAMES: Record<Language, string[]> = {
+  en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  af: ['So', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Sa'],
+}
 
 /** Formats an ISO date string as e.g. "Jan 5, 2026". */
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, lang: Language = 'en'): string {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(lang === 'af' ? 'en-ZA' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 /**
@@ -72,6 +79,23 @@ export function ScheduleCard({
   onConfirmDelete: () => void
 }) {
   const experiences: any[] = schedule.experiences ?? []
+  const strings = {
+    created: resolveTranslatable({ default: 'Created', translations: { af: 'Geskep' } }, lang ?? 'en'),
+    edit: resolveTranslatable({ default: 'Edit', translations: { af: 'Wysig' } }, lang ?? 'en'),
+    delete: resolveTranslatable({ default: 'Delete', translations: { af: 'Verwyder' } }, lang ?? 'en'),
+    deleting: resolveTranslatable({ default: 'Deleting…', translations: { af: 'Verwyder…' } }, lang ?? 'en'),
+    confirmDelete: resolveTranslatable({ default: 'Confirm delete', translations: { af: 'Bevestig verwydering' } }, lang ?? 'en'),
+    cancel: resolveTranslatable({ default: 'Cancel', translations: { af: 'Kanselleer' } }, lang ?? 'en'),
+    deletePrompt: resolveTranslatable({ default: 'Delete', translations: { af: 'Verwyder' } }, lang ?? 'en'),
+    cannotUndo: resolveTranslatable({ default: 'This cannot be undone.', translations: { af: 'Dit kan nie ongedaan gemaak word nie.' } }, lang ?? 'en'),
+    dateRange: resolveTranslatable({ default: 'Date range', translations: { af: 'Datumbereik' } }, lang ?? 'en'),
+    time: resolveTranslatable({ default: 'Time', translations: { af: 'Tyd' } }, lang ?? 'en'),
+    buffer: resolveTranslatable({ default: 'Buffer', translations: { af: 'Buffer' } }, lang ?? 'en'),
+    minutes: resolveTranslatable({ default: 'minutes', translations: { af: 'minute' } }, lang ?? 'en'),
+    days: resolveTranslatable({ default: 'Days of week', translations: { af: 'Weekdae' } }, lang ?? 'en'),
+    linked: resolveTranslatable({ default: 'Linked experiences', translations: { af: 'Gekoppelde ervarings' } }, lang ?? 'en'),
+    unitTypes: resolveTranslatable({ default: 'Unit types', translations: { af: 'Eenheidstipes' } }, lang ?? 'en'),
+  }
 
   return (
     <article
@@ -79,67 +103,64 @@ export function ScheduleCard({
         isDeleting ? 'pointer-events-none opacity-50' : ''
       }`}
     >
-      {/* Header */}
       <header className="flex items-start justify-between gap-4 border-b border-[var(--line)] bg-[var(--dash-panel-muted)] px-5 py-4">
         <div>
           <h2 className="text-lg font-bold text-[var(--sea-ink)]">{schedule.title}</h2>
           <p className="mt-0.5 text-xs text-[var(--sea-ink-soft)]">
-            Created {formatDate(schedule.created)}
+            {strings.created} {formatDate(schedule.created, lang ?? 'en')}
           </p>
         </div>
         <div className="flex gap-2">
           <Link
             to="/dashboard/create-calendar"
-            search={{ lang: 'en', calId: schedule.id }}
+            search={{ lang: lang ?? 'en', calId: schedule.id }}
             {...({ state: { calendar: schedule } } as any)}
           >
-            <Button variant="ghost">Edit</Button>
+            <Button variant="ghost">{strings.edit}</Button>
           </Link>
           <Button variant="danger" onClick={onRequestDelete} disabled={isDeleting}>
-            {isDeleting ? 'Deleting…' : 'Delete'}
+            {isDeleting ? strings.deleting : strings.delete}
           </Button>
         </div>
       </header>
 
-      {/* Inline delete confirmation (no stacked modal) */}
       {confirmingDelete && (
         <div className="border-b border-[var(--line)] bg-[color-mix(in_oklab,var(--destructive)_8%,transparent)] px-5 py-4">
           <p className="mb-3 text-sm text-[var(--sea-ink)]">
-            Delete <strong>{schedule.title}</strong>? This cannot be undone.
+            {strings.deletePrompt} <strong>{schedule.title}</strong>? {strings.cannotUndo}
           </p>
           <div className="flex gap-2">
             <Button variant="danger" onClick={onConfirmDelete} disabled={isDeleting}>
-              {isDeleting ? 'Deleting…' : 'Confirm delete'}
+              {isDeleting ? strings.deleting : strings.confirmDelete}
             </Button>
             <Button variant="ghost" onClick={onCancelDelete} disabled={isDeleting}>
-              Cancel
+              {strings.cancel}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Body */}
       <div className="space-y-5 p-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <DetailRow icon={CalendarClock} label="Date range">
-            {formatDate(schedule.start_date)} – {formatDate(schedule.end_date)}
+          <DetailRow icon={CalendarClock} label={strings.dateRange}>
+            {formatDate(schedule.start_date, lang ?? 'en')} – {formatDate(schedule.end_date, lang ?? 'en')}
           </DetailRow>
-          <DetailRow icon={Clock} label="Time">
+          <DetailRow icon={Clock} label={strings.time}>
             {schedule.start_time} – {schedule.end_time}
           </DetailRow>
-          <DetailRow icon={Timer} label="Buffer">
-            {schedule.buffer_minutes} minutes
+          <DetailRow icon={Timer} label={strings.buffer}>
+            {schedule.buffer_minutes} {strings.minutes}
           </DetailRow>
         </div>
 
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--sea-ink-soft)]">
-            Days of week
+            {strings.days}
           </p>
           <div className="flex flex-wrap gap-2">
             {schedule.days_of_week?.map((day: number) => (
               <Pill key={day} tone="accent">
-                {DAY_NAMES[day]}
+                {DAY_NAMES[lang ?? 'en'][day]}
               </Pill>
             ))}
           </div>
@@ -147,7 +168,7 @@ export function ScheduleCard({
 
         {experiences.length > 0 && (
           <div className="border-t border-[var(--line)] pt-4">
-            <h3 className="mb-2 text-sm font-bold text-[var(--sea-ink)]">Linked experiences</h3>
+            <h3 className="mb-2 text-sm font-bold text-[var(--sea-ink)]">{strings.linked}</h3>
             <div className="space-y-2">
               {experiences.map((exp) => (
                 <div
@@ -178,7 +199,7 @@ export function ScheduleCard({
         {schedule.units.length > 0 && (
           <div className="border-t border-[var(--line)] pt-4">
             <h3 className="mb-2 text-sm font-bold text-[var(--sea-ink)]">
-              Unit types ({schedule.units.length})
+              {strings.unitTypes} ({schedule.units.length})
             </h3>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {schedule.units.map((unit: UnitType) => (

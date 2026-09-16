@@ -8,6 +8,9 @@ import trailImg from "../images/trail.jpeg"
 import { ArrowLeft } from 'lucide-react';
 
 export const Route = createFileRoute('/login')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as 'en' | 'af') ?? undefined,
+  }),
   component: RouteComponent,
 })
 

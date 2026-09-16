@@ -75,14 +75,14 @@ const MediaRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: "med
         block.src ?
           block.assetType === "image" ? (
             <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
-          ) :
-            block.assetType === "svg" ? (
-              <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
-            ) : (
-              <video src={block.src} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
-            )
-          :
-          (<div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
+          ): 
+          block.assetType === "svg" ? (
+            <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+          ): (
+            <video key={block.src} preload="none" autoPlay={false} src={block.src} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
+          )
+        :
+        (<div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No image uploaded</span>
           </div>
           )
@@ -192,10 +192,11 @@ export const HydratedVideoRenderer = ({ block, lang }: HydratedVideoRendererProp
   return (
     <div className="my-4 flex flex-col gap-2">
       <div className="overflow-hidden rounded-lg bg-black shadow-sm aspect-video">
-        <video
-          src={block.url}
-          controls
+        <video 
+          controls 
+          src={block.url} 
           title={titleText}
+          autoPlay={false}
           className="w-full h-full"
         />
       </div>
