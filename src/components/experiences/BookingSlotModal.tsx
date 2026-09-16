@@ -58,14 +58,14 @@ export function BookingSlotModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--brand-navy)]/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-hidden bg-[var(--brand-navy)]/70 p-0 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="booking-modal-title"
       onClick={onClose}
     >
       <div
-        className="flex h-[100svh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:h-auto sm:max-h-[min(92svh,760px)] sm:rounded-2xl lg:max-w-4xl"
+        className="flex max-h-[calc(100svh-0.75rem)] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:max-h-[min(92svh,760px)] sm:rounded-2xl lg:max-w-4xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 bg-[var(--brand-navy)] px-5 pb-5 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5">
