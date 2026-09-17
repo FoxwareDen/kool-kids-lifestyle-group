@@ -117,7 +117,7 @@ export function Booker({
   }, [type, setSlot]);
 
   return (
-    <div className={cn("w-full min-w-0 rounded-xl border bg-card p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
+    <div className={cn("w-full min-w-0 rounded-xl border bg-card p-2.5 text-card-foreground shadow-sm flex flex-col gap-3 sm:p-3", className)}>
       {children}
     </div>
   );
@@ -285,7 +285,7 @@ export function BookingCalendar({ className }: { className?: string }) {
         mode="single"
         selected={date}
         onSelect={handleChange}
-        className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]", className)}
+        className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(1.75rem,8vw,2.25rem)] sm:[--cell-size:2.25rem]", className)}
         required
         disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
       />
@@ -295,7 +295,7 @@ export function BookingCalendar({ className }: { className?: string }) {
   return (
     <Calendar
       mode="range"
-      className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]", className)}
+      className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(1.75rem,8vw,2.25rem)] sm:[--cell-size:2.25rem]", className)}
       selected={currentRange}
       onSelect={handleRangeChange}
       disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
@@ -422,7 +422,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
         </CardHeader>
 
         <CardContent className="p-0">
-          <ScrollArea className="h-[400px] w-full px-4 py-3">
+          <ScrollArea className="h-[320px] w-full px-3 py-2">
             {slots.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 No available time slots on this date.

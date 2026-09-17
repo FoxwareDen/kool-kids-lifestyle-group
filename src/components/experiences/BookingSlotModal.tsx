@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import {
   generateSlots,
@@ -16,6 +16,8 @@ import {
   BookingTimeSelect,
   BookingView,
   BookingPagingButtonGroup,
+  steps,
+  useBookerStore,
 } from '@/components/booking/calendar'
 import { PaymentForm } from '../payment'
 
@@ -43,6 +45,14 @@ export function BookingSlotModal({
   }, [calendarSchedule, existingBookings])
 
   const [isBookingComplete, setIsBookingComplete] = useState(false)
+  const bookingStep = useBookerStore((state) => state.sepCounter)
+  const bookingType = useBookerStore((state) => state.type)
+
+  useEffect(() => {
+    if (isBookingComplete && bookingStep < steps[bookingType].setCount - 1) {
+      setIsBookingComplete(false)
+    }
+  }, [bookingStep, bookingType, isBookingComplete])
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [isLoading, setIsLoading] = useState(false)
