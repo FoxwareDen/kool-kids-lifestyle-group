@@ -102,7 +102,7 @@ export function BookingSlotModal({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:flex lg:overflow-hidden">
           <section
             aria-label="Choose a booking time"
-            className="min-w-0 flex-1 border-b border-[var(--line)] px-5 pb-8 pt-6 sm:px-6 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:py-7"
+            className="min-w-0 flex-1 overflow-x-hidden border-b border-[var(--line)] px-5 pb-8 pt-6 sm:px-6 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:py-7"
           >
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">

@@ -117,7 +117,7 @@ export function Booker({
   }, [type, setSlot]);
 
   return (
-    <div className={cn("w-full max-w-md rounded-xl border bg-card p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
+    <div className={cn("w-full min-w-0 rounded-xl border bg-card p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
       {children}
     </div>
   );
@@ -403,7 +403,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
 
   return (
     <div className="w-full space-y-3">
-      <Card className={cn("w-full max-w-sm mx-auto shadow-sm", className)}>
+      <Card className={cn("w-full min-w-0 shadow-sm", className)}>
         <CardHeader className="pb-3 border-b">
           <div className="flex items-center justify-between">
             <div>
