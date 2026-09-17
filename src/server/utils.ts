@@ -81,21 +81,15 @@ export const initializePayment = createServerFn()
       }),
     });
 
-    const { status, data }: {
-      status: boolean;
-      message: string;
-      data: {
-        authorization_url: string;
-        access_code: string;
-        reference: string;
-      };
-    } = await res.json();
+    const json = await res.json();
 
-    if (!status) {
-      throw new Error("Failed to initialize payment");
+    if (!json.status) {
+      // Surface Paystack's exact rejection reason
+      console.error("[Paystack Server Error]:", json);
+      throw new Error(json.message || "Failed to initialize payment");
     }
 
     return {
-      access_code: data.access_code,
+      access_code: json.data.access_code,
     };
   });
