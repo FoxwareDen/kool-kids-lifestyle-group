@@ -177,14 +177,14 @@ export function BookingUnitSelect({valueSymbol="R"}:{valueSymbol?: string}) {
             type="button"
             onClick={() => filterUnits(unit)}
             className={cn(
-              "relative flex flex-col items-start justify-between rounded-lg border p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              isSelected ? "border-primary bg-primary/5 text-foreground shadow-xs" : "border-border bg-card text-card-foreground"
+              "relative flex flex-col items-start justify-between rounded-lg border-3 p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isSelected ? "border-[var(--brand-navy)] bg-[var(--brand-navy)]/5 text-foreground shadow-xs" : "border-border bg-card text-card-foreground"
             )}
           >
             <div className="flex w-full items-center justify-between gap-2">
               <span className="font-medium text-sm">{unit.label}</span>
               {isSelected && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--brand-navy)] text-primary-foreground">
                   <Check className="h-3 w-3" />
                 </span>
               )}
@@ -452,7 +452,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                           "absolute rounded-full border bg-background transition-all z-10",
                           isHourStart ? "w-3 h-3 -left-[7px] border-2" : "w-2 h-2 -left-[5px]",
                           isSelected
-                            ? "bg-primary border-primary ring-4 ring-primary/20 scale-110"
+                            ? "bg-[var(--brand-navy)] border-[var(--brand-navy)] ring-4 ring-[var(--brand-navy)]/20 scale-110"
                             : slot.isDisabled
                             ? "border-destructive/40 bg-destructive/10"
                             : "border-muted-foreground/40 group-hover:border-primary"
@@ -465,10 +465,10 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                         disabled={slot.isDisabled}
                         onClick={() => handleSelectSlot(slot)}
                         className={cn(
-                          "ml-3 sm:ml-4 w-full h-12 rounded-md px-2.5 sm:px-3 flex items-center justify-between text-sm transition-all outline-none border",
+                          "ml-3 sm:ml-4 w-full cursor-pointer h-12 rounded-md px-2.5 sm:px-3 flex items-center justify-between text-sm transition-all outline-none border",
                           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                           isSelected
-                            ? "bg-primary text-primary-foreground font-medium shadow-sm border-primary"
+                            ? "bg-[var(--brand-navy)] text-primary-foreground font-medium shadow-sm border-[var(--brand-navy)]"
                             : slot.isDisabled
                             ? "bg-destructive/10 text-destructive/80 border-destructive/20 cursor-not-allowed opacity-90"
                             : "bg-card hover:bg-accent/70 active:bg-accent border-transparent hover:border-border"
