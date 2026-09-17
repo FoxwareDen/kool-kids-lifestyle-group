@@ -3,7 +3,7 @@
 // ============================================================
 
 import { environmentManager } from "@tanstack/react-query";
-import { buildImageUrl, createPB_SSR, createResult, pb, Result, uploadAsset, type Asset } from "./pocketbase";
+import { buildImageUrl, createPB_SSR, createResult, getPBSession, pb, Result, uploadAsset, type Asset } from "./pocketbase";
 
 export type Language = "en" | "af";
 
@@ -375,14 +375,16 @@ export async function hydrateBlocksAsync(
 // ============================================================
 
 export async function fetchExperiences(cookieHeader?: string): Promise<Result<HydratedBookingPage[], string>> {
-  let client;
+  // let client;
 
-  if (environmentManager.isServer()) {
-    client = createPB_SSR(cookieHeader);
-  } else {
-    const { pb } = await import("@/lib/pocketbase");
-    client = pb;
-  }
+  // if (environmentManager.isServer()) {
+  //   client = createPB_SSR(cookieHeader);
+  // } else {
+  //   const { pb } = await import("@/lib/pocketbase");
+  //   client = pb;
+  // }
+
+  const client = getPBSession(cookieHeader);
 
   try {
     const records: FlatBookingPage[] = await client.collection("Experiences").getFullList({

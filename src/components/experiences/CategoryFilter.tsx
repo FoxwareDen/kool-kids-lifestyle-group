@@ -1,3 +1,4 @@
+import type { Language } from '#/lib/experiences'
 import { Link } from '@tanstack/react-router'
 
 /**
@@ -23,7 +24,9 @@ function label(category: string): string {
 export function CategoryFilter({
   categories,
   active,
+  lang
 }: {
+  lang: Language
   categories: string[]
   active?: string
 }) {
@@ -41,7 +44,7 @@ export function CategoryFilter({
     <div className="flex flex-wrap gap-2.5" role="tablist" aria-label="Filter experiences by category">
       <Link
         to="/experiences"
-        search={{ lang: 'en', category: undefined }}
+        search={{ lang, category: undefined }}
         className={chipClass(!active)}
         role="tab"
         aria-selected={!active}
@@ -52,7 +55,7 @@ export function CategoryFilter({
         <Link
           key={cat}
           to="/experiences"
-          search={{ lang: 'en', category: cat }}
+          search={{ lang, category: cat }}
           className={chipClass(isActive(cat))}
           role="tab"
           aria-selected={isActive(cat)}
