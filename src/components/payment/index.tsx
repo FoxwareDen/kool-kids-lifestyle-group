@@ -1,14 +1,14 @@
 import * as z from "zod";
-import { useForm } from "@tanstack/react-form";
-import { Lock, CheckCircle2, Download, Phone, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import type { Booking } from "#/lib/system";
-import { createPackage, deleteBooking, fetchUnitTypes } from "#/lib/booking";
 import { useEffect, useState } from "react";
-import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
+import { Input } from "@/components/ui/input";
 import PaystackPop from "@paystack/inline-js";
+import { Label } from "@/components/ui/label";
+import { useForm } from "@tanstack/react-form";
+import { Button } from "@/components/ui/button";
+import { Lock, CheckCircle2, Download, Phone, Mail } from "lucide-react";
+import { createPackage, deleteBooking, fetchUnitTypes } from "#/lib/booking";
+import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
 
 const payloadSchema = z.object({
   email: z.email("Invalid email address"),
@@ -223,6 +223,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
       }
 
       try {
+
         const popup = new PaystackPop();
         setIsPopupOpen(true);
 
