@@ -42,7 +42,7 @@ export const Route = createFileRoute('/about-prieska')({
     ],
   }),
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as 'en' | 'af') ?? undefined,
+    lang: (search.lang as Language),
   }),
   loaderDeps: ({ search: {lang}  }) => ({lang}),
   loader: async ({ location, deps: { lang } }) => {
@@ -53,7 +53,7 @@ export const Route = createFileRoute('/about-prieska')({
       data: { slug, lang },
     })
 
-    if (!pageData) throw notFound()
+    // if (!pageData) throw notFound()
 
     return { pageData }
   },
@@ -76,13 +76,13 @@ function AboutPrieskaPage() {
 
   return (
     <main>
-      <AboutHero data={pageData.components["about_hero"]} lang={lang ?? 'en'} />
-      <AboutIntro data={pageData.components["about_intro"]} lang={lang ?? 'en'} />
+      <AboutHero data={pageData.components["about_hero"]} lang={lang} />
+      <AboutIntro data={pageData.components["about_intro"]} lang={lang} />
       <StatsBand />
-      <MissionVisionValues data={pageData.components["mission_vision_values"]} lang={lang ?? 'en'} />
-      <OurStory data={pageData.components["our_story"]} lang={lang ?? 'en'} />
-      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]} lang={lang ?? 'en'} />
-      <AboutCta data={pageData.components["about_cta"]} lang={lang ?? 'en'} />
+      <MissionVisionValues data={pageData.components["mission_vision_values"]} lang={lang} />
+      <OurStory data={pageData.components["our_story"]} lang={lang} />
+      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]} lang={lang} />
+      <AboutCta data={pageData.components["about_cta"]} lang={lang} />
     </main>
   )
 }
