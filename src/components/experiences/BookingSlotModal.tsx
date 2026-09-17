@@ -140,29 +140,30 @@ export function BookingSlotModal({
             )}
           </section>
 
-          <section
-            aria-label="Payment details"
-            className="min-w-0 flex-1 bg-white/55 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:overflow-y-auto lg:py-7"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--brand-orange)]/40 text-sm font-bold text-[var(--brand-orange)]">
-                2
-              </span>
-              <div>
-                <h3 className="font-semibold text-[var(--sea-ink)]">
-                  Payment details
-                </h3>
-                <p className="text-xs text-[var(--sea-ink-soft)]">
-                  Complete your booking securely.
-                </p>
+          {isBookingComplete && (
+            <section
+              aria-label="Payment details"
+              className="min-w-0 flex-1 bg-white/55 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:overflow-y-auto lg:py-7"
+            >
+              <div className="mb-5 flex items-center gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--brand-orange)]/40 text-sm font-bold text-[var(--brand-orange)]">
+                  2
+                </span>
+                <div>
+                  <h3 className="font-semibold text-[var(--sea-ink)]">
+                    Payment details
+                  </h3>
+                  <p className="text-xs text-[var(--sea-ink-soft)]">
+                    Complete your booking securely.
+                  </p>
+                </div>
               </div>
-            </div>
-            <PaymentForm
-              toggleModel={onClose}
-              disabled={!isBookingComplete}
-              booking={booking}
-            />
-          </section>
+              <PaymentForm
+                toggleModel={onClose}
+                booking={booking}
+              />
+            </section>
+          )}
         </div>
       </div>
     </div>
