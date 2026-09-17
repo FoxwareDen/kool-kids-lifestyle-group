@@ -1,7 +1,7 @@
 import { CategoryFilter } from '#/components/experiences/CategoryFilter'
 import { ExperienceListCard } from '#/components/experiences/ExperienceListCard'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
-import { deriveCategories, experienceHasCategory, fetchExperiences } from '#/lib/experiences'
+import { deriveCategories, experienceHasCategory, fetchExperiences, resolveTranslatable } from '#/lib/experiences'
 import type { HydratedBookingPage, Language } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { Compass, Loader2, Router } from 'lucide-react'
@@ -27,7 +27,114 @@ export const Route = createFileRoute('/experiences/')({
       lang
     }
   },
+  head: ({ loaderData }) => {
+    const lang = loaderData?.lang || "en";
+    const experiences = loaderData?.experiences ?? []
 
+    const title = '360 Experiences | Experiences'
+
+    const description =
+      'Discover unforgettable tours, experiences and stays. Explore, book and plan your visit with 360 Experiences.'
+
+    const url = 'https://360experiences.co.za/experiences'
+
+    const image =
+      experiences[0]?.coverImage
+        ? experiences[0].coverImage : ""
+
+    return {
+      meta: [
+        // Basic SEO
+        {
+          title,
+        },
+        {
+          name: 'description',
+          content: description,
+        },
+
+        // Open Graph
+        {
+          property: 'og:title',
+          content: title,
+        },
+        {
+          property: 'og:description',
+          content: description,
+        },
+        {
+          property: 'og:type',
+          content: 'website',
+        },
+        {
+          property: 'og:url',
+          content: url,
+        },
+        {
+          property: 'og:image',
+          content: image,
+        },
+
+        // Twitter / X
+        {
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        },
+        {
+          name: 'twitter:title',
+          content: title,
+        },
+        {
+          name: 'twitter:description',
+          content: description,
+        },
+        {
+          name: 'twitter:image',
+          content: image,
+        },
+      ],
+
+      // Canonical URL
+      links: [
+        {
+          rel: 'canonical',
+          href: url,
+        },
+      ],
+
+      // Structured data / GEO
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            name: '360 Experiences',
+            description,
+            url,
+            numberOfItems: experiences.length,
+            itemListElement: experiences.map((experience, index) => {
+              const name = resolveTranslatable(experience.title, lang);
+              
+              const experienceDescription = experience.description ? resolveTranslatable(experience.description, lang) : "";
+
+              return {
+                '@type': 'ListItem',
+                position: index + 1,
+                item: {
+                  '@type': 'TouristTrip',
+                  name,
+                  description: experienceDescription,
+                  image: experience.coverImage,
+                  url: `${url}/${experience.slug}`,
+                },
+              }
+            }),
+          }),
+        },
+      ],
+    }
+  },
   errorComponent: ExperiencesError,
   component: RouteComponent,
 })
@@ -130,7 +237,6 @@ function ExperiencesError() {
 }
 
 function RouteComponent() {
-  const isLoading = false;
   const { experiences, lang} = Route.useLoaderData();
   const { category } = Route.useSearch()
 
@@ -142,9 +248,6 @@ function RouteComponent() {
 
   const heading = category ? categoryLabel(category) : translations[lang].all
   const text = translations[lang];
-
-  console.log("text....");
-  console.log(text);
   
 
   return (
@@ -167,33 +270,13 @@ function RouteComponent() {
               <h2 className="display-title text-2xl font-medium text-[var(--brand-navy)] sm:text-3xl">
                 {heading}
               </h2>
-
-              {!isLoading && (
-                <span className="text-sm font-medium text-[var(--brand-navy)]/55">
-                  {filtered.length}{' '}
-                  {filtered.length === 1
-                    ? text.experienceCountSingular
-                    : text.experienceCountPlural}
-                </span>
-              )}
             </div>
           </div>
 
           <CategoryFilter lang={lang} categories={categories} active={category} />
         </div>
 
-        {isLoading ? (
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 py-20 text-center">
-            <Loader2
-              className="h-8 w-8 animate-spin text-[var(--brand-orange)]"
-              strokeWidth={1.5}
-            />
-
-            <p className="text-sm font-medium text-[var(--brand-navy)]/55">
-              {text.loading}
-            </p>
-          </div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="mt-12 flex flex-col items-center justify-center gap-3 border border-dashed border-[var(--brand-navy)]/20 bg-white/60 py-20 text-center">
             <Compass
               className="h-8 w-8 text-[var(--brand-navy)]/30"
