@@ -222,8 +222,6 @@ function RouteComponent() {
           .filter((booking) => booking.success && booking.value != null)
           .flatMap((booking) => booking.value);
 
-        console.log("bookings//", bookings);
-
         setExistingBookings(bookings);
 
         setScheduleData(result.value);

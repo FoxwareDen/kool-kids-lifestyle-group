@@ -253,11 +253,6 @@ function RouteComponent() {
     return resolveTranslatable(field, lang)
   }
 
-  useEffect(() => {
-    console.log(blocks);
-
-  }, [blocks])
-
   const handleSubmit = async () => {
     setSubmitError(null)
     if (!pageData.coverImage) { setSubmitError('Cover image is required.'); return }

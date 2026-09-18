@@ -134,7 +134,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
       console.error("[Payment] Form validation failed on submit:", formApi.state.errors);
     },
     onSubmit: async ({ value }) => {
-      console.log("[Payment] Submission triggered:", { value, disabled, booking });
       setPaymentStatus(null);
 
       if (disabled || booking == null) {
@@ -146,7 +145,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         return;
       }
 
-      console.log("[Payment] Calling createPackage with booking:", booking);
       let packageResult;
       let reference;
       let code;
@@ -156,7 +154,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
 
         packageResult = await createPackage(booking, code, reference);
 
-        console.log("[Payment] createPackage response:", packageResult);
       } catch (err) {
         console.error("[Payment] createPackage threw an exception:", err);
         setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
@@ -182,7 +179,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
       }
 
       const [func, booking_confirmed] = packageResult.value;
-      console.log("[Payment] Extracted package value:", func);
 
       const amountInSubunits = value.amount;
 
@@ -229,11 +225,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
 
         popup.resumeTransaction(res.access_code, {
           onSuccess: async (transaction) => {
-            console.log("[Payment] Transaction successful:", transaction);
             setIsPopupOpen(false);
 
             if (typeof func === "function") {
-              console.log("[Payment] Executing package closure with contact details...");
               try {
                 const res = await func({
                   // @ts-ignore
@@ -242,7 +236,6 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                   phone: value.phone,
                 });
 
-                console.log(res);
               } catch (err) {
                 console.error("[Payment] Error running package function:", err);
                 setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
@@ -257,15 +250,12 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             });
           },
           onCancel: async () => {
-            console.log("payment was canceled removing booking...");
 
             const res = await deleteBooking(booking_confirmed.id);
 
-            console.log(res);
 
             if (!res) await deleteBooking(booking_confirmed.id);
 
-            console.log("[Payment] Transaction cancelled by user");
             setIsPopupOpen(false);
             setPaymentStatus({
               type: "cancelled",
@@ -275,11 +265,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             // toggleModel()
           },
           onError: async (error) => {
-            console.log("payment was failed removing booking...");
-
             const res = await deleteBooking(booking_confirmed.id);
-
-            console.log(res);
 
             if (!res) await deleteBooking(booking_confirmed.id);
 
@@ -324,7 +310,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         const amount = unit.value * booking.duration;
         form.setFieldValue("amount", amount);
       } catch (error) {
-        console.log(error);
+        console.error(error);
         setIsAmountError(
           error instanceof Error
             ? error.message

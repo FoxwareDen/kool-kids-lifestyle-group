@@ -48,9 +48,6 @@ export function GallerySection({ lang }: { lang: Language }) {
         .sort(() => Math.random() - 0.5)
         .slice(0, 6)
         
-        console.log(buildImageUrl(shuffled[0].collectionId, shuffled[0].id, shuffled[0].name));
-        console.log(shuffled[0]);
-
       const images = shuffled.map((item) => ({
         href: buildImageUrl(item.collectionId, item.id, item.file),
         imageAlt: item.alt,

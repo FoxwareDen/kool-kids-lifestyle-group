@@ -15,9 +15,6 @@ export const Route = createFileRoute('/experiences/')({
   loader: async ({ deps: { lang ="en"} }): Promise<{experiences:HydratedBookingPage[], lang:Language}> => {
     const result = await fetchExperiences()
 
-    console.log("result")
-    console.log(result)
-
     if (!result.success || !result.value) {
       throw new Error('Failed to fetch experiences')
     }

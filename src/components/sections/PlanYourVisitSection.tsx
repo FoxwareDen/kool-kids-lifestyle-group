@@ -42,7 +42,7 @@ const TRANSLATIONS = {
       eyebrow: "Our Story",
       title: "A Town Built on Stories",
       description: "Prieska is a place where history, heritage and nature come together. From the Orange River that sustains life to the historic landmarks that define our identity, every corner of Prieska has a story waiting to be discovered.",
-      ctaLabel: "Learn more"
+      ctaLabel: "LEARN MORE ABOUT OUR HERITAGE"
     },
     visit: {
       eyebrow: "Plan Your Visit",

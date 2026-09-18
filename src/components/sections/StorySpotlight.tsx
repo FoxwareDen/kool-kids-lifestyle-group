@@ -28,7 +28,7 @@ export function StorySpotlight({
   title,
   description,
   href = '#',
-  ctaLabel = 'Learn more',
+  ctaLabel = 'LEARN MORE ABOUT OUR HERITAGE',
 }: {
   image: string
   imageAlt: string
