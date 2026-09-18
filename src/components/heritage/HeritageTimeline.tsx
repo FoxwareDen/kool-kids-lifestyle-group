@@ -77,7 +77,7 @@ export function HeritageTimeline({ lang = 'en' }: { lang?: Language }) {
 
         {/* Image */}
         <div className="relative lg:sticky lg:top-28">
-          <img
+          <img decoding='async' loading='lazy' 
             src={koppieImg}
             alt="Rocky koppie overlooking Prieska, source of the region's tiger's-eye stone"
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"

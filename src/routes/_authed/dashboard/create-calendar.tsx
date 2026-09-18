@@ -422,7 +422,7 @@ function RouteComponent() {
                       : 'border-[var(--line)] hover:border-[var(--brand-orange)]/50'
                   }`}
                 >
-                  <img
+                  <img decoding='async' loading='lazy'
                     src={card.coverImage}
                     alt=""
                     className="h-32 w-full object-cover"

@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         rel: 'stylesheet',
         href: appCss,
-      },
+      }
     ],
   }),
   shellComponent: RootDocument

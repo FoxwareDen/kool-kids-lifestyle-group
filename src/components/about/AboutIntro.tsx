@@ -54,12 +54,12 @@ export function AboutIntro({data, lang = 'en'}:{data: AboutIntro; lang?: Languag
       <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         {/* Image collage */}
         <div className="relative">
-          <img
+          <img decoding='async' loading='lazy' 
             src={trailImg}
             alt="The town of Prieska nestled against the Karoo hills"
             className="h-[26rem] w-full object-cover shadow-lg"
           />
-          <img
+          <img decoding='async' loading='lazy' 
             src={riverImg}
             alt="The Orange River winding past Prieska"
             className="absolute -bottom-8 -right-4 hidden h-44 w-56 border-4 border-[#f1ede6] object-cover shadow-xl sm:block"

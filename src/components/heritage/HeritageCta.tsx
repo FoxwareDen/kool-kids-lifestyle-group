@@ -18,7 +18,7 @@ export function HeritageCta({ lang = 'en' }: { lang?: Language }) {
   const secondaryLabel = resolveTranslatable({ default: 'Contact Us', translations: { af: 'Kontak Ons' } }, lang)
   return (
     <section className="relative overflow-hidden">
-      <img
+      <img decoding='async' loading='lazy' 
         src={riverImg}
         alt="The Orange River winding past Prieska"
         className="absolute inset-0 h-full w-full object-cover"

@@ -31,7 +31,7 @@ export function LandmarkCard({
   return (
     <article className="group flex flex-col overflow-hidden bg-white shadow-md transition-shadow hover:shadow-xl">
       <div className="relative h-56 overflow-hidden">
-        <img
+        <img decoding='async' loading='lazy' 
           src={image}
           alt={name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

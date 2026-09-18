@@ -48,7 +48,7 @@ export function EventsCard({
 }) {
   return (
     <article className="relative flex min-h-[20rem] flex-col justify-between overflow-hidden p-7">
-      <img
+      <img decoding='async' loading='lazy' 
         src={image || '/placeholder.svg'}
         alt={imageAlt}
         className="absolute inset-0 h-full w-full object-cover"

@@ -38,7 +38,7 @@ function Carousel() {
           style={{ opacity: i === active ? 1 : 0 }}
           aria-hidden={i !== active}
         >
-          <img src={slide.src} alt={slide.alt} className="h-full w-full object-cover" draggable={false} />
+          <img decoding='async' loading='lazy' src={slide.src} alt={slide.alt} className="h-full w-full object-cover" draggable={false} />
           <div
             className="absolute inset-0"
             style={{ background: 'linear-gradient(160deg, rgba(12,26,51,0.9) 0%, rgba(12,26,51,0.55) 45%, rgba(12,26,51,0.25) 100%)' }}
@@ -120,7 +120,7 @@ function RouteComponent() {
         
           <a href="/" className="absolute left-0 top-0 z-20 flex items-center" aria-label="360 Experiences home">
             <span className="inline-flex items-center px-1 py-3">
-              <img src="/logo-2.png" alt="360 Experiences" className="h-17 w-auto object-contain" />
+              <img decoding='async' loading='lazy' src="/logo-2.png" alt="360 Experiences" className="h-17 w-auto object-contain" />
             </span>
           </a>
  

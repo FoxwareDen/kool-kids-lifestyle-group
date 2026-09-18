@@ -68,6 +68,9 @@ export function HeroSection({data}:{data: any|null}) {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
             i === activeIndex ? 'opacity-100' : 'opacity-0'
           }`}
+          loading={i === 0 ? 'eager' : 'lazy'}
+          fetchpriority={i === 0 ? 'high' : 'low'}
+          decoding="async"
         />
       ))}
 

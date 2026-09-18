@@ -119,7 +119,7 @@ function ImageBlockEditor({ block, lang, onChange }: { block: Extract<PageBlock,
           onChange({ ...block, file })
         }} />
         {error && <span className="mt-1 block text-xs text-[var(--destructive)]">{error}</span>}
-        {previewUrl && !error && <img src={previewUrl} alt="preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
+        {previewUrl && !error && <img decoding='async' loading='lazy' src={previewUrl} alt="preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
       </label>
       <label className="block">
         <span className="mb-1 block text-sm font-semibold text-[var(--sea-ink)]">Alt text</span>
@@ -311,7 +311,7 @@ function RouteComponent() {
                 setSubmitError(null)
                 setPageData((prev) => ({ ...prev, coverImage: file }))
               }} />
-              {coverPreviewUrl && <img src={coverPreviewUrl} alt="Cover preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
+              {coverPreviewUrl && <img decoding='async' loading='lazy' src={coverPreviewUrl} alt="Cover preview" className="mt-1 rounded-sm max-h-36 object-cover w-full" />}
             </label>
 
             <label className="block">

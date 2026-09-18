@@ -48,7 +48,7 @@ export function ExperienceListCard({
       className="group flex flex-col overflow-hidden border border-[var(--brand-navy)]/10 bg-white no-underline shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-[var(--brand-navy)]/10"
     >
       <div className="relative h-52 w-full overflow-hidden">
-        <img
+        <img decoding='async' loading='lazy' 
           src={experience.coverImage || '/placeholder.svg'}
           alt={title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"

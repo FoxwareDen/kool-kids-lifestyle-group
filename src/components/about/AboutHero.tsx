@@ -36,7 +36,7 @@ export function AboutHero({ data, lang = 'en' }: { data: AboutHero; lang?: Langu
   return (
     <section id='about-hero' className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
-      <img
+      <img decoding='async' loading='lazy' 
         src={media[image_order[0]] ? buildImageUrl(media[image_order[0]].collectionId, media[image_order[0]].id, media[image_order[0]].file): "/placeholder.svg"}
         alt={media[image_order[0]] ? media[image_order[0]].alt:""}
         className="absolute inset-0 h-full w-full object-cover"

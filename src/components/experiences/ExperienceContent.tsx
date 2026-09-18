@@ -47,7 +47,7 @@ function FlatMediaBlock({
           className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10"
         />
       ) : (
-        <img
+        <img decoding='async' loading='lazy' 
           src={url || '/placeholder.svg'}
           alt={block.alt ?? ''}
           className="mx-auto max-h-[28rem] w-full rounded-xl object-cover shadow-lg shadow-[var(--brand-navy)]/10"

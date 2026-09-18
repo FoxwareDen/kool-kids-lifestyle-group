@@ -19,7 +19,7 @@ export function ContactHero({ lang = 'en' }: { lang?: Language }) {
   return (
     <section className="relative flex min-h-[55svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
-      <img
+      <img decoding='async' loading='lazy' 
         src="/hero-karoo-river.png"
         alt="The Orange River flowing past the town of Prieska in the Northern Cape"
         className="absolute inset-0 h-full w-full object-cover"

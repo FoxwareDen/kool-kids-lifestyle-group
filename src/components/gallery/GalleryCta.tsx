@@ -18,7 +18,7 @@ export function GalleryCta({ lang = 'en' }: { lang?: Language }) {
   const secondaryLabel = resolveTranslatable({ default: 'Share Your Photos', translations: { af: 'Deel Jou Foto’s' } }, lang)
   return (
     <section className="relative overflow-hidden">
-      <img
+      <img decoding='async' loading='lazy' 
         src={riverImg}
         alt="The Orange River lined with palm trees near Prieska"
         className="absolute inset-0 h-full w-full object-cover"

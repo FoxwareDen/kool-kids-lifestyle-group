@@ -18,7 +18,7 @@ export function ContactCta({ lang = 'en' }: { lang?: Language }) {
   const secondaryLabel = resolveTranslatable({ default: 'Call Us', translations: { af: 'Bel Ons' } }, lang)
   return (
     <section className="relative overflow-hidden">
-      <img
+      <img decoding='async' loading='lazy' 
         src={riverImg}
         alt="The Orange River winding past Prieska"
         className="absolute inset-0 h-full w-full object-cover"

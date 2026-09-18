@@ -33,7 +33,7 @@ export function ExperiencesHero({
 }) {
   return (
     <section className="relative flex min-h-[58svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
-      <img
+      <img decoding='async' loading='lazy' 
         src={image || '/placeholder.svg'}
         alt=""
         aria-hidden="true"

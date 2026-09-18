@@ -50,7 +50,7 @@ export function StoryCard({
       </svg>
       {/* Banner image with overlapping badge */}
       <div className="relative" style={{ clipPath: `url(#${clipId})` }}>
-        <img
+        <img decoding='async' loading='lazy' 
           src={image || '/placeholder.svg'}
           alt={imageAlt}
           className="h-50 w-full object-cover"

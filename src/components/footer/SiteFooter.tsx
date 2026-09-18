@@ -103,7 +103,7 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
-              <img
+              <img decoding='async' loading='lazy' 
                 src={logo}
                 alt="360 Experiences logo"
                 className="h-12 w-12 object-contain"

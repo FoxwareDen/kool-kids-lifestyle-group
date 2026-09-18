@@ -17,7 +17,7 @@ export function DashboardSidebar({ lang = 'en' }: { lang?: Language }) {
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-[var(--line)] bg-[var(--surface-strong)]">
       <div className="flex items-center gap-3 border-b border-[var(--line)] px-5 py-4">
-        <img
+        <img decoding='async' loading='lazy' 
           src={logo}
           alt="Kool Kids Lifestyle Group"
           className="size-9 rounded-sm object-contain"

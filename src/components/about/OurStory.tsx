@@ -67,7 +67,7 @@ export function OurStory({data, lang = 'en'}: {data: Content<Partial<OurStory>>;
       <div className="mx-auto grid w-full max-w-[1180px] items-start gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
         {/* Image */}
         <div className="relative lg:sticky lg:top-28">
-          <img
+          <img decoding='async' loading='lazy' 
             src={heritageImg}
             alt="Historic church reflecting Prieska's rich heritage"
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"

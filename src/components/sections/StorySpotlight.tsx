@@ -44,6 +44,8 @@ export function StorySpotlight({
         src={image || '/placeholder.svg'}
         alt={imageAlt}
         className="absolute inset-0 h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)]/90 via-[var(--brand-navy)]/55 to-[var(--brand-navy)]/20" />
 

@@ -149,11 +149,10 @@ export default function MediaModel({ open, onClick, toggleOpen, accept = "all" }
                   <div className="relative">
                     {
                       item.type == "image" || item.type == "svg" ? (
-                        <img
+                        <img decoding='async' loading='lazy' 
                           src={buildImageUrl(item.collectionId, item.id, item.file)}
                           alt={item.alt}
                           className="relative z-20 aspect-video w-full object-cover rounded-t-2xl"
-                          loading="lazy"
                         />
                       ) : (
                         <video src={buildImageUrl(item.collectionId, item.id, item.file)} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />

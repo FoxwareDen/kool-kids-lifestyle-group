@@ -19,7 +19,7 @@ export function GalleryHero({ lang = 'en' }: { lang?: Language }) {
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
-      <img
+      <img decoding='async' loading='lazy' 
         src="/hero-karoo-landscape.png"
         alt="Sweeping Karoo landscape and the Orange River near Prieska"
         className="absolute inset-0 h-full w-full object-cover"

@@ -26,7 +26,7 @@ export const ImageBlockEditor = ({
           }}
         />
         {previewUrl && (
-          <img src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
+          <img decoding='async' loading='lazy'  src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
         )}
       </Field>
       <Field label="Alt text">

@@ -38,12 +38,12 @@ export function HeritageIntro({ lang = 'en' }: { lang?: Language }) {
 
         {/* Image collage */}
         <div className="grid grid-cols-2 gap-4">
-          <img
+          <img decoding='async' loading='lazy' 
             src={churchImg}
             alt="Historic church building in Prieska"
             className="col-span-2 h-64 w-full object-cover shadow-md"
           />
-          <img
+          <img decoding='async' loading='lazy' 
             src={prieskaImg}
             alt="Street view of the town of Prieska"
             className="h-48 w-full object-cover shadow-md"

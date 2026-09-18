@@ -34,7 +34,7 @@ export function AboutCta({data, lang = 'en'}: {data: Content<Partial<AboutCta>>;
 
   return (
     <section className="relative overflow-hidden">
-      <img
+      <img decoding='async' loading='lazy'
         src={storyImg}
         alt="Karoo landscape at sunset near Prieska"
         className="absolute inset-0 h-full w-full object-cover"

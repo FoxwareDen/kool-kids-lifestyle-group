@@ -92,7 +92,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
       {/* Brand */}
       <a href="/" className="absolute left-0 top-0 z-10 flex items-center no-underline" aria-label="360 Experiences home">
-        <img
+        <img decoding='async' loading='lazy' 
           src="/logo-2.png"
           alt="360 Experiences logo"
           className={`

@@ -177,7 +177,7 @@ export function ScheduleCard({
                 >
                   <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-[var(--line)]">
                     {exp.coverImage && (
-                      <img src={exp.coverImage} alt="" className="size-full object-cover" />
+                      <img decoding='async' loading='lazy'  src={exp.coverImage} alt="" className="size-full object-cover" />
                     )}
                   </div>
                   <div className="flex-1">
