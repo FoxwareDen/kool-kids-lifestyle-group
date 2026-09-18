@@ -8,7 +8,6 @@ import { Trash2 } from 'lucide-react'
 import { setTranslated } from '#/lib/utils'
 import MediaModel from '#/components/MediaModel'
 import type { Asset } from '#/lib/pocketbase'
-import MediaModel from '#/components/MediaModel'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
