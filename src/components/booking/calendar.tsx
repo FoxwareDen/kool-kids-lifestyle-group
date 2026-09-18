@@ -117,7 +117,7 @@ export function Booker({
   }, [type, setSlot]);
 
   return (
-    <div className={cn("w-fit rounded-xl border bg-card p-4 text-card-foreground shadow-sm flex flex-col gap-4", className)}>
+    <div className={cn("w-full max-w-md rounded-xl border bg-card p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4", className)}>
       {children}
     </div>
   );
@@ -139,7 +139,7 @@ export function BookerStep({
   if (currentStepName !== name) return null;
 
   return (
-    <div className={cn("w-full flex justify-center items-center min-h-96 min-w-96", className)}>
+    <div className={cn("w-full min-w-0 flex justify-center items-center", className)}>
       {name === "calendar" ? <ClientOnly>{children}</ClientOnly> : children}
     </div>
   );
@@ -285,7 +285,7 @@ export function BookingCalendar({ className }: { className?: string }) {
         mode="single"
         selected={date}
         onSelect={handleChange}
-        className={cn("rounded-md border w-full", className)}
+        className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]", className)}
         required
         disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
       />
@@ -295,7 +295,7 @@ export function BookingCalendar({ className }: { className?: string }) {
   return (
     <Calendar
       mode="range"
-      className={cn("rounded-md border w-full", className)}
+      className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]", className)}
       selected={currentRange}
       onSelect={handleRangeChange}
       disabled={(date: Date) => !availableDates.some(t => isWithinInterval(date, { start: t.from, end: t.to }))}
@@ -428,7 +428,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                 No available time slots on this date.
               </div>
             ) : (
-              <div className="relative border-l-2 border-border ml-16 my-2 space-y-2">
+              <div className="relative border-l-2 border-border ml-12 sm:ml-16 my-2 space-y-2">
                 {slots.map((slot) => {
                   const isSelected = booking.start_time === slot.time;
                   const isHourStart = slot.minute === 0;
@@ -438,7 +438,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                       {/* Left Axis Label */}
                       <span
                         className={cn(
-                          "absolute -left-16 w-14 text-right text-xs font-mono select-none transition-colors",
+                          "absolute -left-12 w-10 sm:-left-16 sm:w-14 text-right text-[11px] sm:text-xs font-mono select-none transition-colors",
                           isHourStart ? "font-semibold text-foreground" : "text-muted-foreground/70",
                           isSelected && "text-primary font-bold"
                         )}
@@ -465,7 +465,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                         disabled={slot.isDisabled}
                         onClick={() => handleSelectSlot(slot)}
                         className={cn(
-                          "ml-4 w-full h-12 rounded-md px-3 flex items-center justify-between text-sm transition-all outline-none border",
+                          "ml-3 sm:ml-4 w-full h-12 rounded-md px-2.5 sm:px-3 flex items-center justify-between text-sm transition-all outline-none border",
                           "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                           isSelected
                             ? "bg-primary text-primary-foreground font-medium shadow-sm border-primary"

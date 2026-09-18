@@ -1,13 +1,13 @@
-import type { 
-  PageBlock, 
-  BookingPage, 
-  Language, 
-  HydratedPageBlock, 
-  HydratedBookingPage, 
-  HeaderBlock, 
-  ParagraphBlock, 
-  HydratedImageBlock, 
-  HydratedVideoBlock 
+import type {
+  PageBlock,
+  BookingPage,
+  Language,
+  HydratedPageBlock,
+  HydratedBookingPage,
+  HeaderBlock,
+  ParagraphBlock,
+  HydratedImageBlock,
+  HydratedVideoBlock
 } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
 import { buildImageUrl } from '#/lib/pocketbase';
@@ -18,7 +18,7 @@ import { buildImageUrl } from '#/lib/pocketbase';
 
 const HeaderRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'header' }>; lang: Language }) => {
   const text = resolveTranslatable(block.text, lang)
-  const cls =  { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
+  const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
   const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
   return <Tag className={`display-title font-medium tracking-tight text-balance text-[var(--brand-navy)] ${cls}`}>{text}</Tag>
 }
@@ -31,14 +31,14 @@ const ParagraphRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 
 
 const ImageRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'image' }>; lang: Language }) => {
   const src = block.file ? URL.createObjectURL(block.file) : null
-  
+
   return (
     <figure className="flex flex-col gap-2">
       {src
         ? <img src={src} alt={resolveTranslatable(block.alt, lang)} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
         : <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No image uploaded</span>
-          </div>
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No image uploaded</span>
+        </div>
       }
       {block.caption && (
         <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
@@ -56,8 +56,8 @@ const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'vid
       {src
         ? <video src={src} controls className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
         : <div className="flex h-44 w-full items-center justify-center rounded-xl border border-dashed border-[var(--brand-navy)]/20 bg-[#f1ede6]">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No video uploaded</span>
-          </div>
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--brand-navy)]/40">No video uploaded</span>
+        </div>
       }
       {block.title && (
         <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
@@ -68,11 +68,11 @@ const VideoRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: 'vid
   )
 }
 
-const MediaRenderer = ({ block, lang}: { block: Extract<PageBlock, { type: "media"}>, lang: Language }) => {
+const MediaRenderer = ({ block, lang }: { block: Extract<PageBlock, { type: "media" }>, lang: Language }) => {
   return (
     <figure className="flex flex-col gap-2">
       {
-         block.src ?
+        block.src ?
           block.assetType === "image" ? (
             <img src={block.src} alt={block.alt} className="w-full mx-auto h-96 object-cover rounded-xl shadow-lg shadow-[var(--brand-navy)]/10" />
           ): 
@@ -91,7 +91,7 @@ const MediaRenderer = ({ block, lang}: { block: Extract<PageBlock, { type: "medi
         <figcaption className="text-center text-xs italic text-[var(--brand-navy)]/50">
           {block.name}
         </figcaption>
-      )} 
+      )}
     </figure>
   )
 }
@@ -136,7 +136,7 @@ type HydratedHeaderRendererProps = {
 export const HydratedHeaderRenderer = ({ block, lang }: HydratedHeaderRendererProps) => {
   const text = resolveTranslatable(block.text, lang);
   const Tag = `h${block.level}` as keyof JSX.IntrinsicElements;
-  
+
   const classes = {
     1: "text-3xl font-bold tracking-tight text-gray-900 md:text-4xl",
     2: "text-2xl font-semibold tracking-tight text-gray-900",
@@ -167,9 +167,9 @@ export const HydratedImageRenderer = ({ block, lang }: HydratedImageRendererProp
 
   return (
     <figure className="my-4 flex flex-col gap-2">
-      <img 
-        src={block.url} 
-        alt={altText} 
+      <img
+        src={block.url}
+        alt={altText}
         className="rounded-lg object-cover w-full max-h-[450px] shadow-sm"
       />
       {captionText && (
@@ -226,6 +226,8 @@ export const FlatPageRenderer = ({ data, lang }: FlatPageRendererProps) => {
               return <HydratedImageRenderer key={block.index} block={block} lang={lang} />;
             case "video":
               return <HydratedVideoRenderer key={block.index} block={block} lang={lang} />;
+            case "media":
+              return <MediaRenderer key={block.index} block={block as any} lang={lang} />;
             default:
               return (
                 <div key={(block as any).index} className="text-red-500 text-sm italic">

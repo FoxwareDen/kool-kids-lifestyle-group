@@ -16,8 +16,7 @@ export function LocationMap({ lang = 'en' }: { lang?: Language }) {
   const title = resolveTranslatable({ default: 'Where to Find Prieska', translations: { af: 'Waar om Prieska te Vind' } }, lang)
   const cta = resolveTranslatable({ default: 'View on Google Maps', translations: { af: 'Beskou op Google Maps' } }, lang)
   const place = resolveTranslatable({ default: 'Prieska, Northern Cape', translations: { af: 'Prieska, Noord-Kaap' } }, lang)
-  const addressLine1 = resolveTranslatable({ default: 'Victoria Street, Prieska, 8940', translations: { af: 'Victoriaweg, Prieska, 8940' } }, lang)
-  const addressLine2 = resolveTranslatable({ default: 'On the banks of the Orange River, South Africa.', translations: { af: 'Aan die oewers van die Oranjerivier, Suid-Afrika.' } }, lang)
+  const addressLine1 = resolveTranslatable({ default: ' 18 Steward Street, Prieska, 8940', translations: { af: 'Victoriaweg, Prieska, 8940' } }, lang)
 
   return (
     <section className="bg-white py-20">
@@ -39,8 +38,6 @@ export function LocationMap({ lang = 'en' }: { lang?: Language }) {
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-[var(--brand-navy)]/70">
               {addressLine1}
-              <br />
-              {addressLine2}
             </p>
             <a
               href="https://www.google.com/maps/place/Prieska"
