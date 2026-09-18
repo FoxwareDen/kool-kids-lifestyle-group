@@ -50,6 +50,8 @@ export function ExperienceCard({
         src={image || '/placeholder.svg'}
         alt={imageAlt}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
       />
       {/* Navy gradient for legibility */}
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--brand-navy)] via-[var(--brand-navy)]/70 to-transparent" />
