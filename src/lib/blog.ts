@@ -1,4 +1,4 @@
-import { createResult, pb, Result, uploadAsset, type Asset } from "./pocketbase";
+import { createResult, getPBSession, pb, Result, uploadAsset, type Asset } from "./pocketbase";
 import type {
   HeaderBlock,
   ParagraphBlock,
@@ -93,10 +93,12 @@ export type UpdateEventInput = Omit<Event, "id" | "createdAt" | "updatedAt">;
 export async function createBlogPage(
   input: CreateBlogPageInput
 ): Promise<Result<HydratedBlogPage, string>> {
+  const client = getPBSession();
+
   try {
     const flatContent = await flattenBlocks(input.content);
 
-    const result = await pb.collection("Posts").create({
+    const result = await client.collection("Posts").create({
       title: JSON.stringify(input.title),
       content: flatContent,
       type: "blog",
@@ -120,10 +122,12 @@ export async function updateBlogPage(
   id: string,
   input: UpdateBlogPageInput
 ): Promise<Result<HydratedBlogPage, string>> {
+  const client = getPBSession();
+
   try {
     const flatContent = await flattenBlocks(input.content);
 
-    const result = await pb.collection("Posts").update(id, {
+    const result = await client.collection("Posts").update(id, {
       title: JSON.stringify(input.title),
       content: flatContent,
       type: "blog",
@@ -144,8 +148,10 @@ export async function updateBlogPage(
 }
 
 export async function deleteBlogPage(id: string): Promise<Result<true, string>> {
+  const client = getPBSession();
+
   try {
-    await pb.collection("Posts").delete(id);
+    await client.collection("Posts").delete(id);
     return createResult<true, string>(true, null);
   } catch (error) {
     return createResult<true, string>(null, `${error}`);
@@ -153,8 +159,10 @@ export async function deleteBlogPage(id: string): Promise<Result<true, string>> 
 }
 
 export async function getBlogPage(id: string): Promise<Result<HydratedBlogPage, string>> {
+  const client = getPBSession();
+
   try {
-    const result = await pb.collection("Posts").getOne(id, {
+    const result = await client.collection("Posts").getOne(id, {
       filter: 'type = "blog"',
     });
     return createResult<HydratedBlogPage, string>(hydrateBlogRecord(result), null);
@@ -164,8 +172,10 @@ export async function getBlogPage(id: string): Promise<Result<HydratedBlogPage, 
 }
 
 export async function listBlogPages(): Promise<Result<HydratedBlogPage[], string>> {
+  const client = getPBSession();
+
   try {
-    const results = await pb.collection("Posts").getFullList({
+    const results = await client.collection("Posts").getFullList({
       filter: 'type = "blog"',
     });
     return createResult<HydratedBlogPage[], string>(results.map(hydrateBlogRecord), null);
@@ -180,10 +190,12 @@ export async function listBlogPages(): Promise<Result<HydratedBlogPage[], string
 export async function createEvent(
   input: CreateEventInput
 ): Promise<Result<HydratedEvent, string>> {
+  const client = getPBSession();
+
   try {
     const flatContent = await flattenBlocks(input.content);
 
-    const result = await pb.collection("Posts").create({
+    const result = await client.collection("Posts").create({
       title: JSON.stringify(input.title),
       content: flatContent,
       start_date: input.startDate.toISOString(),
@@ -211,10 +223,12 @@ export async function updateEvent(
   id: string,
   input: UpdateEventInput
 ): Promise<Result<HydratedEvent, string>> {
+  const client = getPBSession();
+
   try {
     const flatContent = await flattenBlocks(input.content);
 
-    const result = await pb.collection("Posts").update(id, {
+    const result = await client.collection("Posts").update(id, {
       title: JSON.stringify(input.title),
       content: flatContent,
       start_date: input.startDate.toISOString(),
@@ -239,8 +253,10 @@ export async function updateEvent(
 }
 
 export async function deleteEvent(id: string): Promise<Result<true, string>> {
+  const client = getPBSession();
+
   try {
-    await pb.collection("Posts").delete(id);
+    await client.collection("Posts").delete(id);
     return createResult<true, string>(true, null);
   } catch (error) {
     return createResult<true, string>(null, `${error}`);
@@ -248,8 +264,10 @@ export async function deleteEvent(id: string): Promise<Result<true, string>> {
 }
 
 export async function getEvent(id: string): Promise<Result<HydratedEvent, string>> {
+  const client = getPBSession();
+
   try {
-    const result = await pb.collection("Posts").getOne(id, {
+    const result = await client.collection("Posts").getOne(id, {
       filter: 'type = "event"',
     });
     return createResult<HydratedEvent, string>(hydrateEventRecord(result), null);
@@ -259,8 +277,10 @@ export async function getEvent(id: string): Promise<Result<HydratedEvent, string
 }
 
 export async function listEvents(): Promise<Result<HydratedEvent[], string>> {
+  const client = getPBSession();
+
   try {
-    const results = await pb.collection("Posts").getFullList({
+    const results = await client.collection("Posts").getFullList({
       filter: 'type = "event"',
     });
     return createResult<HydratedEvent[], string>(results.map(hydrateEventRecord), null);
