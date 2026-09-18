@@ -7,14 +7,15 @@ import { TimelineHero } from '#/components/timeline/TimelineHero'
 
 export const Route = createFileRoute('/blogs/$blogId')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language),
+    lang: search.lang as Language,
   }),
-  loaderDeps: ({ search: {lang} }) => ({lang: lang || "en"}),
-  loader: async ({params: { blogId}, deps: { lang}}) =>{
-      const result = await getBlogPage(blogId)
-    if (!result.success || !result.value) throw Error("Failed to fetch event page data")
+  loaderDeps: ({ search: { lang } }) => ({ lang: lang || 'en' }),
+  loader: async ({ params: { blogId }, deps: { lang } }) => {
+    const result = await getBlogPage(blogId)
+    if (!result.success || !result.value)
+      throw Error('Failed to fetch event page data')
 
-    return {blogId, lang, data: result.value}
+    return { blogId, lang, data: result.value }
   },
   head: ({ loaderData }) => {
     if (!loaderData) return {}
@@ -62,7 +63,9 @@ export const Route = createFileRoute('/blogs/$blogId')({
   errorComponent: () => {
     return (
       <main className="flex min-h-[70svh] flex-col items-center justify-center bg-[#f4efe7] px-6 text-center">
-        <h1 className="text-2xl font-medium text-[var(--brand-navy)]">Blog not found</h1>
+        <h1 className="text-2xl font-medium text-[var(--brand-navy)]">
+          Blog not found
+        </h1>
         <p className="mt-2 max-w-md text-sm text-[var(--brand-navy)]/60">
           The blog post you're looking for doesn't exist or has been removed.
         </p>
@@ -97,9 +100,14 @@ function RouteComponent() {
         <div className="grid gap-10 lg:grid-cols-[1fr]">
           <article className="flex flex-col gap-8">
             {data.content.length > 0 ? (
-              <BookingPageRenderer page={{ blocks: data.content }} lang={lang} />
+              <BookingPageRenderer
+                page={{ blocks: data.content }}
+                lang={lang}
+              />
             ) : (
-              <p className="text-sm text-[var(--brand-navy)]/50">No content yet.</p>
+              <p className="text-sm text-[var(--brand-navy)]/50">
+                No content yet.
+              </p>
             )}
           </article>
         </div>

@@ -20,7 +20,12 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * when wiring up live data.
  * @type {{ image: string, name: string, description: string, location: string }[]}
  */
-const SITES: { image: string; name: string; description: string; location: string }[] = [
+const SITES: {
+  image: string
+  name: string
+  description: string
+  location: string
+}[] = [
   {
     image: riverImg,
     name: 'The Orange River Crossing',
@@ -59,16 +64,24 @@ const SITES: { image: string; name: string; description: string; location: strin
  * @returns {JSX.Element} The rendered heritage sites section.
  */
 export function HeritageSites({ lang = 'en' }: { lang?: Language }) {
-  const eyebrow = resolveTranslatable({ default: 'Landmarks Worth the Journey', translations: { af: 'Landmerke Waard om te Reis' } }, lang)
-  const title = resolveTranslatable({ default: 'Heritage Sites to Explore', translations: { af: 'Erfenisplekke om te Verken' } }, lang)
+  const eyebrow = resolveTranslatable(
+    {
+      default: 'Landmarks Worth the Journey',
+      translations: { af: 'Landmerke Waard om te Reis' },
+    },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'Heritage Sites to Explore',
+      translations: { af: 'Erfenisplekke om te Verken' },
+    },
+    lang,
+  )
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={title}
-          theme="light"
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} theme="light" />
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {SITES.map((site) => (

@@ -11,14 +11,40 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered call-to-action section.
  */
 export function GalleryCta({ lang = 'en' }: { lang?: Language }) {
-  const kicker = resolveTranslatable({ default: 'See It For Yourself', translations: { af: 'Sien Dit Self' } }, lang)
-  const title = resolveTranslatable({ default: 'Every Photo Began as a Visit to Prieska', translations: { af: 'Elke Foto Het Begin as ’n Besoek aan Prieska' } }, lang)
-  const description = resolveTranslatable({ default: 'Come stand on the riverbank, walk the trails and watch the Karoo sky turn gold — then capture moments of your own.', translations: { af: 'Kom staan aan die rivierwal, loop die roetes en kyk hoe die Karoo-lug goud word — en vang dan jou eie oomblikke vas.' } }, lang)
-  const primaryLabel = resolveTranslatable({ default: 'Book Your Visit', translations: { af: 'Bespreek Jou Besoek' } }, lang)
-  const secondaryLabel = resolveTranslatable({ default: 'Share Your Photos', translations: { af: 'Deel Jou Foto’s' } }, lang)
+  const kicker = resolveTranslatable(
+    { default: 'See It For Yourself', translations: { af: 'Sien Dit Self' } },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'Every Photo Began as a Visit to Prieska',
+      translations: { af: 'Elke Foto Het Begin as ’n Besoek aan Prieska' },
+    },
+    lang,
+  )
+  const description = resolveTranslatable(
+    {
+      default:
+        'Come stand on the riverbank, walk the trails and watch the Karoo sky turn gold — then capture moments of your own.',
+      translations: {
+        af: 'Kom staan aan die rivierwal, loop die roetes en kyk hoe die Karoo-lug goud word — en vang dan jou eie oomblikke vas.',
+      },
+    },
+    lang,
+  )
+  const primaryLabel = resolveTranslatable(
+    { default: 'Book Your Visit', translations: { af: 'Bespreek Jou Besoek' } },
+    lang,
+  )
+  const secondaryLabel = resolveTranslatable(
+    { default: 'Share Your Photos', translations: { af: 'Deel Jou Foto’s' } },
+    lang,
+  )
   return (
     <section className="relative overflow-hidden">
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src={riverImg}
         alt="The Orange River lined with palm trees near Prieska"
         className="absolute inset-0 h-full w-full object-cover"

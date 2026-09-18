@@ -8,7 +8,7 @@ import { nitro } from 'nitro/vite'
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  
+
   // 1. Force Vite to tree-shake lucide-react during SSR instead of loading the entire index module
   ssr: {
     noExternal: ['lucide-react'],
@@ -65,7 +65,7 @@ export default defineConfig({
       },
       sitemap: {
         enabled: true,
-        host: "https://360experiences.co.za",
+        host: 'https://360experiences.co.za',
       },
     }),
     viteReact(),

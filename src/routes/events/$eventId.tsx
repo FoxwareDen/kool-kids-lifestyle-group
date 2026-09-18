@@ -8,15 +8,16 @@ import { BookingPageRenderer } from '#/components/BookingPageRenderer'
 
 export const Route = createFileRoute('/events/$eventId')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language),
+    lang: search.lang as Language,
   }),
-  loaderDeps: ({ search: {lang} }) => ({lang: lang || "en"}),
-  loader: async ({params: {  eventId }, deps: { lang }}) =>{
-    const result = await getEvent(eventId);
+  loaderDeps: ({ search: { lang } }) => ({ lang: lang || 'en' }),
+  loader: async ({ params: { eventId }, deps: { lang } }) => {
+    const result = await getEvent(eventId)
 
-    if (!result.success || !result.value) throw Error("Failed to fetch event page data")
+    if (!result.success || !result.value)
+      throw Error('Failed to fetch event page data')
 
-    return {eventId, lang, data: result.value}
+    return { eventId, lang, data: result.value }
   },
   head: ({ loaderData }) => {
     if (!loaderData) return {}
@@ -37,9 +38,7 @@ export const Route = createFileRoute('/events/$eventId')({
     })
 
     const dateDisplay =
-      startDate === endDate
-        ? startDate
-        : `${startDate} – ${endDate}`
+      startDate === endDate ? startDate : `${startDate} – ${endDate}`
 
     const seoTitle = `${title} | 360 Experiences`
     const description = `${title} — ${dateDisplay}. Join us for this special experience.`
@@ -83,7 +82,9 @@ export const Route = createFileRoute('/events/$eventId')({
   errorComponent: () => {
     return (
       <main className="flex min-h-[70svh] flex-col items-center justify-center bg-[#f4efe7] px-6 text-center">
-        <h1 className="text-2xl font-medium text-[var(--brand-navy)]">Event not found</h1>
+        <h1 className="text-2xl font-medium text-[var(--brand-navy)]">
+          Event not found
+        </h1>
         <p className="mt-2 max-w-md text-sm text-[var(--brand-navy)]/60">
           The event you're looking for doesn't exist or has been removed.
         </p>
@@ -100,20 +101,21 @@ export const Route = createFileRoute('/events/$eventId')({
 })
 
 function RouteComponent() {
-  const { lang, data} = Route.useLoaderData()
+  const { lang, data } = Route.useLoaderData()
 
   const title = resolveTranslatable(data.title, lang)
   const startDate = data.startDate.toLocaleDateString(lang, {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
   const endDate = data.endDate.toLocaleDateString(lang, {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
-  const dateDisplay = startDate === endDate ? startDate : `${startDate} – ${endDate}`
+  const dateDisplay =
+    startDate === endDate ? startDate : `${startDate} – ${endDate}`
 
   return (
     <main className="bg-[#f4efe7]">
@@ -129,9 +131,14 @@ function RouteComponent() {
         <div className="grid gap-10 lg:grid-cols-[1fr]">
           <article className="flex flex-col gap-8">
             {data.content.length > 0 ? (
-              <BookingPageRenderer page={{ blocks: data.content as PageBlock[] }} lang={lang} />
+              <BookingPageRenderer
+                page={{ blocks: data.content as PageBlock[] }}
+                lang={lang}
+              />
             ) : (
-              <p className="text-sm text-[var(--brand-navy)]/50">No content yet.</p>
+              <p className="text-sm text-[var(--brand-navy)]/50">
+                No content yet.
+              </p>
             )}
           </article>
         </div>

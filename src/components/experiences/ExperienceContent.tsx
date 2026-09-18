@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { resolveTranslatable, type FlatBookingPage, type Language } from '#/lib/experiences'
+import {
+  resolveTranslatable,
+  type FlatBookingPage,
+  type Language,
+} from '#/lib/experiences'
 
 // The blocks on a hydrated experience are "flat": media blocks reference an
 // asset by id (resolved lazily on the client) rather than carrying a File.
@@ -20,12 +24,14 @@ function FlatMediaBlock({
 }) {
   const { data: url, isLoading } = useQuery({
     queryKey: ['asset', block.asset_id],
-    queryFn: () => ()=>"",//TODO: fix the crack smoking AI code
+    queryFn: () => () => '', //TODO: fix the crack smoking AI code
     staleTime: 10 * 60 * 1000,
   })
 
   if (isLoading) {
-    return <div className="h-80 w-full animate-pulse rounded-xl bg-[var(--brand-navy)]/5" />
+    return (
+      <div className="h-80 w-full animate-pulse rounded-xl bg-[var(--brand-navy)]/5" />
+    )
   }
 
   if (!url) {
@@ -47,7 +53,9 @@ function FlatMediaBlock({
           className="w-full rounded-xl shadow-lg shadow-[var(--brand-navy)]/10"
         />
       ) : (
-        <img decoding='async' loading='lazy' 
+        <img
+          decoding="async"
+          loading="lazy"
           src={url || '/placeholder.svg'}
           alt={block.alt ?? ''}
           className="mx-auto max-h-[28rem] w-full rounded-xl object-cover shadow-lg shadow-[var(--brand-navy)]/10"
@@ -90,7 +98,9 @@ export function ExperienceContent({
         switch (block.type) {
           case 'header': {
             const text = resolveTranslatable(block.text, lang)
-            const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[block.level]
+            const cls = { 1: 'text-2xl', 2: 'text-xl', 3: 'text-lg' }[
+              block.level
+            ]
             const Tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
             return (
               <Tag

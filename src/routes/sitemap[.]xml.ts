@@ -17,14 +17,8 @@ export const Route = createFileRoute('/sitemap.xml')({
         const origin = new URL(request.url).origin
 
         const [events, blogs] = await Promise.all([
-          fetchTimelineEntries(
-            kindFromSlug('/events/'),
-            'en',
-          ),
-          fetchTimelineEntries(
-            kindFromSlug('/blogs/'),
-            'en',
-          ),
+          fetchTimelineEntries(kindFromSlug('/events/'), 'en'),
+          fetchTimelineEntries(kindFromSlug('/blogs/'), 'en'),
         ])
 
         const urls = [
@@ -35,25 +29,23 @@ export const Route = createFileRoute('/sitemap.xml')({
           `${origin}/contact`,
 
           ...events.map(
-            (entry) =>
-              `${origin}/events/${encodeURIComponent(entry.id)}`,
+            (entry) => `${origin}/events/${encodeURIComponent(entry.id)}`,
           ),
 
           ...blogs.map(
-            (entry) =>
-              `${origin}/blogs/${encodeURIComponent(entry.id)}`,
+            (entry) => `${origin}/blogs/${encodeURIComponent(entry.id)}`,
           ),
         ]
 
         const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
                         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
                         ${urls
-                        .map(
+                          .map(
                             (url) => `  <url>
                             <loc>${escapeXml(url)}</loc>
                         </url>`,
-                        )
-                        .join('\n')}
+                          )
+                          .join('\n')}
                         </urlset>`
 
         return new Response(sitemap, {

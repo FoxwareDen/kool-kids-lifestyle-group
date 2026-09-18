@@ -12,7 +12,7 @@ export const Route = createFileRoute('/blogs/')({
   loader: async ({ location, deps: { lang } }) => {
     const entries = await fetchTimelineEntries(
       kindFromSlug(location.pathname),
-      lang
+      lang,
     )
 
     return {

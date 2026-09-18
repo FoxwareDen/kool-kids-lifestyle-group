@@ -24,7 +24,7 @@ function label(category: string): string {
 export function CategoryFilter({
   categories,
   active,
-  lang
+  lang,
 }: {
   lang: Language
   categories: string[]
@@ -41,7 +41,11 @@ export function CategoryFilter({
     }`
 
   return (
-    <div className="flex flex-wrap gap-2.5" role="tablist" aria-label="Filter experiences by category">
+    <div
+      className="flex flex-wrap gap-2.5"
+      role="tablist"
+      aria-label="Filter experiences by category"
+    >
       <Link
         to="/experiences"
         search={{ lang, category: undefined }}

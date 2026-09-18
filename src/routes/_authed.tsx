@@ -5,16 +5,15 @@ import { getRequest } from '@tanstack/react-start/server' // <-- Fixed export
 import { isAuthenticatedSSR, getCurrentUserSSR } from '#/lib/pocketbase'
 
 // 1. Localized server function to handle cookie collection on the host environment
-const getAuthSession = createServerFn({ method: 'GET' })
-  .handler(async () => {
-    const request = getRequest() // <-- Returns the native web Request object
-    const cookieHeader = request?.headers.get('Cookie') || ''
-    
-    return {
-      isValid: isAuthenticatedSSR(cookieHeader),
-      user: getCurrentUserSSR(cookieHeader)
-    }
-  })
+const getAuthSession = createServerFn({ method: 'GET' }).handler(async () => {
+  const request = getRequest() // <-- Returns the native web Request object
+  const cookieHeader = request?.headers.get('Cookie') || ''
+
+  return {
+    isValid: isAuthenticatedSSR(cookieHeader),
+    user: getCurrentUserSSR(cookieHeader),
+  }
+})
 
 export const Route = createFileRoute('/_authed')({
   beforeLoad: async ({ location }) => {

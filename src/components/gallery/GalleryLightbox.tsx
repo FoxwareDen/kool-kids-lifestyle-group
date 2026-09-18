@@ -91,7 +91,9 @@ export function GalleryLightbox({
         className="flex max-h-full w-full max-w-4xl flex-col items-center"
         onClick={(event) => event.stopPropagation()}
       >
-        <img decoding='async' loading='lazy' 
+        <img
+          decoding="async"
+          loading="lazy"
           src={photo.image || '/placeholder.svg'}
           alt={photo.alt}
           className="max-h-[78svh] w-auto max-w-full object-contain shadow-2xl shadow-black/40"

@@ -57,7 +57,9 @@ export function QuickAccessCard({
 
       <div className="flex flex-1 flex-col gap-1 p-5">
         <h3 className="text-base font-bold text-[var(--sea-ink)]">{title}</h3>
-        <p className="text-sm leading-relaxed text-[var(--sea-ink-soft)]">{description}</p>
+        <p className="text-sm leading-relaxed text-[var(--sea-ink-soft)]">
+          {description}
+        </p>
 
         {meta.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-[var(--line)] pt-3">

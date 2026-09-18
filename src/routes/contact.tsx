@@ -17,7 +17,7 @@ export const Route = createFileRoute('/contact')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? undefined,
   }),
-  loaderDeps: ({ search: { lang } }) => ({ lang: lang || "en" }),
+  loaderDeps: ({ search: { lang } }) => ({ lang: lang || 'en' }),
   head: () => ({
     meta: [
       {

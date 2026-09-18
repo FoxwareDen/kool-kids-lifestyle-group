@@ -16,7 +16,8 @@ import { Calendar, Mail, MessageCircle, type LucideIcon } from 'lucide-react'
  */
 
 const VARIANT_CLASSES: Record<'orange' | 'outline' | 'green', string> = {
-  orange: 'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]',
+  orange:
+    'bg-[var(--brand-orange)] !text-white hover:bg-[var(--brand-orange-deep)]',
   outline: 'border border-white/35 !text-white hover:bg-white/10',
   green: 'bg-[var(--palm)] !text-white hover:brightness-110',
 }
@@ -28,7 +29,7 @@ const VARIANT_CLASSES: Record<'orange' | 'outline' | 'green', string> = {
  * @param {CtaButtonProps} props - Component props.
  * @returns {JSX.Element} The rendered button.
  */
-  function WhatsAppIcon({ className }: { className?: string }) {
+function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -95,9 +96,19 @@ export function ExploreCtaCard({
   title,
   description,
   actions = [
-    { icon: Calendar, label: 'Book Now', variant: 'orange' as const, href: '#' },
+    {
+      icon: Calendar,
+      label: 'Book Now',
+      variant: 'orange' as const,
+      href: '#',
+    },
     { icon: Mail, label: 'Contact Us', variant: 'outline' as const, href: '#' },
-    { icon: WhatsAppIcon, label: 'WhatsApp Us', variant: 'green' as const, href: '#' },
+    {
+      icon: WhatsAppIcon,
+      label: 'WhatsApp Us',
+      variant: 'green' as const,
+      href: '#',
+    },
   ],
 }: {
   eyebrow: string
@@ -118,7 +129,9 @@ export function ExploreCtaCard({
       <h2 className="display-title mt-3 text-balance text-3xl font-medium leading-[1.15] text-white sm:text-[2rem]">
         {title}
       </h2>
-      <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/75">{description}</p>
+      <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/75">
+        {description}
+      </p>
 
       <div className="mt-7 grid grid-cols-3 gap-3">
         {actions.map((action) => (

@@ -11,14 +11,46 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered call-to-action section.
  */
 export function ContactCta({ lang = 'en' }: { lang?: Language }) {
-  const kicker = resolveTranslatable({ default: 'Ready When You Are', translations: { af: 'Klaar Wanneer Jy Is' } }, lang)
-  const title = resolveTranslatable({ default: 'Start Planning Your Visit to Prieska', translations: { af: 'Begin Om Jou Besoek aan Prieska te Beplan' } }, lang)
-  const description = resolveTranslatable({ default: 'From riverside adventures to rich heritage, our team is ready to help you craft the perfect Northern Cape getaway.', translations: { af: 'Van rivier-avonture tot ryk erfenis, ons span is gereed om jou te help om die perfekte Noord-Kaap-ontsnapping te skep.' } }, lang)
-  const primaryLabel = resolveTranslatable({ default: 'Explore Experiences', translations: { af: 'Verken Ervarings' } }, lang)
-  const secondaryLabel = resolveTranslatable({ default: 'Call Us', translations: { af: 'Bel Ons' } }, lang)
+  const kicker = resolveTranslatable(
+    {
+      default: 'Ready When You Are',
+      translations: { af: 'Klaar Wanneer Jy Is' },
+    },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'Start Planning Your Visit to Prieska',
+      translations: { af: 'Begin Om Jou Besoek aan Prieska te Beplan' },
+    },
+    lang,
+  )
+  const description = resolveTranslatable(
+    {
+      default:
+        'From riverside adventures to rich heritage, our team is ready to help you craft the perfect Northern Cape getaway.',
+      translations: {
+        af: 'Van rivier-avonture tot ryk erfenis, ons span is gereed om jou te help om die perfekte Noord-Kaap-ontsnapping te skep.',
+      },
+    },
+    lang,
+  )
+  const primaryLabel = resolveTranslatable(
+    {
+      default: 'Explore Experiences',
+      translations: { af: 'Verken Ervarings' },
+    },
+    lang,
+  )
+  const secondaryLabel = resolveTranslatable(
+    { default: 'Call Us', translations: { af: 'Bel Ons' } },
+    lang,
+  )
   return (
     <section className="relative overflow-hidden">
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src={riverImg}
         alt="The Orange River winding past Prieska"
         className="absolute inset-0 h-full w-full object-cover"

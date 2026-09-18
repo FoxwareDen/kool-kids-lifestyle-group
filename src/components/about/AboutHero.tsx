@@ -1,16 +1,20 @@
 import { ChevronRight } from 'lucide-react'
 import { buildImageUrl, type Asset } from '#/lib/pocketbase'
-import { resolveTranslatable, type Language, type Translatable } from '#/lib/experiences'
+import {
+  resolveTranslatable,
+  type Language,
+  type Translatable,
+} from '#/lib/experiences'
 
 interface AboutHero {
-  id: string,
-  collectionId: string,
-  collectionName: string,
+  id: string
+  collectionId: string
+  collectionName: string
   content: {
-    kicker: string,
-    title: string,
-    subtitle: string,
-    image_order: string []
+    kicker: string
+    title: string
+    subtitle: string
+    image_order: string[]
   }
   media: Record<string, Asset>
   pages: string
@@ -24,21 +28,64 @@ interface AboutHero {
  *
  * @returns {JSX.Element} The rendered about hero section.
  */
-export function AboutHero({ data, lang = 'en' }: { data: AboutHero; lang?: Language }) {
-  const {content: { image_order, kicker, title, subtitle }, media,} = data;
+export function AboutHero({
+  data,
+  lang = 'en',
+}: {
+  data: AboutHero
+  lang?: Language
+}) {
+  const {
+    content: { image_order, kicker, title, subtitle },
+    media,
+  } = data
 
-  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
-  const current = resolveTranslatable({ default: 'About Prieska', translations: { af: 'Oor Prieska' } }, lang)
-  const kickerText = resolveTranslatable({ default: 'Get to Know Us', translations: { af: 'Kom Ons Leer Ken' } }, lang)
-  const titleText = resolveTranslatable({ default: 'A Town Where Heritage Meets Adventure', translations: { af: 'n Dorpie Waar Erfenis en Avontuur Saamkom' } }, lang)
-  const subText = resolveTranslatable({ default: 'Discover the heart of the Northern Cape.', translations: { af: 'Ontdek die hart van die Noord-Kaap.' } }, lang)
+  const home = resolveTranslatable(
+    { default: 'Home', translations: { af: 'Tuis' } },
+    lang,
+  )
+  const current = resolveTranslatable(
+    { default: 'About Prieska', translations: { af: 'Oor Prieska' } },
+    lang,
+  )
+  const kickerText = resolveTranslatable(
+    { default: 'Get to Know Us', translations: { af: 'Kom Ons Leer Ken' } },
+    lang,
+  )
+  const titleText = resolveTranslatable(
+    {
+      default: 'A Town Where Heritage Meets Adventure',
+      translations: { af: 'n Dorpie Waar Erfenis en Avontuur Saamkom' },
+    },
+    lang,
+  )
+  const subText = resolveTranslatable(
+    {
+      default: 'Discover the heart of the Northern Cape.',
+      translations: { af: 'Ontdek die hart van die Noord-Kaap.' },
+    },
+    lang,
+  )
 
   return (
-    <section id='about-hero' className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
+    <section
+      id="about-hero"
+      className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14"
+    >
       {/* Background image */}
-      <img decoding='async' loading='lazy' 
-        src={media[image_order[0]] ? buildImageUrl(media[image_order[0]].collectionId, media[image_order[0]].id, media[image_order[0]].file): "/placeholder.svg"}
-        alt={media[image_order[0]] ? media[image_order[0]].alt:""}
+      <img
+        decoding="async"
+        loading="lazy"
+        src={
+          media[image_order[0]]
+            ? buildImageUrl(
+                media[image_order[0]].collectionId,
+                media[image_order[0]].id,
+                media[image_order[0]].file,
+              )
+            : '/placeholder.svg'
+        }
+        alt={media[image_order[0]] ? media[image_order[0]].alt : ''}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
@@ -54,11 +101,17 @@ export function AboutHero({ data, lang = 'en' }: { data: AboutHero; lang?: Langu
         <nav aria-label="Breadcrumb" className="mb-5">
           <ol className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             <li>
-              <a href="/" className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]">
+              <a
+                href="/"
+                className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
+              >
                 {home}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li className="text-[var(--brand-orange)]" aria-current="page">
               {current}
             </li>

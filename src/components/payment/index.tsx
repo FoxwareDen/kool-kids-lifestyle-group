@@ -1,64 +1,74 @@
-import * as z from "zod";
-import type { Booking } from "#/lib/system";
-import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import PaystackPop from "@paystack/inline-js";
-import { Label } from "@/components/ui/label";
-import { useForm } from "@tanstack/react-form";
-import { Button } from "@/components/ui/button";
-import { Lock, CheckCircle2, Download, Phone, Mail } from "lucide-react";
-import { createPackage, deleteBooking, fetchUnitTypes } from "#/lib/booking";
-import { generatePaymentReference, generateUniqueCode, initializePayment } from "#/server/utils";
+import * as z from 'zod'
+import type { Booking } from '#/lib/system'
+import { useEffect, useState } from 'react'
+import { Input } from '@/components/ui/input'
+import PaystackPop from '@paystack/inline-js'
+import { Label } from '@/components/ui/label'
+import { useForm } from '@tanstack/react-form'
+import { Button } from '@/components/ui/button'
+import { Lock, CheckCircle2, Download, Phone, Mail } from 'lucide-react'
+import { createPackage, deleteBooking, fetchUnitTypes } from '#/lib/booking'
+import {
+  generatePaymentReference,
+  generateUniqueCode,
+  initializePayment,
+} from '#/server/utils'
 
 const payloadSchema = z.object({
-  email: z.email("Invalid email address"),
+  email: z.email('Invalid email address'),
   name: z.string().optional(),
   phone: z.string(),
   amount: z.number().nonnegative(),
-});
+})
 
-type PaymentFormValues = z.infer<typeof payloadSchema>;
+type PaymentFormValues = z.infer<typeof payloadSchema>
 
 interface PaymentFormProps {
-  disabled?: boolean;
-  booking: Booking | null;
-  toggleModel: () => void;
+  disabled?: boolean
+  booking: Booking | null
+  toggleModel: () => void
 }
 
 type PaymentStatus = {
-  type: "success" | "error" | "cancelled" | "conflict";
-  message: string;
-  reference?: string;
-};
+  type: 'success' | 'error' | 'cancelled' | 'conflict'
+  message: string
+  reference?: string
+}
 
 const fieldLabelClass =
-  "text-xs font-semibold uppercase tracking-wide text-[var(--brand-navy)]/70";
+  'text-xs font-semibold uppercase tracking-wide text-[var(--brand-navy)]/70'
 
 const inputClass =
-  "border-[var(--brand-navy)]/15 focus-visible:border-[var(--brand-orange)] focus-visible:ring-[var(--brand-orange)]/30";
+  'border-[var(--brand-navy)]/15 focus-visible:border-[var(--brand-orange)] focus-visible:ring-[var(--brand-orange)]/30'
 
-function BookingConfirmation({ reference, onClose }: { reference: string; onClose: () => void }) {
+function BookingConfirmation({
+  reference,
+  onClose,
+}: {
+  reference: string
+  onClose: () => void
+}) {
   const handleDownload = () => {
     const content = [
-      "BOOKING CONFIRMATION",
-      "====================",
-      "",
+      'BOOKING CONFIRMATION',
+      '====================',
+      '',
       `Payment Reference: ${reference}`,
-      "",
-      "Your payment has been received and is being verified.",
-      "A confirmation email will be sent to you shortly.",
-      "",
-      "====================",
-    ].join("\n");
+      '',
+      'Your payment has been received and is being verified.',
+      'A confirmation email will be sent to you shortly.',
+      '',
+      '====================',
+    ].join('\n')
 
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `booking-${reference}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `booking-${reference}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="flex flex-col items-center justify-center gap-5 py-6 text-center">
@@ -90,7 +100,8 @@ function BookingConfirmation({ reference, onClose }: { reference: string; onClos
       <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-left">
         <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
         <p className="text-xs text-amber-700">
-          Expect a confirmation email once your payment has been verified. Please keep your reference number handy.
+          Expect a confirmation email once your payment has been verified.
+          Please keep your reference number handy.
         </p>
       </div>
 
@@ -112,83 +123,96 @@ function BookingConfirmation({ reference, onClose }: { reference: string; onClos
         Done
       </Button>
     </div>
-  );
+  )
 }
 
-export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAmountError, setIsAmountError] = useState<string | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+export function PaymentForm({
+  disabled = false,
+  booking,
+  toggleModel,
+}: PaymentFormProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [isAmountError, setIsAmountError] = useState<string | null>(null)
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null)
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
 
   const form = useForm({
     defaultValues: {
-      email: "",
-      phone: "",
+      email: '',
+      phone: '',
       amount: 0,
     } satisfies PaymentFormValues,
     validators: {
       onSubmit: payloadSchema,
     },
     onSubmitInvalid: ({ formApi }) => {
-      console.error("[Payment] Form validation failed on submit:", formApi.state.errors);
+      console.error(
+        '[Payment] Form validation failed on submit:',
+        formApi.state.errors,
+      )
     },
     onSubmit: async ({ value }) => {
-      setPaymentStatus(null);
+      setPaymentStatus(null)
 
       if (disabled || booking == null) {
-        console.warn("[Payment] Submission aborted:", {
-          reason: disabled ? "Form is disabled" : "Booking is null/undefined",
+        console.warn('[Payment] Submission aborted:', {
+          reason: disabled ? 'Form is disabled' : 'Booking is null/undefined',
           disabled,
           booking,
-        });
-        return;
+        })
+        return
       }
 
-      let packageResult;
-      let reference;
-      let code;
+      let packageResult
+      let reference
+      let code
       try {
-        reference = await generatePaymentReference();
-        code = await generateUniqueCode();
+        reference = await generatePaymentReference()
+        code = await generateUniqueCode()
 
-        packageResult = await createPackage(booking, code, reference);
-
+        packageResult = await createPackage(booking, code, reference)
       } catch (err) {
-        console.error("[Payment] createPackage threw an exception:", err);
-        setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
-        return;
+        console.error('[Payment] createPackage threw an exception:', err)
+        setPaymentStatus({
+          type: 'error',
+          message: "Couldn't create your booking package. Please try again.",
+        })
+        return
       }
 
       if (packageResult.value == null || packageResult.error) {
-        console.error("[Payment] Package creation failed:", {
+        console.error('[Payment] Package creation failed:', {
           error: packageResult.error,
           value: packageResult.value,
-        });
+        })
 
-        if (packageResult.error === "blop") {
+        if (packageResult.error === 'blop') {
           setPaymentStatus({
-            type: "conflict",
-            message: "This booking is no longer available. Please refresh the page.",
-          });
-          return;
+            type: 'conflict',
+            message:
+              'This booking is no longer available. Please refresh the page.',
+          })
+          return
         }
 
-        setPaymentStatus({ type: "error", message: "Couldn't create your booking package. Please try again." });
-        return;
+        setPaymentStatus({
+          type: 'error',
+          message: "Couldn't create your booking package. Please try again.",
+        })
+        return
       }
 
-      const [func, booking_confirmed] = packageResult.value;
+      const [func, booking_confirmed] = packageResult.value
 
-      const amountInSubunits = value.amount;
+      const amountInSubunits = value.amount
 
       if (!Number.isInteger(amountInSubunits) || amountInSubunits <= 0) {
-        console.error("Invalid payment amount:", {
+        console.error('Invalid payment amount:', {
           valueAmount: value.amount,
           amountInSubunits,
-        });
-        setIsAmountError("Payment amount must be greater than 0");
-        return;
+        })
+        setIsAmountError('Payment amount must be greater than 0')
+        return
       }
 
       const paymentPayload = {
@@ -201,129 +225,144 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
           reference,
           code,
         },
-      };
+      }
 
-      let res;
+      let res
       try {
-        res = await initializePayment(paymentPayload);
+        res = await initializePayment(paymentPayload)
       } catch (err) {
-        console.error("[Payment] initializePayment threw an error:", err);
-        setPaymentStatus({ type: "error", message: "Couldn't start the payment. Please try again." });
-        return;
+        console.error('[Payment] initializePayment threw an error:', err)
+        setPaymentStatus({
+          type: 'error',
+          message: "Couldn't start the payment. Please try again.",
+        })
+        return
       }
 
       if (!res?.access_code) {
-        console.error("[Payment] access_code is missing or falsy:", res);
-        setPaymentStatus({ type: "error", message: "Couldn't start the payment. Please try again." });
-        return;
+        console.error('[Payment] access_code is missing or falsy:', res)
+        setPaymentStatus({
+          type: 'error',
+          message: "Couldn't start the payment. Please try again.",
+        })
+        return
       }
 
       try {
-
-        const popup = new PaystackPop();
-        setIsPopupOpen(true);
+        const popup = new PaystackPop()
+        setIsPopupOpen(true)
 
         popup.resumeTransaction(res.access_code, {
           onSuccess: async (transaction) => {
-            setIsPopupOpen(false);
+            setIsPopupOpen(false)
 
-            if (typeof func === "function") {
+            if (typeof func === 'function') {
               try {
                 const res = await func({
                   // @ts-ignore
                   name: value?.name || undefined,
                   email: value.email,
                   phone: value.phone,
-                });
-
+                })
               } catch (err) {
-                console.error("[Payment] Error running package function:", err);
-                setPaymentStatus({ type: "error", message: "Something went wrong finalizing your booking." });
-                return;
+                console.error('[Payment] Error running package function:', err)
+                setPaymentStatus({
+                  type: 'error',
+                  message: 'Something went wrong finalizing your booking.',
+                })
+                return
               }
             }
 
             setPaymentStatus({
-              type: "success",
-              message: "Payment successful! Your booking is confirmed.",
+              type: 'success',
+              message: 'Payment successful! Your booking is confirmed.',
               reference,
-            });
+            })
           },
           onCancel: async () => {
+            const res = await deleteBooking(booking_confirmed.id)
 
-            const res = await deleteBooking(booking_confirmed.id);
+            if (!res) await deleteBooking(booking_confirmed.id)
 
-
-            if (!res) await deleteBooking(booking_confirmed.id);
-
-            setIsPopupOpen(false);
+            setIsPopupOpen(false)
             setPaymentStatus({
-              type: "cancelled",
-              message: "Payment was cancelled. You can try again whenever you're ready.",
+              type: 'cancelled',
+              message:
+                "Payment was cancelled. You can try again whenever you're ready.",
               reference,
-            });
+            })
             // toggleModel()
           },
           onError: async (error) => {
-            const res = await deleteBooking(booking_confirmed.id);
+            const res = await deleteBooking(booking_confirmed.id)
 
-            if (!res) await deleteBooking(booking_confirmed.id);
+            if (!res) await deleteBooking(booking_confirmed.id)
 
-            console.error("[Payment] Paystack transaction error:", error);
-            setIsPopupOpen(false);
+            console.error('[Payment] Paystack transaction error:', error)
+            setIsPopupOpen(false)
             setPaymentStatus({
-              type: "error",
-              message: error?.message || "Something went wrong with the payment.",
-            });
-            toggleModel();
+              type: 'error',
+              message:
+                error?.message || 'Something went wrong with the payment.',
+            })
+            toggleModel()
           },
-        });
+        })
       } catch (err) {
-        console.error("[Payment] PaystackPop execution failed:", err);
-        setIsPopupOpen(false);
-        setPaymentStatus({ type: "error", message: "Couldn't open the payment popup." });
+        console.error('[Payment] PaystackPop execution failed:', err)
+        setIsPopupOpen(false)
+        setPaymentStatus({
+          type: 'error',
+          message: "Couldn't open the payment popup.",
+        })
       }
     },
-  });
+  })
 
   useEffect(() => {
-    (async () => {
-      if (!booking) return;
-      const unitId = booking.unit_id;
+    ;(async () => {
+      if (!booking) return
+      const unitId = booking.unit_id
 
-      setIsLoading(true);
-      setIsAmountError(null);
+      setIsLoading(true)
+      setIsAmountError(null)
 
       try {
-        const res = await fetchUnitTypes();
+        const res = await fetchUnitTypes()
 
         if (res.value == null || !res.success) {
-          throw new Error(res.error || "Failed to load unit types");
+          throw new Error(res.error || 'Failed to load unit types')
         }
 
-        const unit = res.value.find((u) => u.id == unitId);
+        const unit = res.value.find((u) => u.id == unitId)
 
         if (!unit) {
-          throw new Error("No matching unit type found for this booking");
+          throw new Error('No matching unit type found for this booking')
         }
 
-        const amount = unit.value * booking.duration;
-        form.setFieldValue("amount", amount);
+        const amount = unit.value * booking.duration
+        form.setFieldValue('amount', amount)
       } catch (error) {
-        console.error(error);
+        console.error(error)
         setIsAmountError(
           error instanceof Error
             ? error.message
-            : "Couldn't calculate the payment amount"
-        );
+            : "Couldn't calculate the payment amount",
+        )
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    })();
-  }, [booking]);
+    })()
+  }, [booking])
 
-  if (paymentStatus?.type === "success") {
-    return <BookingConfirmation reference={paymentStatus.reference!} onClose={toggleModel} />;
+  if (paymentStatus?.type === 'success') {
+    return (
+      <BookingConfirmation
+        reference={paymentStatus.reference!}
+        onClose={toggleModel}
+      />
+    )
   }
 
   return (
@@ -337,17 +376,17 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         </h3>
         <p className="mt-1 text-sm text-[var(--brand-navy)]/60">
           {disabled
-            ? "Finish your booking on the left to unlock payment."
-            : "Enter your booking details to confirm payment."}
+            ? 'Finish your booking on the left to unlock payment.'
+            : 'Enter your booking details to confirm payment.'}
         </p>
       </div>
 
       <form
         onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (disabled) return;
-          form.handleSubmit();
+          e.preventDefault()
+          e.stopPropagation()
+          if (disabled) return
+          form.handleSubmit()
         }}
         className="relative flex flex-1 flex-col"
         aria-disabled={disabled}
@@ -355,11 +394,14 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         <fieldset
           disabled={disabled}
           className={`flex flex-1 flex-col transition-opacity duration-200 ${
-            disabled ? "opacity-40" : "opacity-100"
+            disabled ? 'opacity-40' : 'opacity-100'
           }`}
         >
           <div className="flex-1 space-y-4">
-            <form.Field name="email" validators={{ onChange: payloadSchema.shape.email }}>
+            <form.Field
+              name="email"
+              validators={{ onChange: payloadSchema.shape.email }}
+            >
               {(field) => (
                 <div className="space-y-1.5">
                   <Label htmlFor={field.name} className={fieldLabelClass}>
@@ -378,7 +420,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                   />
                   {field.state.meta.errors.length > 0 && (
                     <p className="text-sm text-destructive">
-                      {field.state.meta.errors.map((err) => err?.message ?? String(err)).join(", ")}
+                      {field.state.meta.errors
+                        .map((err) => err?.message ?? String(err))
+                        .join(', ')}
                     </p>
                   )}
                 </div>
@@ -407,7 +451,10 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                 )}
               </form.Field>
 
-              <form.Field name="phone" validators={{ onChange: payloadSchema.shape.phone }}>
+              <form.Field
+                name="phone"
+                validators={{ onChange: payloadSchema.shape.phone }}
+              >
                 {(field) => (
                   <div className="space-y-1.5">
                     <Label htmlFor={field.name} className={fieldLabelClass}>
@@ -426,7 +473,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                     />
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map((err) => err?.message ?? String(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) => err?.message ?? String(err))
+                          .join(', ')}
                       </p>
                     )}
                   </div>
@@ -435,7 +484,10 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <form.Field name="amount" validators={{ onChange: payloadSchema.shape.amount }}>
+              <form.Field
+                name="amount"
+                validators={{ onChange: payloadSchema.shape.amount }}
+              >
                 {(field) => (
                   <div className="space-y-1.5">
                     <Label htmlFor={field.name} className={fieldLabelClass}>
@@ -446,7 +498,7 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                         R
                       </span>
                       <span className="ml-1 text-sm text-[var(--brand-navy)]">
-                        {isLoading ? "Calculating..." : field.state.value}
+                        {isLoading ? 'Calculating...' : field.state.value}
                       </span>
                     </div>
                     {isAmountError && (
@@ -456,7 +508,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                     )}
                     {field.state.meta.errors.length > 0 && (
                       <p className="text-sm text-destructive">
-                        {field.state.meta.errors.map((err) => err?.message ?? String(err)).join(", ")}
+                        {field.state.meta.errors
+                          .map((err) => err?.message ?? String(err))
+                          .join(', ')}
                       </p>
                     )}
                   </div>
@@ -466,10 +520,19 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
           </div>
 
           <div className="mt-6 border-t border-[var(--brand-navy)]/10 pt-4">
-            <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
+            <form.Subscribe
+              selector={(state) =>
+                [state.canSubmit, state.isSubmitting] as const
+              }
+            >
               {([canSubmit, isSubmitting]) => {
-                const isLocked = disabled || !canSubmit || isSubmitting || isLoading || isPopupOpen;
-                const isBusy = isSubmitting || isPopupOpen;
+                const isLocked =
+                  disabled ||
+                  !canSubmit ||
+                  isSubmitting ||
+                  isLoading ||
+                  isPopupOpen
+                const isBusy = isSubmitting || isPopupOpen
 
                 return (
                   <Button
@@ -483,10 +546,10 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
                         Processing...
                       </span>
                     ) : (
-                      "Pay now"
+                      'Pay now'
                     )}
                   </Button>
-                );
+                )
               }}
             </form.Subscribe>
 
@@ -494,14 +557,15 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
               <div className="mt-3 text-center">
                 <p
                   className={`text-sm font-medium ${
-                    paymentStatus.type === "cancelled" || paymentStatus.type === "conflict"
-                      ? "text-amber-600"
-                      : "text-destructive"
+                    paymentStatus.type === 'cancelled' ||
+                    paymentStatus.type === 'conflict'
+                      ? 'text-amber-600'
+                      : 'text-destructive'
                   }`}
                 >
                   {paymentStatus.message}
                 </p>
-                {paymentStatus.type === "conflict" && (
+                {paymentStatus.type === 'conflict' && (
                   <Button
                     type="button"
                     variant="outline"
@@ -521,7 +585,9 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-navy)]/10">
               <Lock className="h-4 w-4 text-[var(--brand-navy)]" />
             </div>
-            <p className="text-sm font-medium text-[var(--brand-navy)]">Finish your booking first</p>
+            <p className="text-sm font-medium text-[var(--brand-navy)]">
+              Finish your booking first
+            </p>
             <p className="text-xs text-[var(--brand-navy)]/60">
               Payment unlocks once you confirm your dates.
             </p>
@@ -529,5 +595,5 @@ export function PaymentForm({ disabled = false, booking, toggleModel }: PaymentF
         )}
       </form>
     </div>
-  );
+  )
 }

@@ -1,7 +1,12 @@
 import { CategoryFilter } from '#/components/experiences/CategoryFilter'
 import { ExperienceListCard } from '#/components/experiences/ExperienceListCard'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
-import { deriveCategories, experienceHasCategory, fetchExperiences, resolveTranslatable } from '#/lib/experiences'
+import {
+  deriveCategories,
+  experienceHasCategory,
+  fetchExperiences,
+  resolveTranslatable,
+} from '#/lib/experiences'
 import type { HydratedBookingPage, Language } from '#/lib/experiences'
 import { createFileRoute } from '@tanstack/react-router'
 import { Compass, Loader2, Router } from 'lucide-react'
@@ -12,7 +17,9 @@ export const Route = createFileRoute('/experiences/')({
     category: (search.category as string) || undefined,
   }),
   loaderDeps: ({ search: { lang } }) => ({ lang }),
-  loader: async ({ deps: { lang ="en"} }): Promise<{experiences:HydratedBookingPage[], lang:Language}> => {
+  loader: async ({
+    deps: { lang = 'en' },
+  }): Promise<{ experiences: HydratedBookingPage[]; lang: Language }> => {
     const result = await fetchExperiences()
 
     if (!result.success || !result.value) {
@@ -21,11 +28,11 @@ export const Route = createFileRoute('/experiences/')({
 
     return {
       experiences: result.value,
-      lang
+      lang,
     }
   },
   head: ({ loaderData }) => {
-    const lang = loaderData?.lang || "en";
+    const lang = loaderData?.lang || 'en'
     const experiences = loaderData?.experiences ?? []
 
     const title = '360 Experiences | Experiences'
@@ -35,9 +42,7 @@ export const Route = createFileRoute('/experiences/')({
 
     const url = 'https://360experiences.co.za/experiences'
 
-    const image =
-      experiences[0]?.coverImage
-        ? experiences[0].coverImage : ""
+    const image = experiences[0]?.coverImage ? experiences[0].coverImage : ''
 
     return {
       meta: [
@@ -111,9 +116,11 @@ export const Route = createFileRoute('/experiences/')({
             url,
             numberOfItems: experiences.length,
             itemListElement: experiences.map((experience, index) => {
-              const name = resolveTranslatable(experience.title, lang);
-              
-              const experienceDescription = experience.description ? resolveTranslatable(experience.description, lang) : "";
+              const name = resolveTranslatable(experience.title, lang)
+
+              const experienceDescription = experience.description
+                ? resolveTranslatable(experience.description, lang)
+                : ''
 
               return {
                 '@type': 'ListItem',
@@ -207,10 +214,10 @@ function ExperiencesError() {
   return (
     <main className="bg-[#f4efe7]">
       <ExperiencesHero
-        eyebrow={""}
-        title={""}
-        subtitle={""}
-        crumbs={[{ label: "" }]}
+        eyebrow={''}
+        title={''}
+        subtitle={''}
+        crumbs={[{ label: '' }]}
       />
 
       <section className="mx-auto w-full max-w-[1180px] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
@@ -221,12 +228,10 @@ function ExperiencesError() {
           />
 
           <p className="text-base font-semibold text-[var(--brand-navy)]">
-            {"Failed to load content"}
+            {'Failed to load content'}
           </p>
 
-          <p className="max-w-sm text-sm text-[var(--brand-navy)]/55">
-            {""}
-          </p>
+          <p className="max-w-sm text-sm text-[var(--brand-navy)]/55">{''}</p>
         </div>
       </section>
     </main>
@@ -234,7 +239,7 @@ function ExperiencesError() {
 }
 
 function RouteComponent() {
-  const { experiences, lang} = Route.useLoaderData();
+  const { experiences, lang } = Route.useLoaderData()
   const { category } = Route.useSearch()
 
   const categories = deriveCategories(experiences)
@@ -244,8 +249,7 @@ function RouteComponent() {
     : experiences
 
   const heading = category ? categoryLabel(category) : translations[lang].all
-  const text = translations[lang];
-  
+  const text = translations[lang]
 
   return (
     <main className="bg-[#f4efe7]">
@@ -270,7 +274,11 @@ function RouteComponent() {
             </div>
           </div>
 
-          <CategoryFilter lang={lang} categories={categories} active={category} />
+          <CategoryFilter
+            lang={lang}
+            categories={categories}
+            active={category}
+          />
         </div>
 
         {filtered.length === 0 ? (

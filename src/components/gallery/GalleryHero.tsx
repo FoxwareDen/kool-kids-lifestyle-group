@@ -1,4 +1,8 @@
-import { resolveTranslatable, type Language, type Translatable } from '#/lib/experiences'
+import {
+  resolveTranslatable,
+  type Language,
+  type Translatable,
+} from '#/lib/experiences'
 import { ChevronRight } from 'lucide-react'
 
 /**
@@ -10,16 +14,42 @@ import { ChevronRight } from 'lucide-react'
  * @returns {JSX.Element} The rendered gallery hero section.
  */
 export function GalleryHero({ lang = 'en' }: { lang?: Language }) {
-  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
-  const current = resolveTranslatable({ default: 'Gallery', translations: { af: 'Galery' } }, lang)
-  const kickerText = resolveTranslatable({ default: 'Moments Worth Experiencing', translations: { af: 'Oomblikke Waard om te Beleef' } }, lang)
-  const titleText = resolveTranslatable({ default: 'The Prieska Gallery', translations: { af: 'Die Prieska Galery' } }, lang)
-  const subText = resolveTranslatable({ default: 'Where the river, the stone and the sky meet.', translations: { af: 'Waar die rivier, die klip en die lug ontmoet.' } }, lang)
+  const home = resolveTranslatable(
+    { default: 'Home', translations: { af: 'Tuis' } },
+    lang,
+  )
+  const current = resolveTranslatable(
+    { default: 'Gallery', translations: { af: 'Galery' } },
+    lang,
+  )
+  const kickerText = resolveTranslatable(
+    {
+      default: 'Moments Worth Experiencing',
+      translations: { af: 'Oomblikke Waard om te Beleef' },
+    },
+    lang,
+  )
+  const titleText = resolveTranslatable(
+    {
+      default: 'The Prieska Gallery',
+      translations: { af: 'Die Prieska Galery' },
+    },
+    lang,
+  )
+  const subText = resolveTranslatable(
+    {
+      default: 'Where the river, the stone and the sky meet.',
+      translations: { af: 'Waar die rivier, die klip en die lug ontmoet.' },
+    },
+    lang,
+  )
 
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src="/hero-karoo-landscape.png"
         alt="Sweeping Karoo landscape and the Orange River near Prieska"
         className="absolute inset-0 h-full w-full object-cover"
@@ -44,7 +74,10 @@ export function GalleryHero({ lang = 'en' }: { lang?: Language }) {
                 {home}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li className="text-[var(--brand-orange)]" aria-current="page">
               {current}
             </li>

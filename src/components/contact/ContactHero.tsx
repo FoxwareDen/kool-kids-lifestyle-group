@@ -10,16 +10,42 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered contact hero section.
  */
 export function ContactHero({ lang = 'en' }: { lang?: Language }) {
-  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
-  const current = resolveTranslatable({ default: 'Contact', translations: { af: 'Kontak' } }, lang)
-  const kickerText = resolveTranslatable({ default: 'We’d Love to Hear From You', translations: { af: 'Ons Wil Van Jou Hoor' } }, lang)
-  const titleText = resolveTranslatable({ default: 'Get in Touch With Us', translations: { af: 'Kom In Kontak Met Ons' } }, lang)
-  const subText = resolveTranslatable({ default: 'Let’s plan your Prieska adventure.', translations: { af: 'Laat ons jou Prieska-avontuur beplan.' } }, lang)
+  const home = resolveTranslatable(
+    { default: 'Home', translations: { af: 'Tuis' } },
+    lang,
+  )
+  const current = resolveTranslatable(
+    { default: 'Contact', translations: { af: 'Kontak' } },
+    lang,
+  )
+  const kickerText = resolveTranslatable(
+    {
+      default: 'We’d Love to Hear From You',
+      translations: { af: 'Ons Wil Van Jou Hoor' },
+    },
+    lang,
+  )
+  const titleText = resolveTranslatable(
+    {
+      default: 'Get in Touch With Us',
+      translations: { af: 'Kom In Kontak Met Ons' },
+    },
+    lang,
+  )
+  const subText = resolveTranslatable(
+    {
+      default: 'Let’s plan your Prieska adventure.',
+      translations: { af: 'Laat ons jou Prieska-avontuur beplan.' },
+    },
+    lang,
+  )
 
   return (
     <section className="relative flex min-h-[55svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src="/hero-karoo-river.png"
         alt="The Orange River flowing past the town of Prieska in the Northern Cape"
         className="absolute inset-0 h-full w-full object-cover"
@@ -37,11 +63,17 @@ export function ContactHero({ lang = 'en' }: { lang?: Language }) {
         <nav aria-label="Breadcrumb" className="mb-5">
           <ol className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             <li>
-              <a href="/" className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]">
+              <a
+                href="/"
+                className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
+              >
                 {home}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li className="text-[var(--brand-orange)]" aria-current="page">
               {current}
             </li>

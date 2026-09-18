@@ -31,7 +31,9 @@ export function GalleryPhotoTile({
       aria-label={`View ${photo.title}`}
       className="group relative block w-full overflow-hidden break-inside-avoid bg-[var(--brand-navy)]/5 text-left sm:mb-4"
     >
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src={photo.image || '/placeholder.svg'}
         alt={photo.alt}
         className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:aspect-auto"

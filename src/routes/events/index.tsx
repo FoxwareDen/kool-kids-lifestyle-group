@@ -1,6 +1,6 @@
 import BlogRenderer from '#/components/BlogRenderer'
-import type { Language } from '#/lib/experiences';
-import { fetchTimelineEntries, kindFromSlug } from '#/lib/timeline';
+import type { Language } from '#/lib/experiences'
+import { fetchTimelineEntries, kindFromSlug } from '#/lib/timeline'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/events/')({
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/events/')({
   loader: async ({ location, deps: { lang } }) => {
     const entries = await fetchTimelineEntries(
       kindFromSlug(location.pathname),
-      lang
+      lang,
     )
     return {
       entries,

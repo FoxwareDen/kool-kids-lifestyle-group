@@ -27,7 +27,7 @@ export const Route = createFileRoute('/gallery')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as Language) ?? undefined,
   }),
-  loaderDeps: ({search: {lang} }) => ({lang}),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
   component: GalleryPage,
 })
 
@@ -37,7 +37,7 @@ export const Route = createFileRoute('/gallery')({
  * @returns {JSX.Element} The rendered page.
  */
 function GalleryPage() {
-  const { lang } = Route.useLoaderDeps();
+  const { lang } = Route.useLoaderDeps()
 
   return (
     <main>

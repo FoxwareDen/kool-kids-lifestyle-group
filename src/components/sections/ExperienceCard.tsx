@@ -1,6 +1,10 @@
 import type { LucideIcon } from 'lucide-react'
 import { IconBadge } from './IconBadge'
-import { resolveTranslatable, type Language, type Translatable } from '#/lib/experiences'
+import {
+  resolveTranslatable,
+  type Language,
+  type Translatable,
+} from '#/lib/experiences'
 
 /**
  * Props for the {@link ExperienceCard} component.
@@ -28,18 +32,16 @@ export function ExperienceCard({
   title,
   description,
   href = '#',
-  lang
+  lang,
 }: {
   image: string
   imageAlt: string
   icon: LucideIcon
   title: Translatable | undefined
   description: Translatable | undefined
-  href?: string,
+  href?: string
   lang: Language
 }) {
-  
-  
   return (
     <a
       href={href}
@@ -63,7 +65,9 @@ export function ExperienceCard({
           {resolveTranslatable(title!, lang)}
         </h3>
         <p className="text-xs leading-relaxed text-white/70">
-        {resolveTranslatable(description!, lang).length > 85 ? resolveTranslatable(description!, lang).slice(0, 85) + " ...":resolveTranslatable(description!, lang)}
+          {resolveTranslatable(description!, lang).length > 85
+            ? resolveTranslatable(description!, lang).slice(0, 85) + ' ...'
+            : resolveTranslatable(description!, lang)}
         </p>
       </div>
     </a>

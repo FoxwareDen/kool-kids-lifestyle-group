@@ -1,15 +1,15 @@
 // HAS CMS MANAGING
 
-import { HeroSection } from '#/components/hero/HeroSection';
-import { StoriesSection } from '#/components/sections/StoriesSection';
-import { ExperiencesSection } from '#/components/sections/ExperiencesSection';
-import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection';
-import { GallerySection } from '#/components/sections/GallerySection';
-import { PreFooterSection } from '#/components/footer/PreFooterSection';
-import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase';
+import { HeroSection } from '#/components/hero/HeroSection'
+import { StoriesSection } from '#/components/sections/StoriesSection'
+import { ExperiencesSection } from '#/components/sections/ExperiencesSection'
+import { PlanYourVisitSection } from '#/components/sections/PlanYourVisitSection'
+import { GallerySection } from '#/components/sections/GallerySection'
+import { PreFooterSection } from '#/components/footer/PreFooterSection'
+import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { fetchFeaturedExperienceCard, type Language } from '#/lib/experiences';
+import { fetchFeaturedExperienceCard, type Language } from '#/lib/experiences'
 
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
@@ -20,7 +20,7 @@ export const getPageData = createServerFn()
 
 export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language),
+    lang: search.lang as Language,
   }),
   loaderDeps: ({ search: { lang } }) => ({ lang }),
   loader: async ({ location, deps: { lang } }) => {
@@ -36,7 +36,7 @@ export const Route = createFileRoute('/')({
 
     return { pageData, featuredList: experience.value, lang }
   },
-    head: () => ({
+  head: () => ({
     meta: [
       {
         title: '360 Experiences | Tours, Stays & Experiences',
@@ -63,7 +63,9 @@ export const Route = createFileRoute('/')({
   }),
   notFoundComponent: () => <div>Page not found</div>,
 
-  errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div>Something went wrong: {error.message}</div>
+  ),
 
   component: function () {
     const { pageData, featuredList, lang } = Route.useLoaderData()
@@ -71,8 +73,14 @@ export const Route = createFileRoute('/')({
     return (
       <main>
         <HeroSection data={pageData.components['hero']} />
-        <StoriesSection data={pageData.components["stories_section"]!} />
-        <ExperiencesSection data={{ ...pageData.components["experiences_section"], list: featuredList || [] }} lang={lang} />
+        <StoriesSection data={pageData.components['stories_section']!} />
+        <ExperiencesSection
+          data={{
+            ...pageData.components['experiences_section'],
+            list: featuredList || [],
+          }}
+          lang={lang}
+        />
         <PlanYourVisitSection lang={lang} />
         <GallerySection lang={lang} />
         <PreFooterSection lang={lang} />

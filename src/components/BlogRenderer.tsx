@@ -24,17 +24,24 @@ import { kindFromSlug } from '#/lib/timeline'
  * @returns {JSX.Element} The rendered timeline page for the active section.
  */
 function BlogRenderer({
-  lang = 'en', 
+  lang = 'en',
   entries,
-  slug
-}: { 
-  entries: TimelineEntry[], 
-  lang?: 'en' | 'af',
-  slug: string 
+  slug,
+}: {
+  entries: TimelineEntry[]
+  lang?: 'en' | 'af'
+  slug: string
 }) {
   const kind = kindFromSlug(slug)
 
-  return <TimelineRenderer section={kind} entries={entries} isLoading={false} lang={lang} />
+  return (
+    <TimelineRenderer
+      section={kind}
+      entries={entries}
+      isLoading={false}
+      lang={lang}
+    />
+  )
 }
 
 export default BlogRenderer

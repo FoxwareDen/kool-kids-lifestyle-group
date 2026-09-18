@@ -25,9 +25,14 @@ const LANGUAGES: { code: Language; label: string; short: string }[] = [
 const NAV_ITEMS: Record<Language, any> = {
   en: [
     { label: 'HOME', href: '/', authed: false },
-    { label: "DashBoard", href: "/dashboard", authed: true },
+    { label: 'DashBoard', href: '/dashboard', authed: true },
     { label: 'ABOUT PRIESKA', href: '/about-prieska', authed: false },
-    { label: 'EXPERIENCES', href: '/experiences', hasDropdown: true, authed: false },
+    {
+      label: 'EXPERIENCES',
+      href: '/experiences',
+      hasDropdown: true,
+      authed: false,
+    },
     { label: 'HERITAGE', href: '/heritage', authed: false },
     { label: 'GALLERY', href: '/gallery', authed: false },
     { label: 'EVENTS', href: '/events', authed: false },
@@ -36,15 +41,20 @@ const NAV_ITEMS: Record<Language, any> = {
   ],
   af: [
     { label: 'TUIS', href: '/', authed: false },
-    { label: "Proneel", href: "/dashboard", authed: true },
+    { label: 'Proneel', href: '/dashboard', authed: true },
     { label: 'OOR PRIESKA', href: '/about-prieska', authed: false },
-    { label: 'ERVARINGS', href: '/experiences', hasDropdown: true, authed: false },
+    {
+      label: 'ERVARINGS',
+      href: '/experiences',
+      hasDropdown: true,
+      authed: false,
+    },
     { label: 'ERFENIS', href: '/heritage', authed: false },
     { label: 'GALERY', href: '/gallery', authed: false },
     { label: 'GEBEURE', href: '/events', authed: false },
     { label: 'BLOG', href: '/blogs', authed: false },
     { label: 'KONTAK', href: '/contact', authed: false },
-  ]
+  ],
 }
 
 export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
@@ -54,7 +64,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
   const { categories, isLoading: categoriesLoading } = useExperienceCategories()
   const langRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
-  
+
   // FIX: Read language from URL using useSearch
   const search = useSearch({ from: '__root__' }) as { lang?: Language }
   const lang = search.lang || 'en' // Default to English if not specified
@@ -79,10 +89,10 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
 
   function switchLang(code: Language) {
     // FIX: Use replace to avoid creating history entries
-    navigate({ 
+    navigate({
       to: window.location.pathname, // Stay on current page
       search: (prev) => ({ ...prev, lang: code }),
-      replace: true // Replace instead of push
+      replace: true, // Replace instead of push
     })
     setLangOpen(false)
     setMobileOpen(false)
@@ -91,8 +101,14 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
   return (
     <header className="fixed inset-x-0 top-0 z-30 bg-[var(--brand-navy)] overflow-visible">
       {/* Brand */}
-      <a href="/" className="absolute left-0 top-0 z-10 flex items-center no-underline" aria-label="360 Experiences home">
-        <img decoding='async' loading='lazy' 
+      <a
+        href="/"
+        className="absolute left-0 top-0 z-10 flex items-center no-underline"
+        aria-label="360 Experiences home"
+      >
+        <img
+          decoding="async"
+          loading="lazy"
           src="/logo-2.png"
           alt="360 Experiences logo"
           className={`
@@ -102,7 +118,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
           `}
         />
       </a>
-      
+
       <div className="mx-auto flex max-w-[1280px] py-2 items-center justify-end px-4 sm:px-6 lg:px-8">
         {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
@@ -129,7 +145,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
                 {item.label}
                 {item.hasDropdown && <ChevronDown className="h-3 w-3" />}
               </Link>
-            );
+            )
           })}
         </nav>
 
@@ -142,7 +158,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
             aria-label="Contact us on WhatsApp"
             className="hidden h-10 w-10 items-center justify-center rounded-full bg-[#25D366] !text-white no-underline shadow-lg shadow-black/20 transition-colors hover:bg-[#1ebe5b] sm:flex"
           > */}
-            {/* <WhatsAppIcon className="h-5 w-5" /> */}
+          {/* <WhatsAppIcon className="h-5 w-5" /> */}
           {/* </a> */}
 
           {/* Language switcher */}
@@ -157,7 +173,9 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
             >
               <Globe className="h-3.5 w-3.5" />
               {currentLang.short}
-              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                className={`h-3 w-3 transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`}
+              />
             </button>
 
             {langOpen && (
@@ -167,21 +185,32 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
                 className="absolute right-0 top-full mt-1 w-36 bg-[var(--brand-navy)] border border-white/15 shadow-xl z-50"
               >
                 {LANGUAGES.map((l) => (
-                  <li key={l.code} role="option" aria-selected={l.code === lang}>
+                  <li
+                    key={l.code}
+                    role="option"
+                    aria-selected={l.code === lang}
+                  >
                     <button
                       type="button"
                       onClick={() => switchLang(l.code)}
                       className={`
                         w-full flex items-center gap-2 px-4 py-2.5 text-xs font-semibold tracking-wide text-left transition-colors
-                        ${l.code === lang
-                          ? 'text-[var(--brand-orange)] bg-white/5'
-                          : 'text-white/75 hover:text-white hover:bg-white/10'
+                        ${
+                          l.code === lang
+                            ? 'text-[var(--brand-orange)] bg-white/5'
+                            : 'text-white/75 hover:text-white hover:bg-white/10'
                         }
                       `}
                     >
-                      <span className="w-5 text-center opacity-60">{l.short}</span>
+                      <span className="w-5 text-center opacity-60">
+                        {l.short}
+                      </span>
                       {l.label}
-                      {l.code === lang && <span className="ml-auto text-[var(--brand-orange)]">✓</span>}
+                      {l.code === lang && (
+                        <span className="ml-auto text-[var(--brand-orange)]">
+                          ✓
+                        </span>
+                      )}
                     </button>
                   </li>
                 ))}
@@ -197,7 +226,11 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
             aria-expanded={mobileOpen}
             className="flex h-9 w-9 items-center justify-center rounded-md text-white lg:hidden"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>
@@ -211,7 +244,7 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
           <ul className="flex flex-col gap-1">
             {NAV_ITEMS[lang].map((item, index) => {
               if (item.authed && !isAuthed) return null
-              
+
               return (
                 <li key={item.label + index}>
                   <a
@@ -224,9 +257,11 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
                 </li>
               )
             })}
-            
+
             <li className="mt-2 border-t border-white/10 pt-2">
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">Language</p>
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-white/40">
+                Language
+              </p>
               <div className="flex gap-1 px-3">
                 {LANGUAGES.map((l) => (
                   <button
@@ -235,9 +270,10 @@ export function SiteHeader({ isAuthed }: { isAuthed: boolean }) {
                     onClick={() => switchLang(l.code)}
                     className={`
                       flex-1 py-2 text-xs font-semibold tracking-wide border transition-colors
-                      ${l.code === lang
-                        ? 'border-[var(--brand-orange)] text-[var(--brand-orange)]'
-                        : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
+                      ${
+                        l.code === lang
+                          ? 'border-[var(--brand-orange)] text-[var(--brand-orange)]'
+                          : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'
                       }
                     `}
                   >

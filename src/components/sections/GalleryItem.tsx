@@ -25,7 +25,9 @@ export function GalleryItem({
       href={href}
       className="group relative block aspect-square overflow-hidden"
     >
-      <img decoding='async' loading='lazy' 
+      <img
+        decoding="async"
+        loading="lazy"
         src={href || '/placeholder.svg'}
         alt={imageAlt}
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"

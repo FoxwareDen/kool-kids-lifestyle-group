@@ -21,8 +21,20 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
 export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
   const [activeCategory, setActiveCategory] = useState<GalleryCategory>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const eyebrow = resolveTranslatable({ default: 'Explore the Collection', translations: { af: 'Verken die Versameling' } }, lang)
-  const title = resolveTranslatable({ default: 'A Town Captured in Light', translations: { af: 'n Dorpie Vasgevang in Lig' } }, lang)
+  const eyebrow = resolveTranslatable(
+    {
+      default: 'Explore the Collection',
+      translations: { af: 'Verken die Versameling' },
+    },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'A Town Captured in Light',
+      translations: { af: 'n Dorpie Vasgevang in Lig' },
+    },
+    lang,
+  )
 
   const visiblePhotos = useMemo(
     () =>
@@ -57,14 +69,13 @@ export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          eyebrow={eyebrow}
-          title={title}
-          theme="light"
-        />
+        <SectionHeading eyebrow={eyebrow} title={title} theme="light" />
 
         <div className="mt-10">
-          <GalleryFilter active={activeCategory} onChange={handleFilterChange} />
+          <GalleryFilter
+            active={activeCategory}
+            onChange={handleFilterChange}
+          />
         </div>
 
         <div className="mt-12 grid grid-cols-3 gap-1 sm:block sm:columns-2 sm:gap-4 lg:columns-3">

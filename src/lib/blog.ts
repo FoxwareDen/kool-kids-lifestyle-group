@@ -5,172 +5,196 @@ import type {
   VideoBlock,
   Translatable,
   PageBlock,
-} from "./experiences";
-import { createResult, getPBSession, Result, uploadAsset } from "./pocketbase";
+} from './experiences'
+import { createResult, getPBSession, Result, uploadAsset } from './pocketbase'
 
 // ============================================================
 // STATUS
 // ============================================================
 
-export type PostStatus = "Published" | "Draft";
+export type PostStatus = 'Published' | 'Draft'
 
 // ============================================================
 // BLOCK TYPES – reuse PageBlock, add index
 // ============================================================
 
 //export type BlogPageBlock = Omit<PageBlock, "id"> & { index: number };
-export type BlogPageBlock = PageBlock & { index: number };
-export type EventBlock = PageBlock & { index: number };
+export type BlogPageBlock = PageBlock & { index: number }
+export type EventBlock = PageBlock & { index: number }
 
 // ============================================================
 // BLOG PAGE
 // ============================================================
 
 export type BlogPage = {
-  id: string;
-  title: Translatable;
-  content: BlogPageBlock[];
-  status: PostStatus;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  id: string
+  title: Translatable
+  content: BlogPageBlock[]
+  status: PostStatus
+  createdAt: Date
+  updatedAt: Date
+}
 
 export type HydratedBlogPage = {
-  id: string;
-  title: Translatable;
-  content: BlogPageBlock[];
-  status: PostStatus;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  id: string
+  title: Translatable
+  content: BlogPageBlock[]
+  status: PostStatus
+  createdAt: Date
+  updatedAt: Date
+}
 
-export type CreateBlogPageInput = Omit<BlogPage, "id" | "createdAt" | "updatedAt">;
-export type UpdateBlogPageInput = Omit<BlogPage, "id" | "createdAt" | "updatedAt">;
+export type CreateBlogPageInput = Omit<
+  BlogPage,
+  'id' | 'createdAt' | 'updatedAt'
+>
+export type UpdateBlogPageInput = Omit<
+  BlogPage,
+  'id' | 'createdAt' | 'updatedAt'
+>
 
 // ============================================================
 // EVENT
 // ============================================================
 
 export type Event = {
-  id: string;
-  title: Translatable;
-  content: EventBlock[];
-  status: PostStatus;
-  startDate: Date;
-  endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  id: string
+  title: Translatable
+  content: EventBlock[]
+  status: PostStatus
+  startDate: Date
+  endDate: Date
+  createdAt: Date
+  updatedAt: Date
+}
 
 export type HydratedEvent = {
-  id: string;
-  title: Translatable;
-  content: EventBlock[];
-  status: PostStatus;
-  startDate: Date;
-  endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
+  id: string
+  title: Translatable
+  content: EventBlock[]
+  status: PostStatus
+  startDate: Date
+  endDate: Date
+  createdAt: Date
+  updatedAt: Date
+}
 
-export type CreateEventInput = Omit<Event, "id" | "createdAt" | "updatedAt">;
-export type UpdateEventInput = Omit<Event, "id" | "createdAt" | "updatedAt">;
+export type CreateEventInput = Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
+export type UpdateEventInput = Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
 
 // ============================================================
 // CRUD FUNCTIONS
 // ============================================================
 
 export async function createBlogPage(
-  input: CreateBlogPageInput
+  input: CreateBlogPageInput,
 ): Promise<Result<HydratedBlogPage, string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    const processedContent = await processBlocks(input.content);
+    const processedContent = await processBlocks(input.content)
 
-    const result = await client.collection("Posts").create({
+    const result = await client.collection('Posts').create({
       title: JSON.stringify(input.title),
       content: JSON.stringify(processedContent),
-      type: "blog",
+      type: 'blog',
       status: input.status,
-    });
+    })
 
-    return createResult<HydratedBlogPage, string>({
-      id: result.id,
-      title: input.title,
-      content: processedContent,
-      status: input.status,
-      createdAt: new Date(result.created),
-      updatedAt: new Date(result.updated),
-    }, null);
+    return createResult<HydratedBlogPage, string>(
+      {
+        id: result.id,
+        title: input.title,
+        content: processedContent,
+        status: input.status,
+        createdAt: new Date(result.created),
+        updatedAt: new Date(result.updated),
+      },
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedBlogPage, string>(null, `${error}`);
+    return createResult<HydratedBlogPage, string>(null, `${error}`)
   }
 }
 
 export async function updateBlogPage(
   id: string,
-  input: UpdateBlogPageInput
+  input: UpdateBlogPageInput,
 ): Promise<Result<HydratedBlogPage, string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    const processedContent = await processBlocks(input.content);
+    const processedContent = await processBlocks(input.content)
 
-    const result = await client.collection("Posts").update(id, {
+    const result = await client.collection('Posts').update(id, {
       title: JSON.stringify(input.title),
       content: JSON.stringify(processedContent),
-      type: "blog",
+      type: 'blog',
       status: input.status,
-    });
+    })
 
-    return createResult<HydratedBlogPage, string>({
-      id: result.id,
-      title: input.title,
-      content: processedContent,
-      status: input.status,
-      createdAt: new Date(result.created),
-      updatedAt: new Date(result.updated),
-    }, null);
+    return createResult<HydratedBlogPage, string>(
+      {
+        id: result.id,
+        title: input.title,
+        content: processedContent,
+        status: input.status,
+        createdAt: new Date(result.created),
+        updatedAt: new Date(result.updated),
+      },
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedBlogPage, string>(null, `${error}`);
+    return createResult<HydratedBlogPage, string>(null, `${error}`)
   }
 }
 
-export async function deleteBlogPage(id: string): Promise<Result<true, string>> {
-  const client = getPBSession();
+export async function deleteBlogPage(
+  id: string,
+): Promise<Result<true, string>> {
+  const client = getPBSession()
 
   try {
-    await client.collection("Posts").delete(id);
-    return createResult<true, string>(true, null);
+    await client.collection('Posts').delete(id)
+    return createResult<true, string>(true, null)
   } catch (error) {
-    return createResult<true, string>(null, `${error}`);
+    return createResult<true, string>(null, `${error}`)
   }
 }
 
-export async function getBlogPage(id: string): Promise<Result<HydratedBlogPage, string>> {
-  const client = getPBSession();
+export async function getBlogPage(
+  id: string,
+): Promise<Result<HydratedBlogPage, string>> {
+  const client = getPBSession()
 
   try {
-    const result = await client.collection("Posts").getOne(id, {
+    const result = await client.collection('Posts').getOne(id, {
       filter: 'type = "blog"',
-    });
-    return createResult<HydratedBlogPage, string>(hydrateBlogRecord(result), null);
+    })
+    return createResult<HydratedBlogPage, string>(
+      hydrateBlogRecord(result),
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedBlogPage, string>(null, `${error}`);
+    return createResult<HydratedBlogPage, string>(null, `${error}`)
   }
 }
 
-export async function listBlogPages(): Promise<Result<HydratedBlogPage[], string>> {
-  const client = getPBSession();
+export async function listBlogPages(): Promise<
+  Result<HydratedBlogPage[], string>
+> {
+  const client = getPBSession()
 
   try {
-    const results = await client.collection("Posts").getFullList({
+    const results = await client.collection('Posts').getFullList({
       filter: 'type = "blog"',
-    });
-    return createResult<HydratedBlogPage[], string>(results.map(hydrateBlogRecord), null);
+    })
+    return createResult<HydratedBlogPage[], string>(
+      results.map(hydrateBlogRecord),
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedBlogPage[], string>(null, `${error}`);
+    return createResult<HydratedBlogPage[], string>(null, `${error}`)
   }
 }
 
@@ -179,104 +203,115 @@ export async function listBlogPages(): Promise<Result<HydratedBlogPage[], string
 // ============================================================
 
 export async function createEvent(
-  input: CreateEventInput
+  input: CreateEventInput,
 ): Promise<Result<HydratedEvent, string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    const processedContent = await processBlocks(input.content);
+    const processedContent = await processBlocks(input.content)
 
-    const result = await client.collection("Posts").create({
+    const result = await client.collection('Posts').create({
       title: JSON.stringify(input.title),
       content: JSON.stringify(processedContent),
       start_date: input.startDate.toISOString(),
       end_date: input.endDate.toISOString(),
-      type: "event",
+      type: 'event',
       status: input.status,
-    });
+    })
 
-    return createResult<HydratedEvent, string>({
-      id: result.id,
-      title: input.title,
-      content: processedContent,
-      status: input.status,
-      startDate: new Date(result.start_date),
-      endDate: new Date(result.end_date),
-      createdAt: new Date(result.created),
-      updatedAt: new Date(result.updated),
-    }, null);
+    return createResult<HydratedEvent, string>(
+      {
+        id: result.id,
+        title: input.title,
+        content: processedContent,
+        status: input.status,
+        startDate: new Date(result.start_date),
+        endDate: new Date(result.end_date),
+        createdAt: new Date(result.created),
+        updatedAt: new Date(result.updated),
+      },
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedEvent, string>(null, `${error}`);
+    return createResult<HydratedEvent, string>(null, `${error}`)
   }
 }
 
 export async function updateEvent(
   id: string,
-  input: UpdateEventInput
+  input: UpdateEventInput,
 ): Promise<Result<HydratedEvent, string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    const processedContent = await processBlocks(input.content);
+    const processedContent = await processBlocks(input.content)
 
-    const result = await client.collection("Posts").update(id, {
+    const result = await client.collection('Posts').update(id, {
       title: JSON.stringify(input.title),
       content: JSON.stringify(processedContent),
       start_date: input.startDate.toISOString(),
       end_date: input.endDate.toISOString(),
-      type: "event",
+      type: 'event',
       status: input.status,
-    });
+    })
 
-    return createResult<HydratedEvent, string>({
-      id: result.id,
-      title: input.title,
-      content: processedContent,
-      status: input.status,
-      startDate: new Date(result.start_date),
-      endDate: new Date(result.end_date),
-      createdAt: new Date(result.created),
-      updatedAt: new Date(result.updated),
-    }, null);
+    return createResult<HydratedEvent, string>(
+      {
+        id: result.id,
+        title: input.title,
+        content: processedContent,
+        status: input.status,
+        startDate: new Date(result.start_date),
+        endDate: new Date(result.end_date),
+        createdAt: new Date(result.created),
+        updatedAt: new Date(result.updated),
+      },
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedEvent, string>(null, `${error}`);
+    return createResult<HydratedEvent, string>(null, `${error}`)
   }
 }
 
 export async function deleteEvent(id: string): Promise<Result<true, string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    await client.collection("Posts").delete(id);
-    return createResult<true, string>(true, null);
+    await client.collection('Posts').delete(id)
+    return createResult<true, string>(true, null)
   } catch (error) {
-    return createResult<true, string>(null, `${error}`);
+    return createResult<true, string>(null, `${error}`)
   }
 }
 
-export async function getEvent(id: string): Promise<Result<HydratedEvent, string>> {
-  const client = getPBSession();
+export async function getEvent(
+  id: string,
+): Promise<Result<HydratedEvent, string>> {
+  const client = getPBSession()
 
   try {
-    const result = await client.collection("Posts").getOne(id, {
+    const result = await client.collection('Posts').getOne(id, {
       filter: 'type = "event"',
-    });
-    return createResult<HydratedEvent, string>(hydrateEventRecord(result), null);
+    })
+    return createResult<HydratedEvent, string>(hydrateEventRecord(result), null)
   } catch (error) {
-    return createResult<HydratedEvent, string>(null, `${error}`);
+    return createResult<HydratedEvent, string>(null, `${error}`)
   }
 }
 
 export async function listEvents(): Promise<Result<HydratedEvent[], string>> {
-  const client = getPBSession();
+  const client = getPBSession()
 
   try {
-    const results = await client.collection("Posts").getFullList({
+    const results = await client.collection('Posts').getFullList({
       filter: 'type = "event"',
-    });
-    return createResult<HydratedEvent[], string>(results.map(hydrateEventRecord), null);
+    })
+    return createResult<HydratedEvent[], string>(
+      results.map(hydrateEventRecord),
+      null,
+    )
   } catch (error) {
-    return createResult<HydratedEvent[], string>(null, `${error}`);
+    return createResult<HydratedEvent[], string>(null, `${error}`)
   }
 }
 
@@ -285,53 +320,65 @@ export async function listEvents(): Promise<Result<HydratedEvent[], string>> {
 // ============================================================
 
 async function processBlocks<T extends (BlogPageBlock | EventBlock)[]>(
-  blocks: T
+  blocks: T,
 ): Promise<T> {
   const processed = await Promise.all(
     blocks.map(async (block) => {
       // Upload file if the block has a `file` property (image, video, media)
       if (block.file && typeof block.file !== 'string') {
-        const result = await uploadAsset(block.file);
+        const result = await uploadAsset(block.file)
         if (result.success) {
-          const asset = result.value;
+          const asset = result.value
           // Replace file with the asset URL, keep asset_id
           const updated = {
             ...block,
             file: asset.url,
             src: block.type === 'media' ? asset.url : block.src, // for media, also set src
             asset_id: asset.id,
-          };
-          return updated;
+          }
+          return updated
         } else {
-          throw new Error(`Failed to upload asset: ${result.error}`);
+          throw new Error(`Failed to upload asset: ${result.error}`)
         }
       }
-      return block;
-    })
-  );
-  return processed as T;
+      return block
+    }),
+  )
+  return processed as T
 }
 
 function hydrateBlogRecord(record: Record<string, any>): HydratedBlogPage {
   return {
     id: record.id,
-    title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
-    content: typeof record.content === "string" ? JSON.parse(record.content) : (record.content ?? []),
+    title:
+      typeof record.title === 'string'
+        ? JSON.parse(record.title)
+        : record.title,
+    content:
+      typeof record.content === 'string'
+        ? JSON.parse(record.content)
+        : (record.content ?? []),
     status: record.status as PostStatus,
     createdAt: new Date(record.created),
     updatedAt: new Date(record.updated),
-  };
+  }
 }
 
 function hydrateEventRecord(record: Record<string, any>): HydratedEvent {
   return {
     id: record.id,
-    title: typeof record.title === "string" ? JSON.parse(record.title) : record.title,
-    content: typeof record.content === "string" ? JSON.parse(record.content) : (record.content ?? []),
+    title:
+      typeof record.title === 'string'
+        ? JSON.parse(record.title)
+        : record.title,
+    content:
+      typeof record.content === 'string'
+        ? JSON.parse(record.content)
+        : (record.content ?? []),
     status: record.status as PostStatus,
     startDate: new Date(record.start_date),
     endDate: new Date(record.end_date),
     createdAt: new Date(record.created),
     updatedAt: new Date(record.updated),
-  };
+  }
 }

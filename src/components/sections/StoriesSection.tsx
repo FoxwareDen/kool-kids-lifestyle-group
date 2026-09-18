@@ -23,12 +23,12 @@ import { buildImageUrl, type Content } from '#/lib/pocketbase'
 const STORIES = []
 
 export interface StoriesSectionProps {
-  kicker: string,
+  kicker: string
   title: string
   stories: {
     imageName: string
-    imageAlt: string,
-    description: string,
+    imageAlt: string
+    description: string
     title: string
   }[]
 }
@@ -41,22 +41,32 @@ export interface StoriesSectionProps {
  *
  * @returns {JSX.Element} The rendered stories section.
  */
-export function StoriesSection({data}:{data: Content<StoriesSectionProps>}) {
-  const { content: {kicker, title, stories}, media } = data;
-  
+export function StoriesSection({
+  data,
+}: {
+  data: Content<StoriesSectionProps>
+}) {
+  const {
+    content: { kicker, title, stories },
+    media,
+  } = data
+
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          eyebrow={kicker}
-          title={title}
-          theme="light"
-        />
+        <SectionHeading eyebrow={kicker} title={title} theme="light" />
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {(stories).map((story) => {
-            const image = media[story.imageName];
-            return <StoryCard key={story.title} {...story} href='#' image={buildImageUrl(image.collectionId, image.id, image.file)} />
+          {stories.map((story) => {
+            const image = media[story.imageName]
+            return (
+              <StoryCard
+                key={story.title}
+                {...story}
+                href="#"
+                image={buildImageUrl(image.collectionId, image.id, image.file)}
+              />
+            )
           })}
         </div>
       </div>
