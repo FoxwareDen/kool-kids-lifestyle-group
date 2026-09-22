@@ -152,7 +152,7 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
             </div>
           </div>
 
-          {/* Newsletter */}
+          {/* Newsletter
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
               {lang=="af"? "Bly In Skakeling":"Stay Connected"}
@@ -182,7 +182,7 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-white/50">

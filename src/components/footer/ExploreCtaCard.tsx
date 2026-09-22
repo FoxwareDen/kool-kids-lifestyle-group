@@ -95,9 +95,8 @@ export function ExploreCtaCard({
   title,
   description,
   actions = [
-    { icon: Calendar, label: 'Book Now', variant: 'orange' as const, href: '#' },
-    { icon: Mail, label: 'Contact Us', variant: 'outline' as const, href: '#' },
-    { icon: WhatsAppIcon, label: 'WhatsApp Us', variant: 'green' as const, href: '#' },
+    { icon: Calendar, label: 'Book Now', variant: 'orange' as const, href: '/experiences' },
+    { icon: Mail, label: 'Contact Us', variant: 'outline' as const, href: '/contact' },
   ],
 }: {
   eyebrow: string
