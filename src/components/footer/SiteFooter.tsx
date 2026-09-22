@@ -48,7 +48,7 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       [
       { label: 'Home', href: '/' },
       { label: 'About Prieska', href: '/about-prieska' },
-      { label: 'Experiences', href: '#' },
+      { label: 'Experiences', href: '/experiences' },
       { label: 'Heritage', href: '/heritage' },
       { label: 'Gallery', href: '/gallery' },
     ],
@@ -56,7 +56,6 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       { label: 'Events', href: 'events' },
       { label: 'Blog', href: 'blogs' },
       { label: 'Contact', href: '/contact' },
-      { label: 'Book Now', href: '#' },
       { label: 'Admin Login', href: '/login' },
     ]
   ],
@@ -64,7 +63,7 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
     [
       { label: 'Tuis', href: '/' },
       { label: 'Oor Prieska', href: '/about-prieska' },
-      { label: 'Ervarings', href: '#' },
+      { label: 'Ervarings', href: '/experiences' },
       { label: 'Erfenis', href: '/heritage' },
       { label: 'Galery', href: '/gallery' },
     ],
@@ -72,7 +71,6 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       { label: 'Gebeure', href: 'events' },
       { label: 'Blog', href: 'blogs' },
       { label: 'Kontak', href: '/contact' },
-      { label: 'Bespreek Nou', href: '#' },
       { label: 'Admin-intekening', href: '/login' }, // "Admin-intekening" or just "Admin Login" (widely accepted in SA tech)
     ]
   ]
