@@ -101,7 +101,7 @@ export function PlanYourVisitSection({ lang = 'en' }: { lang?: Language }) {
   const t = TRANSLATIONS[lang === 'af' ? 'af' : 'en']
 
   return (
-    <section className="bg-[#f1ede6] py-20">
+    <section id="plan-your-visit" className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <div className="grid items-stretch gap-8 lg:grid-cols-2">
           {/* Left: story spotlight */}

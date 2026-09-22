@@ -26,8 +26,7 @@ export function PlanTile({
   href?: string
 }) {
   return (
-    <a
-      href={href}
+    <div
       className="group flex flex-col items-center justify-center gap-3 border border-[var(--brand-navy)]/15 bg-white px-3 py-7 text-center no-underline transition-colors hover:border-[var(--brand-orange)] hover:bg-[#faf7f2]"
     >
       <Icon
@@ -37,6 +36,6 @@ export function PlanTile({
       <span className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-navy)]/80">
         {label}
       </span>
-    </a>
+    </div>
   )
 }

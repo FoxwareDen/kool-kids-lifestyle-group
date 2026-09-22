@@ -140,12 +140,7 @@ export function Booker({
   }, [type, setSlot])
 
   return (
-    <div
-      className={cn(
-        'w-full max-w-md rounded-xl border bg-card p-3 text-card-foreground shadow-sm flex flex-col gap-4 sm:p-4',
-        className,
-      )}
-    >
+    <div className={cn("w-full min-w-0 rounded-xl border bg-card p-2.5 text-card-foreground shadow-sm flex flex-col gap-3 sm:p-3", className)}>
       {children}
     </div>
   )
@@ -223,16 +218,14 @@ export function BookingUnitSelect({
             type="button"
             onClick={() => filterUnits(unit)}
             className={cn(
-              'relative flex flex-col items-start justify-between rounded-lg border p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              isSelected
-                ? 'border-primary bg-primary/5 text-foreground shadow-xs'
-                : 'border-border bg-card text-card-foreground',
+              "relative flex flex-col items-start justify-between rounded-lg border-3 p-3.5 text-left transition-all hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              isSelected ? "border-[var(--brand-navy)] bg-[var(--brand-navy)]/5 text-foreground shadow-xs" : "border-border bg-card text-card-foreground"
             )}
           >
             <div className="flex w-full items-center justify-between gap-2">
               <span className="font-medium text-sm">{unit.label}</span>
               {isSelected && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--brand-navy)] text-primary-foreground">
                   <Check className="h-3 w-3" />
                 </span>
               )}
@@ -353,10 +346,7 @@ export function BookingCalendar({ className }: { className?: string }) {
         mode="single"
         selected={date}
         onSelect={handleChange}
-        className={cn(
-          'w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]',
-          className,
-        )}
+        className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(1.75rem,8vw,2.25rem)] sm:[--cell-size:2.25rem]", className)}
         required
         disabled={(date: Date) =>
           !availableDates.some((t) =>
@@ -370,10 +360,7 @@ export function BookingCalendar({ className }: { className?: string }) {
   return (
     <Calendar
       mode="range"
-      className={cn(
-        'w-full max-w-full rounded-md border [--cell-size:clamp(2rem,10vw,3rem)] sm:[--cell-size:2.5rem]',
-        className,
-      )}
+      className={cn("w-full max-w-full rounded-md border [--cell-size:clamp(1.75rem,8vw,2.25rem)] sm:[--cell-size:2.25rem]", className)}
       selected={currentRange}
       onSelect={handleRangeChange}
       disabled={(date: Date) =>
@@ -499,7 +486,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
 
   return (
     <div className="w-full space-y-3">
-      <Card className={cn('w-full max-w-sm mx-auto shadow-sm', className)}>
+      <Card className={cn("w-full min-w-0 shadow-sm", className)}>
         <CardHeader className="pb-3 border-b">
           <div className="flex items-center justify-between">
             <div>
@@ -525,7 +512,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
         </CardHeader>
 
         <CardContent className="p-0">
-          <ScrollArea className="h-[400px] w-full px-4 py-3">
+          <ScrollArea className="h-[320px] w-full px-3 py-2">
             {slots.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 No available time slots on this date.
@@ -562,7 +549,7 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                             ? 'w-3 h-3 -left-[7px] border-2'
                             : 'w-2 h-2 -left-[5px]',
                           isSelected
-                            ? 'bg-primary border-primary ring-4 ring-primary/20 scale-110'
+                            ? "bg-[var(--brand-navy)] border-[var(--brand-navy)] ring-4 ring-[var(--brand-navy)]/20 scale-110"
                             : slot.isDisabled
                               ? 'border-destructive/40 bg-destructive/10'
                               : 'border-muted-foreground/40 group-hover:border-primary',
@@ -575,10 +562,10 @@ export function BookingTimeSelect({ className }: { className?: string }) {
                         disabled={slot.isDisabled}
                         onClick={() => handleSelectSlot(slot)}
                         className={cn(
-                          'ml-3 sm:ml-4 w-full h-12 rounded-md px-2.5 sm:px-3 flex items-center justify-between text-sm transition-all outline-none border',
-                          'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                          "ml-3 sm:ml-4 w-full cursor-pointer h-12 rounded-md px-2.5 sm:px-3 flex items-center justify-between text-sm transition-all outline-none border",
+                          "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                           isSelected
-                            ? 'bg-primary text-primary-foreground font-medium shadow-sm border-primary'
+                            ? "bg-[var(--brand-navy)] text-primary-foreground font-medium shadow-sm border-[var(--brand-navy)]"
                             : slot.isDisabled
                               ? 'bg-destructive/10 text-destructive/80 border-destructive/20 cursor-not-allowed opacity-90'
                               : 'bg-card hover:bg-accent/70 active:bg-accent border-transparent hover:border-border',

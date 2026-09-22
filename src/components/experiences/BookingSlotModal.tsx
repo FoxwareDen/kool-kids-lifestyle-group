@@ -1,3 +1,13 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { X } from 'lucide-react'
+import {
+  generateSlots,
+  type Booking,
+  type BookingResponse,
+  type PaymentContinueFunc,
+  type TransformedCalendarSchedule,
+} from '#/lib/booking'
+import { type AvailableRange } from '#/lib/system'
 import {
   Booker,
   BookerStep,
@@ -6,6 +16,8 @@ import {
   BookingTimeSelect,
   BookingView,
   BookingPagingButtonGroup,
+  steps,
+  useBookerStore,
 } from '@/components/booking/calendar'
 import { generateSlots } from '#/lib/booking'
 import { useMemo, useRef, useState } from 'react'
@@ -43,6 +55,14 @@ export function BookingSlotModal({
   }, [calendarSchedule, existingBookings])
 
   const [isBookingComplete, setIsBookingComplete] = useState(false)
+  const bookingStep = useBookerStore((state) => state.sepCounter)
+  const bookingType = useBookerStore((state) => state.type)
+
+  useEffect(() => {
+    if (isBookingComplete && bookingStep < steps[bookingType].setCount - 1) {
+      setIsBookingComplete(false)
+    }
+  }, [bookingStep, bookingType, isBookingComplete])
 
   const [booking, setBooking] = useState<Booking | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -65,7 +85,7 @@ export function BookingSlotModal({
       onClick={onClose}
     >
       <div
-        className="flex max-h-[calc(100svh-0.75rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:max-h-[min(92svh,900px)] sm:max-w-3xl sm:rounded-2xl lg:max-w-6xl"
+        className="flex max-h-[calc(100svh-0.75rem)] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-[var(--foam)] shadow-2xl sm:max-h-[min(92svh,900px)] sm:max-w-3xl sm:rounded-2xl lg:max-w-5xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0 bg-[var(--brand-navy)] px-5 pb-5 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6 sm:pt-5">
@@ -102,7 +122,7 @@ export function BookingSlotModal({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:flex lg:overflow-hidden">
           <section
             aria-label="Choose a booking time"
-            className="min-w-0 flex-1 border-b border-[var(--line)] px-5 pb-8 pt-6 sm:px-6 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:py-7"
+            className="min-w-0 flex-1 overflow-x-hidden border-b border-[var(--line)] px-5 pb-8 pt-6 sm:px-6 lg:overflow-y-auto lg:border-b-0 lg:border-r lg:py-7"
           >
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange)] text-sm font-bold text-white">
@@ -127,7 +147,7 @@ export function BookingSlotModal({
                   <BookingUnitSelect />
                 </BookerStep>
                 <BookerStep name="calendar">
-                  <BookingCalendar />
+                  <BookingCalendar className="max-w-[min(100%,26rem)]" />
                 </BookerStep>
                 <BookerStep name="time_picker">
                   <BookingTimeSelect />
@@ -140,29 +160,30 @@ export function BookingSlotModal({
             )}
           </section>
 
-          <section
-            aria-label="Payment details"
-            className="min-w-0 flex-1 bg-white/55 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:overflow-y-auto lg:py-7"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--brand-orange)]/40 text-sm font-bold text-[var(--brand-orange)]">
-                2
-              </span>
-              <div>
-                <h3 className="font-semibold text-[var(--sea-ink)]">
-                  Payment details
-                </h3>
-                <p className="text-xs text-[var(--sea-ink-soft)]">
-                  Complete your booking securely.
-                </p>
+          {isBookingComplete && (
+            <section
+              aria-label="Payment details"
+              className="min-w-0 flex-1 bg-white/55 px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6 sm:px-6 lg:overflow-y-auto lg:py-7"
+            >
+              <div className="mb-5 flex items-center gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--brand-orange)]/40 text-sm font-bold text-[var(--brand-orange)]">
+                  2
+                </span>
+                <div>
+                  <h3 className="font-semibold text-[var(--sea-ink)]">
+                    Payment details
+                  </h3>
+                  <p className="text-xs text-[var(--sea-ink-soft)]">
+                    Complete your booking securely.
+                  </p>
+                </div>
               </div>
-            </div>
-            <PaymentForm
-              toggleModel={onClose}
-              disabled={!isBookingComplete}
-              booking={booking}
-            />
-          </section>
+              <PaymentForm
+                toggleModel={onClose}
+                booking={booking}
+              />
+            </section>
+          )}
         </div>
       </div>
     </div>

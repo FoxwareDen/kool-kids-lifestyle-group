@@ -120,15 +120,22 @@ export function HeroSection({ data }: { data: any | null }) {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              {content.buttons.map((button, index) => (
-                <HeroButton
-                  key={`${content.collectionId}${index}`}
-                  href={button.src}
-                  variant={index % 2 == 0 ? 'primary' : 'outline'}
-                >
-                  {button.label}
-                </HeroButton>
-              ))}
+              {
+                content.buttons.map((button, index)=> {
+                  const label = button.label.toLowerCase()
+                  const href = label.includes('explore experiences')
+                    ? '/experiences'
+                    : label.includes('plan your visit')
+                      ? '#plan-your-visit'
+                      : button.src
+
+                  return (
+                    <HeroButton key={`${content.collectionId}${index}`} href={href} variant={index % 2 === 0 ? 'primary' : 'outline'}>
+                      {button.label}
+                    </HeroButton>
+                  )
+                })
+              }
             </div>
           </div>
         </div>
