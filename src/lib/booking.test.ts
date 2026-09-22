@@ -9,7 +9,7 @@
 //   return {
 //     ...actual,
 //     // Provide a predictable string implementation for testing
-//     buildImageUrl: (collId: string, id: string, file: string) => 
+//     buildImageUrl: (collId: string, id: string, file: string) =>
 //       `http://mock-cms.local/files/${collId}/${id}/${file}`,
 //     createPB_SSR: vi.fn(),
 //     // Mock the standard client instance
@@ -43,7 +43,7 @@
 //     // Verify properties we stripped out are missing
 //     expect(result[0]).not.toHaveProperty("asset_id");
 //     expect(result[0]).not.toHaveProperty("asset_collectionId");
-    
+
 //     // Verify the URL was successfully generated
 //     expect(result[0]).toHaveProperty("url", "http://mock-cms.local/files/coll456/asset123/adventure.jpg");
 //   });
@@ -64,7 +64,7 @@
 //         }
 //       ])
 //     };
-    
+
 //     vi.mocked(pbModule.createPB_SSR).mockReturnValue(mockSSRInstance as any);
 
 //     const res = await fetchExperiences("mock-auth-cookie");

@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HeritageRouteImport } from './routes/heritage'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -31,6 +33,16 @@ import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_aut
 import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 import { Route as AuthedDashboardBookingsRouteImport } from './routes/_authed/dashboard/bookings'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -148,6 +160,8 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -170,6 +184,8 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/experiences/$id': typeof ExperiencesIdRoute
@@ -193,6 +209,8 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -217,6 +235,8 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/dashboard'
     | '/blogs/$blogId'
     | '/events/$eventId'
@@ -239,6 +259,8 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/blogs/$blogId'
     | '/events/$eventId'
     | '/experiences/$id'
@@ -261,6 +283,8 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/_authed/dashboard'
     | '/blogs/$blogId'
     | '/events/$eventId'
@@ -285,6 +309,8 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogsBlogIdRoute: typeof BlogsBlogIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   ExperiencesIdRoute: typeof ExperiencesIdRoute
@@ -295,6 +321,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -488,6 +528,8 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogsBlogIdRoute: BlogsBlogIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   ExperiencesIdRoute: ExperiencesIdRoute,

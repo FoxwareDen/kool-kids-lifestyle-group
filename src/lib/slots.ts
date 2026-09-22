@@ -32,7 +32,11 @@ export type SlotDay = {
   slots: Slot[]
 }
 
-const UNIT_TYPES: { unit_type_id: string; unit_label: string; capacity: number }[] = [
+const UNIT_TYPES: {
+  unit_type_id: string
+  unit_label: string
+  capacity: number
+}[] = [
   { unit_type_id: '4-bed', unit_label: '4-bedroom villa', capacity: 4 },
   { unit_type_id: '2-bed', unit_label: '2-bedroom apartment', capacity: 2 },
   { unit_type_id: 'standard', unit_label: 'Standard unit', capacity: 6 },
@@ -98,7 +102,9 @@ export function generateSlots(experienceId: string, days = 14): SlotDay[] {
 
     const slots: Slot[] = START_TIMES.map((start) => {
       const unit_availability: UnitAvailability[] = UNIT_TYPES.map((unit) => {
-        const seed = hash(`${experienceId}-${dateKey}-${start}-${unit.unit_type_id}`)
+        const seed = hash(
+          `${experienceId}-${dateKey}-${start}-${unit.unit_type_id}`,
+        )
         const booked = seed % (unit.capacity + 1)
         const remaining = Math.max(0, unit.capacity - booked)
         return {
@@ -132,7 +138,11 @@ export function slotRemaining(slot: Slot): number {
 }
 
 /** Human-friendly day label, e.g. "Mon 5 Mar". */
-export function formatDayLabel(dateKey: string): { weekday: string; day: string; month: string } {
+export function formatDayLabel(dateKey: string): {
+  weekday: string
+  day: string
+  month: string
+} {
   const date = new Date(`${dateKey}T00:00:00`)
   return {
     weekday: date.toLocaleDateString('en-ZA', { weekday: 'short' }),

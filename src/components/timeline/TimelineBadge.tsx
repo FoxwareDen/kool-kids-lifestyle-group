@@ -16,12 +16,24 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @param {TimelineBadgeProps} props - Component props.
  * @returns {JSX.Element} The rendered badge.
  */
-export function TimelineBadge({ kind, lang = 'en' }: { kind: TimelineEntryKind; lang?: Language }) {
+export function TimelineBadge({
+  kind,
+  lang = 'en',
+}: {
+  kind: TimelineEntryKind
+  lang?: Language
+}) {
   const isEvent = kind === 'event'
   const Icon = isEvent ? CalendarDays : BookOpen
   const label = isEvent
-    ? resolveTranslatable({ default: 'Event', translations: { af: 'Gebeurtenis' } }, lang)
-    : resolveTranslatable({ default: 'Blog', translations: { af: 'Blog' } }, lang)
+    ? resolveTranslatable(
+        { default: 'Event', translations: { af: 'Gebeurtenis' } },
+        lang,
+      )
+    : resolveTranslatable(
+        { default: 'Blog', translations: { af: 'Blog' } },
+        lang,
+      )
 
   return (
     <span

@@ -19,7 +19,17 @@ import {
   steps,
   useBookerStore,
 } from '@/components/booking/calendar'
+import { generateSlots } from '#/lib/booking'
+import { useMemo, useRef, useState } from 'react'
+import type {
+  Booking,
+  BookingResponse,
+  PaymentContinueFunc,
+  TransformedCalendarSchedule,
+} from '#/lib/booking'
+import type { AvailableRange } from '#/lib/system'
 import { PaymentForm } from '../payment'
+import { X } from 'lucide-react'
 
 interface BookingSlotModalProps {
   open: boolean

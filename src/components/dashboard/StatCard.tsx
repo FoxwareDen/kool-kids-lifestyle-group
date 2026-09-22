@@ -25,10 +25,17 @@ export function StatCard({
   return (
     <div className="flex flex-col rounded-sm border border-[var(--line)] bg-[var(--surface-strong)] p-5">
       <div className="flex items-start justify-between">
-        <p className="text-sm font-semibold text-[var(--sea-ink-soft)]">{label}</p>
-        <Icon className="size-5 text-[var(--brand-orange)]" aria-hidden="true" />
+        <p className="text-sm font-semibold text-[var(--sea-ink-soft)]">
+          {label}
+        </p>
+        <Icon
+          className="size-5 text-[var(--brand-orange)]"
+          aria-hidden="true"
+        />
       </div>
-      <p className="mt-3 text-4xl font-bold tabular-nums text-[var(--sea-ink)]">{value}</p>
+      <p className="mt-3 text-4xl font-bold tabular-nums text-[var(--sea-ink)]">
+        {value}
+      </p>
       <p className="mt-2 text-xs text-[var(--sea-ink-soft)]">{caption}</p>
     </div>
   )

@@ -1,8 +1,13 @@
 import { cn } from '#/lib/utils'
 import { CheckCircle2, CircleDollarSign } from 'lucide-react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import type { PaymentStatus } from '#/lib/payment';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
+import type { PaymentStatus } from '#/lib/payment'
 
 const statusConfig = {
   verified: {
@@ -17,7 +22,10 @@ const statusConfig = {
     className:
       'border border-[var(--line)] bg-[var(--dash-panel-muted)] text-[var(--sea-ink-soft)]',
   },
-} satisfies Record<PaymentStatus, { Icon: React.ElementType; label: string; className: string }>
+} satisfies Record<
+  PaymentStatus,
+  { Icon: React.ElementType; label: string; className: string }
+>
 
 /**
  * Theme-aware select communicating whether a booking's payment has settled.
@@ -47,14 +55,17 @@ export function PaymentStatusBadge({
         <SelectValue>{label}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {(Object.entries(statusConfig) as [PaymentStatus, typeof statusConfig[PaymentStatus]][]).map(
-          ([value, { Icon: OptionIcon, label: optionLabel }]) => (
-            <SelectItem key={value} value={value}>
-              <OptionIcon className="size-3.5" aria-hidden="true" />
-              {optionLabel}
-            </SelectItem>
-          ),
-        )}
+        {(
+          Object.entries(statusConfig) as [
+            PaymentStatus,
+            (typeof statusConfig)[PaymentStatus],
+          ][]
+        ).map(([value, { Icon: OptionIcon, label: optionLabel }]) => (
+          <SelectItem key={value} value={value}>
+            <OptionIcon className="size-3.5" aria-hidden="true" />
+            {optionLabel}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   )

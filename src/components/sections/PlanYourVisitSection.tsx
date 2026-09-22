@@ -26,7 +26,11 @@ import type { Language } from '#/lib/experiences'
 /**
  * Static placeholder planning resources shown in the grid.
  */
-const PLAN_RESOURCES: { icon: LucideIcon; labelKey: keyof typeof TRANSLATIONS['en']['resources']; href: string }[] = [
+const PLAN_RESOURCES: {
+  icon: LucideIcon
+  labelKey: keyof (typeof TRANSLATIONS)['en']['resources']
+  href: string
+}[] = [
   { icon: BedDouble, labelKey: 'accommodation', href: '#' },
   { icon: UtensilsCrossed, labelKey: 'dining', href: '#' },
   { icon: Camera, labelKey: 'attractions', href: '#' },
@@ -38,16 +42,17 @@ const PLAN_RESOURCES: { icon: LucideIcon; labelKey: keyof typeof TRANSLATIONS['e
 const TRANSLATIONS = {
   en: {
     story: {
-      imageAlt: "Historic church steeple in the Karoo landscape",
-      eyebrow: "Our Story",
-      title: "A Town Built on Stories",
-      description: "Prieska is a place where history, heritage and nature come together. From the Orange River that sustains life to the historic landmarks that define our identity, every corner of Prieska has a story waiting to be discovered.",
-      ctaLabel: "Learn more"
+      imageAlt: 'Historic church steeple in the Karoo landscape',
+      eyebrow: 'Our Story',
+      title: 'A Town Built on Stories',
+      description:
+        'Prieska is a place where history, heritage and nature come together. From the Orange River that sustains life to the historic landmarks that define our identity, every corner of Prieska has a story waiting to be discovered.',
+      ctaLabel: 'LEARN MORE ABOUT OUR HERITAGE',
     },
     visit: {
-      eyebrow: "Plan Your Visit",
-      title: "Everything You Need for Your Journey",
-      bookCta: "Book Your Experience"
+      eyebrow: 'Plan Your Visit',
+      title: 'Everything You Need for Your Journey',
+      bookCta: 'Book Your Experience',
     },
     resources: {
       accommodation: 'Accommodation',
@@ -55,21 +60,22 @@ const TRANSLATIONS = {
       attractions: 'Attractions',
       maps: 'Maps & Routes',
       calendar: 'Events Calendar',
-      guided: 'Guided Experiences'
-    }
+      guided: 'Guided Experiences',
+    },
   },
   af: {
     story: {
-      imageAlt: "Historiese kerktoring in die Karoolandskap",
-      eyebrow: "Ons Storie",
+      imageAlt: 'Historiese kerktoring in die Karoolandskap',
+      eyebrow: 'Ons Storie',
       title: "'n Dorp Gebou op Verhale",
-      description: "Prieska is 'n plek waar geskiedenis, erfenis en die natuur saamkom. Van die Oranjerivier wat lewe gee tot die historiese landmerke wat ons identiteit bepaal, het elke hoek van Prieska 'n storie wat wag om ontdek te word.",
-      ctaLabel: "Verken meer"
+      description:
+        "Prieska is 'n plek waar geskiedenis, erfenis en die natuur saamkom. Van die Oranjerivier wat lewe gee tot die historiese landmerke wat ons identiteit bepaal, het elke hoek van Prieska 'n storie wat wag om ontdek te word.",
+      ctaLabel: 'Verken meer',
     },
     visit: {
-      eyebrow: "Beplan Jou Besoek",
-      title: "Alles Wat Jy Nodig Het vir Jou Reis",
-      bookCta: "Bespreek Jou Ervaring"
+      eyebrow: 'Beplan Jou Besoek',
+      title: 'Alles Wat Jy Nodig Het vir Jou Reis',
+      bookCta: 'Bespreek Jou Ervaring',
     },
     resources: {
       accommodation: 'Akkommodasie',
@@ -77,9 +83,9 @@ const TRANSLATIONS = {
       attractions: 'Besienswaardighede',
       maps: 'Kaarte & Roetes',
       calendar: 'Gebeurekalender',
-      guided: 'Begeleide Ervarings'
-    }
-  }
+      guided: 'Begeleide Ervarings',
+    },
+  },
 }
 
 /**
@@ -90,9 +96,9 @@ const TRANSLATIONS = {
  *
  * @returns {JSX.Element} The rendered plan-your-visit section.
  */
-export function PlanYourVisitSection({ lang = "en" }: { lang?: Language }) {
+export function PlanYourVisitSection({ lang = 'en' }: { lang?: Language }) {
   // Fallback to 'en' if the passed lang is missing from the dictionary
-  const t = TRANSLATIONS[lang === 'af' ? 'af' : 'en'];
+  const t = TRANSLATIONS[lang === 'af' ? 'af' : 'en']
 
   return (
     <section id="plan-your-visit" className="bg-[#f1ede6] py-20">
@@ -119,11 +125,11 @@ export function PlanYourVisitSection({ lang = "en" }: { lang?: Language }) {
 
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
               {PLAN_RESOURCES.map((resource) => (
-                <PlanTile 
-                  key={resource.labelKey} 
+                <PlanTile
+                  key={resource.labelKey}
                   icon={resource.icon}
                   href={resource.href}
-                  label={t.resources[resource.labelKey]} 
+                  label={t.resources[resource.labelKey]}
                 />
               ))}
             </div>

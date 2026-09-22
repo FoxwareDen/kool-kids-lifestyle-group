@@ -1,5 +1,5 @@
-import { Facebook, Instagram, MessageCircle, ArrowRight} from 'lucide-react'
-import logo from "../../images/logo-2.png"
+import { Facebook, Instagram, MessageCircle, ArrowRight } from 'lucide-react'
+import logo from '../../images/logo-2.png'
 import type { Language } from '#/lib/experiences'
 
 /**
@@ -42,10 +42,9 @@ function TikTokIcon({ className }: { className?: string }) {
   )
 }
 
-
 const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
   en: [
-      [
+    [
       { label: 'Home', href: '/' },
       { label: 'About Prieska', href: '/about-prieska' },
       { label: 'Experiences', href: '/experiences' },
@@ -57,7 +56,7 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       { label: 'Blog', href: 'blogs' },
       { label: 'Contact', href: '/contact' },
       { label: 'Admin Login', href: '/login' },
-    ]
+    ],
   ],
   af: [
     [
@@ -72,14 +71,26 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       { label: 'Blog', href: 'blogs' },
       { label: 'Kontak', href: '/contact' },
       { label: 'Admin-intekening', href: '/login' }, // "Admin-intekening" or just "Admin Login" (widely accepted in SA tech)
-    ]
-  ]
+    ],
+  ],
 }
 
 const SOCIAL_LINKS = [
-  { label: 'Facebook', href: 'https://www.facebook.com/share/1BfUUKJvqY/?mibextid=wwXIfr', icon: Facebook },
-  { label: 'Instagram', href: 'https://www.instagram.com/360experiences_sa?stkn=MTlwMWhrYTRmeXVkZQ%3D%3D&utm_source=qr', icon: Instagram },
-  { label: 'TikTok', href: 'https://www.tiktok.com/@360experiences86?_r=1&_t=ZS-99kNxhS7uS2', icon: TikTokIcon },
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/share/1BfUUKJvqY/?mibextid=wwXIfr',
+    icon: Facebook,
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/360experiences_sa?stkn=MTlwMWhrYTRmeXVkZQ%3D%3D&utm_source=qr',
+    icon: Instagram,
+  },
+  {
+    label: 'TikTok',
+    href: 'https://www.tiktok.com/@360experiences86?_r=1&_t=ZS-99kNxhS7uS2',
+    icon: TikTokIcon,
+  },
   // { label: 'WhatsApp', href: '#', icon: WhatsAppIcon },
 ]
 
@@ -90,9 +101,8 @@ const SOCIAL_LINKS = [
  *
  * @returns {JSX.Element} The rendered site footer.
  */
-export function SiteFooter({lang="en"}:{lang?:Language}) {
+export function SiteFooter({ lang = 'en' }: { lang?: Language }) {
   const year = new Date().getFullYear()
-
 
   return (
     <footer className="bg-[#081225] text-white">
@@ -102,6 +112,8 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
           <div>
             <div className="flex items-center gap-3">
               <img
+                decoding="async"
+                loading="lazy"
                 src={logo}
                 alt="360 Experiences logo"
                 className="h-12 w-12 object-contain"
@@ -109,15 +121,17 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
               <div className="leading-tight">
                 <p className="display-title text-xl font-semibold">360</p>
                 <p className="text-[0.6rem] font-bold uppercase tracking-[0.3em] text-white/70">
-                  {lang=="af" ? "Ervarings": "Experiences"}
+                  {lang == 'af' ? 'Ervarings' : 'Experiences'}
                 </p>
               </div>
             </div>
             <p className="mt-4 text-sm text-white/70">
-              {lang =="af"? "Verken meer.": "Explore more."}
+              {lang == 'af' ? 'Verken meer.' : 'Explore more.'}
             </p>
             <p className="mt-1 text-xs text-white/55">
-              {lang=="af"? "Prieska • Noord-Kaap • Suid-Afrika":"Prieska • Northern Cape • South Africa"}
+              {lang == 'af'
+                ? 'Prieska • Noord-Kaap • Suid-Afrika'
+                : 'Prieska • Northern Cape • South Africa'}
             </p>
 
             <div className="mt-5 flex items-center gap-3">
@@ -137,7 +151,7 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
           {/* Quick links */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
-              {lang=="af"? "Vinnige Skakels" :"Quick Links"}
+              {lang == 'af' ? 'Vinnige Skakels' : 'Quick Links'}
             </h2>
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3">
               {QUICK_LINKS[lang].flat().map((link) => (
@@ -155,17 +169,16 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
           {/* Newsletter */}
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-white/80">
-              {lang=="af"? "Bly In Skakeling":"Stay Connected"}
+              {lang == 'af' ? 'Bly In Skakeling' : 'Stay Connected'}
             </h2>
             <p className="mt-5 text-sm text-white/70">
-              {lang=="af"? "Teken in op ons nuusbrief vir opdaterings oor gebeure, ervarings en spesiale aanbiedinge.":"Subscribe to our newsletter for updates on events, experiences and special offers."}
+              {lang == 'af'
+                ? 'Teken in op ons nuusbrief vir opdaterings oor gebeure, ervarings en spesiale aanbiedinge.'
+                : 'Subscribe to our newsletter for updates on events, experiences and special offers.'}
             </p>
-            <form
-              className="mt-5 flex"
-              onSubmit={(e) => e.preventDefault()}
-            >
+            <form className="mt-5 flex" onSubmit={(e) => e.preventDefault()}>
               <label htmlFor="footer-email" className="sr-only">
-                {lang=="af"? "E-posadres":"Email address"}
+                {lang == 'af' ? 'E-posadres' : 'Email address'}
               </label>
               <input
                 id="footer-email"
@@ -178,7 +191,7 @@ export function SiteFooter({lang="en"}:{lang?:Language}) {
                 type="submit"
                 className="group inline-flex shrink-0 items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-[var(--brand-orange-deep)]"
               >
-                {lang=="af"? "Teken in":"Subscribe"}
+                {lang == 'af' ? 'Teken in' : 'Subscribe'}
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </button>
             </form>

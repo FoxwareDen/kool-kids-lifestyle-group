@@ -1,4 +1,8 @@
-import { resolveTranslatable, type Language, type Translatable } from '#/lib/experiences';
+import {
+  resolveTranslatable,
+  type Language,
+  type Translatable,
+} from '#/lib/experiences'
 import { Quote } from 'lucide-react'
 
 /**
@@ -29,7 +33,7 @@ export function TestimonialsCard({
   eyebrow,
   title,
   testimonials,
-  lang
+  lang,
 }: {
   lang: Language
   title: string
@@ -57,7 +61,11 @@ export function TestimonialsCard({
       </blockquote>
       <p className="mt-5 text-sm font-semibold text-white">{`– ${active.author}`}</p>
 
-      <div className="mt-6 flex items-center gap-2" role="tablist" aria-label="Testimonials">
+      <div
+        className="mt-6 flex items-center gap-2"
+        role="tablist"
+        aria-label="Testimonials"
+      >
         {testimonials.map((t, i) => (
           <span
             key={t.author}

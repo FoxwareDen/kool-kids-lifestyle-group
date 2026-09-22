@@ -10,16 +10,42 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered heritage hero section.
  */
 export function HeritageHero({ lang = 'en' }: { lang?: Language }) {
-  const home = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
-  const current = resolveTranslatable({ default: 'Heritage', translations: { af: 'Erfenis' } }, lang)
-  const kickerText = resolveTranslatable({ default: 'Our Roots & Legacy', translations: { af: 'Ons Wortels & Nalatenskap' } }, lang)
-  const titleText = resolveTranslatable({ default: 'The Living Heritage of Prieska', translations: { af: 'Die Lewende Erfenis van Prieska' } }, lang)
-  const subText = resolveTranslatable({ default: 'Stories carried by the river and the stone.', translations: { af: 'Verhale gedra deur die rivier en die klip.' } }, lang)
+  const home = resolveTranslatable(
+    { default: 'Home', translations: { af: 'Tuis' } },
+    lang,
+  )
+  const current = resolveTranslatable(
+    { default: 'Heritage', translations: { af: 'Erfenis' } },
+    lang,
+  )
+  const kickerText = resolveTranslatable(
+    {
+      default: 'Our Roots & Legacy',
+      translations: { af: 'Ons Wortels & Nalatenskap' },
+    },
+    lang,
+  )
+  const titleText = resolveTranslatable(
+    {
+      default: 'The Living Heritage of Prieska',
+      translations: { af: 'Die Lewende Erfenis van Prieska' },
+    },
+    lang,
+  )
+  const subText = resolveTranslatable(
+    {
+      default: 'Stories carried by the river and the stone.',
+      translations: { af: 'Verhale gedra deur die rivier en die klip.' },
+    },
+    lang,
+  )
 
   return (
     <section className="relative flex min-h-[60svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
       <img
+        decoding="async"
+        loading="lazy"
         src="/hero-karoo-heritage.png"
         alt="Historic landmarks and heritage architecture of Prieska in the Northern Cape"
         className="absolute inset-0 h-full w-full object-cover"
@@ -31,18 +57,23 @@ export function HeritageHero({ lang = 'en' }: { lang?: Language }) {
       {/* Top fade so the solid navy navbar blends into the image */}
       <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[var(--brand-navy)] to-transparent" />
 
-
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-5">
           <ol className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
             <li>
-              <a href="/" className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]">
+              <a
+                href="/"
+                className="no-underline !text-white/70 transition-colors hover:!text-[var(--brand-orange)]"
+              >
                 {home}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li className="text-[var(--brand-orange)]" aria-current="page">
               {current}
             </li>

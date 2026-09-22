@@ -3,15 +3,14 @@ import type { Content } from '#/lib/pocketbase'
 import { ArrowRight, Phone } from 'lucide-react'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 
-
 interface AboutCta {
-  kicker: string,
-  title: string,
-  description: string,
+  kicker: string
+  title: string
+  description: string
   buttons: {
-    label: string,
-    style: string,
-    icon: string,
+    label: string
+    style: string
+    icon: string
     href: string
   }[]
 }
@@ -24,17 +23,57 @@ interface AboutCta {
  *
  * @returns {JSX.Element} The rendered call-to-action section.
  */
-export function AboutCta({data, lang = 'en'}: {data: Content<Partial<AboutCta>>; lang?: Language}) {
-  const { content: { kicker, title, description } } = data;
-  const defaultKicker = resolveTranslatable({ default: 'Ready to Explore?', translations: { af: 'Klaar om te Verken?' } }, lang)
-  const defaultTitle = resolveTranslatable({ default: 'Come Experience Prieska for Yourself', translations: { af: 'Kom Beleef Prieska Self' } }, lang)
-  const defaultDescription = resolveTranslatable({ default: 'Let our team help you plan a journey filled with heritage, adventure and the unmistakable warmth of the Northern Cape.', translations: { af: 'Laat ons span jou help om ’n reis te beplan vol erfenis, avontuur en die onmiskenbare warmte van die Noord-Kaap.' } }, lang)
-  const primaryLabel = resolveTranslatable({ default: 'Book an experience', translations: { af: 'Bespreek ’n ervaring' } }, lang)
-  const secondaryLabel = resolveTranslatable({ default: 'Contact Us', translations: { af: 'Kontak Ons' } }, lang)
+export function AboutCta({
+  data,
+  lang = 'en',
+}: {
+  data: Content<Partial<AboutCta>>
+  lang?: Language
+}) {
+  const {
+    content: { kicker, title, description },
+  } = data
+  const defaultKicker = resolveTranslatable(
+    {
+      default: 'Ready to Explore?',
+      translations: { af: 'Klaar om te Verken?' },
+    },
+    lang,
+  )
+  const defaultTitle = resolveTranslatable(
+    {
+      default: 'Come Experience Prieska for Yourself',
+      translations: { af: 'Kom Beleef Prieska Self' },
+    },
+    lang,
+  )
+  const defaultDescription = resolveTranslatable(
+    {
+      default:
+        'Let our team help you plan a journey filled with heritage, adventure and the unmistakable warmth of the Northern Cape.',
+      translations: {
+        af: 'Laat ons span jou help om ’n reis te beplan vol erfenis, avontuur en die onmiskenbare warmte van die Noord-Kaap.',
+      },
+    },
+    lang,
+  )
+  const primaryLabel = resolveTranslatable(
+    {
+      default: 'Book an experience',
+      translations: { af: 'Bespreek ’n ervaring' },
+    },
+    lang,
+  )
+  const secondaryLabel = resolveTranslatable(
+    { default: 'Contact Us', translations: { af: 'Kontak Ons' } },
+    lang,
+  )
 
   return (
     <section className="relative overflow-hidden">
       <img
+        decoding="async"
+        loading="lazy"
         src={storyImg}
         alt="Karoo landscape at sunset near Prieska"
         className="absolute inset-0 h-full w-full object-cover"

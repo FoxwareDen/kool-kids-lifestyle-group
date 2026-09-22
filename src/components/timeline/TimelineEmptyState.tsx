@@ -22,7 +22,10 @@ export function TimelineEmptyState({
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--line)] bg-white/60 px-6 py-16 text-center">
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-navy)]/5">
-        <Newspaper className="h-6 w-6 text-[var(--brand-navy)]/40" aria-hidden="true" />
+        <Newspaper
+          className="h-6 w-6 text-[var(--brand-navy)]/40"
+          aria-hidden="true"
+        />
       </span>
       <p className="mt-4 max-w-sm text-pretty text-sm leading-relaxed text-[var(--brand-navy)]/60">
         {message}

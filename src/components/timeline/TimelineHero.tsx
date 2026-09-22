@@ -34,12 +34,20 @@ export function TimelineHero({
   subtitle: string
   lang?: Language
 }) {
-  const homeLabel = resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang)
-  const timelineLabel = resolveTranslatable({ default: 'Timeline', translations: { af: 'Tydlyn' } }, lang)
+  const homeLabel = resolveTranslatable(
+    { default: 'Home', translations: { af: 'Tuis' } },
+    lang,
+  )
+  const timelineLabel = resolveTranslatable(
+    { default: 'Timeline', translations: { af: 'Tydlyn' } },
+    lang,
+  )
   return (
     <section className="relative flex min-h-[55svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       {/* Background image */}
       <img
+        decoding="async"
+        loading="lazy"
         src="/hero-karoo-river.png"
         alt="The Orange River winding through the Karoo landscape near Prieska"
         className="absolute inset-0 h-full w-full object-cover"
@@ -63,7 +71,10 @@ export function TimelineHero({
                 {homeLabel}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li>
               <a
                 href={crumbHref}
@@ -72,7 +83,10 @@ export function TimelineHero({
                 {crumbLabel}
               </a>
             </li>
-            <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+            <ChevronRight
+              className="h-3.5 w-3.5 text-white/40"
+              aria-hidden="true"
+            />
             <li className="text-[var(--brand-orange)]" aria-current="page">
               {timelineLabel}
             </li>

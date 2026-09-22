@@ -1,7 +1,7 @@
 import { SectionHeading } from '#/components/sections/SectionHeading'
 import { TimelineItem } from './TimelineItem'
 import heritageImg from '../../images/church.jpeg'
-import type { Content } from '#/lib/pocketbase';
+import type { Content } from '#/lib/pocketbase'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 
 /**
@@ -37,13 +37,13 @@ const MILESTONES: { year: string; title: string; description: string }[] = [
 ]
 
 interface OurStory {
-  kicker: string,
-  title: string,
-  image_badge_subtitle: string,
-  image_badge_kicker: string,
+  kicker: string
+  title: string
+  image_badge_subtitle: string
+  image_badge_kicker: string
   timeline: {
-    year: string,
-    title: string,
+    year: string
+    title: string
     description: string
   }[]
 }
@@ -55,12 +55,48 @@ interface OurStory {
  *
  * @returns {JSX.Element} The rendered story section.
  */
-export function OurStory({data, lang = 'en'}: {data: Content<Partial<OurStory>>; lang?: Language}) {
-  const { content: { kicker, title, image_badge_kicker, image_badge_subtitle, timeline }, media } = data;
-  const defaultBadgeTop = resolveTranslatable({ default: 'Since the river first ran', translations: { af: 'Sedert die rivier die eerste keer gevloei het' } }, lang)
-  const defaultBadgeBottom = resolveTranslatable({ default: 'Heritage of the Northern Cape', translations: { af: 'Erfenis van die Noord-Kaap' } }, lang)
-  const defaultKicker = resolveTranslatable({ default: 'Our Story', translations: { af: 'Ons Verhaal' } }, lang)
-  const defaultTitle = resolveTranslatable({ default: 'A Journey Rooted in Place', translations: { af: 'n Reis Gewortel in Plek' } }, lang)
+export function OurStory({
+  data,
+  lang = 'en',
+}: {
+  data: Content<Partial<OurStory>>
+  lang?: Language
+}) {
+  const {
+    content: {
+      kicker,
+      title,
+      image_badge_kicker,
+      image_badge_subtitle,
+      timeline,
+    },
+    media,
+  } = data
+  const defaultBadgeTop = resolveTranslatable(
+    {
+      default: 'Since the river first ran',
+      translations: { af: 'Sedert die rivier die eerste keer gevloei het' },
+    },
+    lang,
+  )
+  const defaultBadgeBottom = resolveTranslatable(
+    {
+      default: 'Heritage of the Northern Cape',
+      translations: { af: 'Erfenis van die Noord-Kaap' },
+    },
+    lang,
+  )
+  const defaultKicker = resolveTranslatable(
+    { default: 'Our Story', translations: { af: 'Ons Verhaal' } },
+    lang,
+  )
+  const defaultTitle = resolveTranslatable(
+    {
+      default: 'A Journey Rooted in Place',
+      translations: { af: 'n Reis Gewortel in Plek' },
+    },
+    lang,
+  )
 
   return (
     <section className="bg-[#f1ede6] py-20">
@@ -68,13 +104,19 @@ export function OurStory({data, lang = 'en'}: {data: Content<Partial<OurStory>>;
         {/* Image */}
         <div className="relative lg:sticky lg:top-28">
           <img
+            decoding="async"
+            loading="lazy"
             src={heritageImg}
             alt="Historic church reflecting Prieska's rich heritage"
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"
           />
           <span className="absolute bottom-0 left-0 bg-[var(--brand-navy)] px-6 py-4 text-white">
-            <span className="script-title block text-2xl text-[var(--brand-orange)]">{image_badge_subtitle ? image_badge_subtitle : defaultBadgeTop}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/70">{image_badge_kicker ? image_badge_kicker : defaultBadgeBottom}</span>
+            <span className="script-title block text-2xl text-[var(--brand-orange)]">
+              {image_badge_subtitle ? image_badge_subtitle : defaultBadgeTop}
+            </span>
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">
+              {image_badge_kicker ? image_badge_kicker : defaultBadgeBottom}
+            </span>
           </span>
         </div>
 
@@ -87,7 +129,7 @@ export function OurStory({data, lang = 'en'}: {data: Content<Partial<OurStory>>;
             align="left"
           />
           <ol className="mt-10">
-            {(timeline? timeline:MILESTONES).map((milestone, index) => (
+            {(timeline ? timeline : MILESTONES).map((milestone, index) => (
               <TimelineItem
                 key={milestone.title}
                 {...milestone}

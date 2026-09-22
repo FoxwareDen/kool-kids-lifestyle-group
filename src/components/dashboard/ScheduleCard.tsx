@@ -34,7 +34,10 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 size-4 shrink-0 text-[var(--brand-orange)]" aria-hidden="true" />
+      <Icon
+        className="mt-0.5 size-4 shrink-0 text-[var(--brand-orange)]"
+        aria-hidden="true"
+      />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-[var(--sea-ink-soft)]">
           {label}
@@ -80,21 +83,75 @@ export function ScheduleCard({
 }) {
   const experiences: any[] = schedule.experiences ?? []
   const strings = {
-    created: resolveTranslatable({ default: 'Created', translations: { af: 'Geskep' } }, lang ?? 'en'),
-    edit: resolveTranslatable({ default: 'Edit', translations: { af: 'Wysig' } }, lang ?? 'en'),
-    delete: resolveTranslatable({ default: 'Delete', translations: { af: 'Verwyder' } }, lang ?? 'en'),
-    deleting: resolveTranslatable({ default: 'Deleting…', translations: { af: 'Verwyder…' } }, lang ?? 'en'),
-    confirmDelete: resolveTranslatable({ default: 'Confirm delete', translations: { af: 'Bevestig verwydering' } }, lang ?? 'en'),
-    cancel: resolveTranslatable({ default: 'Cancel', translations: { af: 'Kanselleer' } }, lang ?? 'en'),
-    deletePrompt: resolveTranslatable({ default: 'Delete', translations: { af: 'Verwyder' } }, lang ?? 'en'),
-    cannotUndo: resolveTranslatable({ default: 'This cannot be undone.', translations: { af: 'Dit kan nie ongedaan gemaak word nie.' } }, lang ?? 'en'),
-    dateRange: resolveTranslatable({ default: 'Date range', translations: { af: 'Datumbereik' } }, lang ?? 'en'),
-    time: resolveTranslatable({ default: 'Time', translations: { af: 'Tyd' } }, lang ?? 'en'),
-    buffer: resolveTranslatable({ default: 'Buffer', translations: { af: 'Buffer' } }, lang ?? 'en'),
-    minutes: resolveTranslatable({ default: 'minutes', translations: { af: 'minute' } }, lang ?? 'en'),
-    days: resolveTranslatable({ default: 'Days of week', translations: { af: 'Weekdae' } }, lang ?? 'en'),
-    linked: resolveTranslatable({ default: 'Linked experiences', translations: { af: 'Gekoppelde ervarings' } }, lang ?? 'en'),
-    unitTypes: resolveTranslatable({ default: 'Unit types', translations: { af: 'Eenheidstipes' } }, lang ?? 'en'),
+    created: resolveTranslatable(
+      { default: 'Created', translations: { af: 'Geskep' } },
+      lang ?? 'en',
+    ),
+    edit: resolveTranslatable(
+      { default: 'Edit', translations: { af: 'Wysig' } },
+      lang ?? 'en',
+    ),
+    delete: resolveTranslatable(
+      { default: 'Delete', translations: { af: 'Verwyder' } },
+      lang ?? 'en',
+    ),
+    deleting: resolveTranslatable(
+      { default: 'Deleting…', translations: { af: 'Verwyder…' } },
+      lang ?? 'en',
+    ),
+    confirmDelete: resolveTranslatable(
+      {
+        default: 'Confirm delete',
+        translations: { af: 'Bevestig verwydering' },
+      },
+      lang ?? 'en',
+    ),
+    cancel: resolveTranslatable(
+      { default: 'Cancel', translations: { af: 'Kanselleer' } },
+      lang ?? 'en',
+    ),
+    deletePrompt: resolveTranslatable(
+      { default: 'Delete', translations: { af: 'Verwyder' } },
+      lang ?? 'en',
+    ),
+    cannotUndo: resolveTranslatable(
+      {
+        default: 'This cannot be undone.',
+        translations: { af: 'Dit kan nie ongedaan gemaak word nie.' },
+      },
+      lang ?? 'en',
+    ),
+    dateRange: resolveTranslatable(
+      { default: 'Date range', translations: { af: 'Datumbereik' } },
+      lang ?? 'en',
+    ),
+    time: resolveTranslatable(
+      { default: 'Time', translations: { af: 'Tyd' } },
+      lang ?? 'en',
+    ),
+    buffer: resolveTranslatable(
+      { default: 'Buffer', translations: { af: 'Buffer' } },
+      lang ?? 'en',
+    ),
+    minutes: resolveTranslatable(
+      { default: 'minutes', translations: { af: 'minute' } },
+      lang ?? 'en',
+    ),
+    days: resolveTranslatable(
+      { default: 'Days of week', translations: { af: 'Weekdae' } },
+      lang ?? 'en',
+    ),
+    linked: resolveTranslatable(
+      {
+        default: 'Linked experiences',
+        translations: { af: 'Gekoppelde ervarings' },
+      },
+      lang ?? 'en',
+    ),
+    unitTypes: resolveTranslatable(
+      { default: 'Unit types', translations: { af: 'Eenheidstipes' } },
+      lang ?? 'en',
+    ),
   }
 
   return (
@@ -105,7 +162,9 @@ export function ScheduleCard({
     >
       <header className="flex items-start justify-between gap-4 border-b border-[var(--line)] bg-[var(--dash-panel-muted)] px-5 py-4">
         <div>
-          <h2 className="text-lg font-bold text-[var(--sea-ink)]">{schedule.title}</h2>
+          <h2 className="text-lg font-bold text-[var(--sea-ink)]">
+            {schedule.title}
+          </h2>
           <p className="mt-0.5 text-xs text-[var(--sea-ink-soft)]">
             {strings.created} {formatDate(schedule.created, lang ?? 'en')}
           </p>
@@ -118,7 +177,11 @@ export function ScheduleCard({
           >
             <Button variant="ghost">{strings.edit}</Button>
           </Link>
-          <Button variant="danger" onClick={onRequestDelete} disabled={isDeleting}>
+          <Button
+            variant="danger"
+            onClick={onRequestDelete}
+            disabled={isDeleting}
+          >
             {isDeleting ? strings.deleting : strings.delete}
           </Button>
         </div>
@@ -127,13 +190,22 @@ export function ScheduleCard({
       {confirmingDelete && (
         <div className="border-b border-[var(--line)] bg-[color-mix(in_oklab,var(--destructive)_8%,transparent)] px-5 py-4">
           <p className="mb-3 text-sm text-[var(--sea-ink)]">
-            {strings.deletePrompt} <strong>{schedule.title}</strong>? {strings.cannotUndo}
+            {strings.deletePrompt} <strong>{schedule.title}</strong>?{' '}
+            {strings.cannotUndo}
           </p>
           <div className="flex gap-2">
-            <Button variant="danger" onClick={onConfirmDelete} disabled={isDeleting}>
+            <Button
+              variant="danger"
+              onClick={onConfirmDelete}
+              disabled={isDeleting}
+            >
               {isDeleting ? strings.deleting : strings.confirmDelete}
             </Button>
-            <Button variant="ghost" onClick={onCancelDelete} disabled={isDeleting}>
+            <Button
+              variant="ghost"
+              onClick={onCancelDelete}
+              disabled={isDeleting}
+            >
               {strings.cancel}
             </Button>
           </div>
@@ -143,7 +215,8 @@ export function ScheduleCard({
       <div className="space-y-5 p-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <DetailRow icon={CalendarClock} label={strings.dateRange}>
-            {formatDate(schedule.start_date, lang ?? 'en')} – {formatDate(schedule.end_date, lang ?? 'en')}
+            {formatDate(schedule.start_date, lang ?? 'en')} –{' '}
+            {formatDate(schedule.end_date, lang ?? 'en')}
           </DetailRow>
           <DetailRow icon={Clock} label={strings.time}>
             {schedule.start_time} – {schedule.end_time}
@@ -168,7 +241,9 @@ export function ScheduleCard({
 
         {experiences.length > 0 && (
           <div className="border-t border-[var(--line)] pt-4">
-            <h3 className="mb-2 text-sm font-bold text-[var(--sea-ink)]">{strings.linked}</h3>
+            <h3 className="mb-2 text-sm font-bold text-[var(--sea-ink)]">
+              {strings.linked}
+            </h3>
             <div className="space-y-2">
               {experiences.map((exp) => (
                 <div
@@ -177,7 +252,13 @@ export function ScheduleCard({
                 >
                   <div className="size-16 shrink-0 overflow-hidden rounded-sm bg-[var(--line)]">
                     {exp.coverImage && (
-                      <img src={exp.coverImage} alt="" className="size-full object-cover" />
+                      <img
+                        decoding="async"
+                        loading="lazy"
+                        src={exp.coverImage}
+                        alt=""
+                        className="size-full object-cover"
+                      />
                     )}
                   </div>
                   <div className="flex-1">

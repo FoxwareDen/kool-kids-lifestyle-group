@@ -72,7 +72,10 @@ export function bookingEnd(booking: DetailedBooking): Date {
  * @param booking - The booking record to test.
  * @param now - Reference time, defaulting to the current moment (injectable for tests).
  */
-export function isActiveBooking(booking: DetailedBooking, now: Date = new Date()): boolean {
+export function isActiveBooking(
+  booking: DetailedBooking,
+  now: Date = new Date(),
+): boolean {
   if (!ACTIVE_STATUSES.includes(booking.status)) return false
   const end = bookingEnd(booking)
   if (Number.isNaN(end.getTime())) return true
