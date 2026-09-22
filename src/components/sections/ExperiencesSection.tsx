@@ -91,9 +91,9 @@ const EXPERIENCES: {
 ]
 
 interface ExperiencesSection {
-  kicker: string,
-  title: string,
-  button: {title: string}
+  kicker: string
+  title: string
+  button: { title: string }
 }
 
 /**
@@ -103,40 +103,53 @@ interface ExperiencesSection {
  *
  * @returns {JSX.Element} The rendered experiences section.
  */
-export function ExperiencesSection({data, lang }:{data: Content<Partial<ExperiencesSection>> & { list: FeatureCard[]}, lang: Language}) {
-  const { content: { title, kicker, button },  list } = data;
-  
+export function ExperiencesSection({
+  data,
+  lang,
+}: {
+  data: Content<Partial<ExperiencesSection>> & { list: FeatureCard[] }
+  lang: Language
+}) {
+  const {
+    content: { title, kicker, button },
+    list,
+  } = data
+
   return (
     <section className="bg-[var(--brand-navy)] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow={kicker??"Adventure Awaits"}
-          title={title??"Choose Your Experience"}
+          eyebrow={kicker ?? 'Adventure Awaits'}
+          title={title ?? 'Choose Your Experience'}
           theme="dark"
         />
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {(list ?? EXPERIENCES).map((experience, i) => (
-            <ExperienceCard 
-                key={experience.coverImage+i}
-                description={experience.description}
-                title={experience.title}
-                image={experience.coverImage}
-                icon={mapIcon("help")}
-                imageAlt=""
-                href={`/experiences/${experience.id}`}
-                lang={lang}
-             />
+            <ExperienceCard
+              key={experience.coverImage + i}
+              description={experience.description}
+              title={experience.title}
+              image={experience.coverImage}
+              icon={mapIcon('help')}
+              imageAlt=""
+              href={`/experiences/${experience.id}`}
+              lang={lang}
+            />
           ))}
         </div>
 
         <div className="mt-12 flex justify-center">
           <Link
-            to='/experiences'
-            search={(prev)=>({...prev, lang, category: prev.category? prev.category: undefined,})}
+            to="/experiences"
+            search={(prev) => ({
+              ...prev,
+              lang,
+              category: prev.category ? prev.category : undefined,
+            })}
             className="group inline-flex items-center gap-4 bg-transparent border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline shadow-lg shadow-black/30 transition-colors hover:bg-[var(--brand-orange-deep)]"
           >
-            {button?.title??""}
+            {button?.title ?? ''}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>

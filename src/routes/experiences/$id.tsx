@@ -2,135 +2,28 @@ import {
   fetchExperienceById,
   parseCategories,
   resolveTranslatable,
-  type HydratedBookingPage,
-  type Language,
 } from '#/lib/experiences'
-import { createFileRoute } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { ClientOnly, createFileRoute } from '@tanstack/react-router'
+import { FlatPageRenderer } from '#/components/BookingPageRenderer'
+import type { HydratedBookingPage, Language } from '#/lib/experiences'
 import { CalendarDays, Clock, Loader2, MapPin, Users } from 'lucide-react'
 import { ExperiencesHero } from '#/components/experiences/ExperiencesHero'
 import { BookingSlotModal } from '#/components/experiences/BookingSlotModal'
-import { FlatPageRenderer } from '#/components/BookingPageRenderer'
-import { fetchBookingsByScheduleId, fetchCalendarScheduleByExperiencesIds, type Booking, type BookingResponse, type TransformedCalendarSchedule } from '#/lib/booking'
+import {
+  fetchBookingsByScheduleId,
+  fetchCalendarScheduleByExperiencesIds,
+} from '#/lib/booking'
+import type {
+  Booking,
+  BookingResponse,
+  TransformedCalendarSchedule,
+} from '#/lib/booking'
 
-export const Route = createFileRoute('/experiences/$id')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language) ?? 'en',
-  }),
-  loaderDeps: ({ search: { lang } }) => ({ lang }),
-  component: RouteComponent,
-})
-
-/**
- * Title-case a raw category string for display.
- * @param {string} category - The raw category label.
- * @returns {string} The display label.
- */
-function categoryLabel(category: string): string {
-  return category
-    .split(/[\s-]+/)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-}
-
-function RouteComponent() {
-  const { lang } = Route.useLoaderDeps();
-  const { id } = Route.useParams()
-  const [bookingOpen, setBookingOpen] = useState(false)
-
-  const {
-    data,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['experience', id],
-    queryFn: async (): Promise<HydratedBookingPage | null> => {
-      const result = await fetchExperienceById(id);
-      if (!result.success || !result.value) return null
-      return result.value
-    },
-    staleTime: 5 * 60 * 1000,
-  })
-  const [scheduleData, setScheduleData] = useState<TransformedCalendarSchedule[] | null>(null);
-  const [existingBookings, setExistingBookings] = useState<BookingResponse[] | null>(null);
-  const [scheduleError, setScheduleError] = useState<string | null>(null);
-  const [scheduleDataLoading, setScheduleDataLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setScheduleDataLoading(true);
-
-        const result = await fetchCalendarScheduleByExperiencesIds(id);
-
-        if (!result.success) {
-          throw new Error("failed to fetch schedule");
-        }
-
-        if (!result.value) {
-          throw new Error("No schedules found");
-        }
-
-        // @ts-ignore
-        const bookings: BookingResponse[] = (
-          await Promise.all(
-            result.value.map((schedule) =>
-              fetchBookingsByScheduleId(schedule.id)
-            )
-          )
-        )
-          .filter((booking) => booking.success && booking.value != null)
-          .flatMap((booking) => booking.value);
-
-        console.log("bookings//", bookings);
-
-        setExistingBookings(bookings);
-
-        setScheduleData(result.value);
-      } catch (error) {
-        console.error(error)
-        setScheduleError("Failed to get schedule data")
-      } finally {
-        setScheduleDataLoading(false);
-      }
-    })()
-  }, [id])
-
-  if (isLoading) {
-    return (
-      <main className="flex min-h-[70svh] flex-col items-center justify-center gap-3 bg-[#f4efe7]">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--brand-orange)]" strokeWidth={1.5} />
-        <p className="text-sm font-medium text-[var(--brand-navy)]/55">Loading experience…</p>
-      </main>
-    )
-  }
-
-  if (isError || !data) {
-    return (
-      <main className="flex min-h-[70svh] flex-col items-center justify-center gap-4 bg-[#f4efe7] px-6 text-center">
-        <h1 className="display-title text-2xl font-medium text-[var(--brand-navy)]">
-          {text.notFoundTitle}
-        </h1>
-        <p className="max-w-md text-sm text-[var(--brand-navy)]/60">
-          {text.notFoundText}
-        </p>
-        <a
-          href="/experiences"
-          className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-sm font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-[var(--brand-orange-deep)]"
-        >
-          {text.browseAll}
-        </a>
-      </main>
-    )
-  }
-
-
-  const title = resolveTranslatable(data.title, lang)
-  const description = data.description ? resolveTranslatable(data.description, lang) : ''
-  const tags = parseCategories(data.category).filter((c) => c.toLowerCase() !== 'featured')
-
-  const translations: Record<Language, {
+const translations: Record<
+  Language,
+  {
     breadcrumb: string
     defaultEyebrow: string
     defaultSubtitle: string
@@ -147,46 +40,226 @@ function RouteComponent() {
     notFoundTitle: string
     notFoundText: string
     browseAll: string
-  }> = {
-    en: {
-      breadcrumb: 'Experiences',
-      defaultEyebrow: 'Experience',
-      defaultSubtitle: 'An unforgettable Karoo adventure awaits.',
-      ready: 'Ready to go?',
-      title: 'Book this experience',
-      chooseDate: 'Choose any available date',
-      unitLabel: 'Multiple unit options',
-      options: 'Options:',
-      noOptions: 'No options available',
-      location: 'Prieska, Northern Cape',
-      book: 'Book now',
-      loading: 'Loading options…',
-      noSchedule: 'No options available',
-      notFoundTitle: 'Experience not found',
-      notFoundText: 'We couldn&apos;t find the experience you were looking for. It may have been moved or is no longer available.',
-      browseAll: 'Browse all experiences',
-    },
-    af: {
-      breadcrumb: 'Ervarings',
-      defaultEyebrow: 'Ervaring',
-      defaultSubtitle: 'n Onvergeetlike Karoo-avontuur wag vir jou.',
-      ready: 'Gereed om te gaan?',
-      title: 'Bespreek hierdie ervaring',
-      chooseDate: 'Kies enige beskikbare datum',
-      unitLabel: 'Veelvuldige eenheidsopsies',
-      options: 'Opsies:',
-      noOptions: 'Geen opsies beskikbaar nie',
-      location: 'Prieska, Noord-Kaap',
-      book: 'Bespreek nou',
-      loading: 'Laai opsies…',
-      noSchedule: 'Geen opsies beskikbaar nie',
-      notFoundTitle: 'Ervaring nie gevind nie',
-      notFoundText: 'Ons kon nie die ervaring vind wat jy soek nie. Dit kan verskuif gewees het of is nie meer beskikbaar nie.',
-      browseAll: 'Blaai deur alle ervarings',
-    },
   }
+> = {
+  en: {
+    breadcrumb: 'Experiences',
+    defaultEyebrow: 'Experience',
+    defaultSubtitle: 'An unforgettable Karoo adventure awaits.',
+    ready: 'Ready to go?',
+    title: 'Book this experience',
+    chooseDate: 'Choose any available date',
+    unitLabel: 'Multiple unit options',
+    options: 'Options:',
+    noOptions: 'No options available',
+    location: 'Prieska, Northern Cape',
+    book: 'Book now',
+    loading: 'Loading options…',
+    noSchedule: 'No options available',
+    notFoundTitle: 'Experience not found',
+    notFoundText:
+      'We couldn&apos;t find the experience you were looking for. It may have been moved or is no longer available.',
+    browseAll: 'Browse all experiences',
+  },
+  af: {
+    breadcrumb: 'Ervarings',
+    defaultEyebrow: 'Ervaring',
+    defaultSubtitle: 'n Onvergeetlike Karoo-avontuur wag vir jou.',
+    ready: 'Gereed om te gaan?',
+    title: 'Bespreek hierdie ervaring',
+    chooseDate: 'Kies enige beskikbare datum',
+    unitLabel: 'Veelvuldige eenheidsopsies',
+    options: 'Opsies:',
+    noOptions: 'Geen opsies beskikbaar nie',
+    location: 'Prieska, Noord-Kaap',
+    book: 'Bespreek nou',
+    loading: 'Laai opsies…',
+    noSchedule: 'Geen opsies beskikbaar nie',
+    notFoundTitle: 'Ervaring nie gevind nie',
+    notFoundText:
+      'Ons kon nie die ervaring vind wat jy soek nie. Dit kan verskuif gewees het of is nie meer beskikbaar nie.',
+    browseAll: 'Blaai deur alle ervarings',
+  },
+}
 
-  const text = translations[lang ?? 'en']
+export const Route = createFileRoute('/experiences/$id')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: search.lang as Language,
+  }),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({
+    params: { id },
+    deps: { lang = 'en' },
+  }): Promise<{
+    data: HydratedBookingPage
+    lang: Language
+    id: string
+  }> => {
+    const result = await fetchExperienceById(id)
+
+    if (!result.success || !result.value)
+      throw Error('Failed to fetch page Content')
+
+    return {
+      data: result.value,
+      lang,
+      id,
+    }
+  },
+  head: ({ loaderData }) => {
+    if (!loaderData) {
+      return {}
+    }
+
+    const { data, lang } = loaderData
+
+    const title = resolveTranslatable(data.title, lang)
+
+    const description = data.description
+      ? resolveTranslatable(data.description, lang)
+      : ''
+
+    return {
+      meta: [
+        {
+          title: `${title} | 360 Experiences`,
+        },
+        {
+          name: 'description',
+          content: description,
+        },
+
+        {
+          property: 'og:title',
+          content: `${title} | 360 Experiences`,
+        },
+        {
+          property: 'og:description',
+          content: description,
+        },
+        {
+          property: 'og:image',
+          content: data.coverImage,
+        },
+        {
+          property: 'og:type',
+          content: 'website',
+        },
+
+        {
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        },
+        {
+          name: 'twitter:title',
+          content: `${title} | 360 Experiences`,
+        },
+        {
+          name: 'twitter:description',
+          content: description,
+        },
+        {
+          name: 'twitter:image',
+          content: data.coverImage,
+        },
+      ],
+    }
+  },
+  errorComponent: () => {
+    const text = translations['en']
+
+    return (
+      <main className="flex min-h-[70svh] flex-col items-center justify-center gap-4 bg-[#f4efe7] px-6 text-center">
+        <h1 className="display-title text-2xl font-medium text-[var(--brand-navy)]">
+          {text.notFoundTitle}
+        </h1>
+        <p className="max-w-md text-sm text-[var(--brand-navy)]/60">
+          {text.notFoundText}
+        </p>
+        <a
+          href="/experiences"
+          className="inline-flex items-center gap-2 bg-[var(--brand-orange)] px-5 py-3 text-sm font-bold uppercase tracking-wide !text-white no-underline transition-colors hover:bg-[var(--brand-orange-deep)]"
+        >
+          {text.browseAll}
+        </a>
+      </main>
+    )
+  },
+  component: RouteComponent,
+})
+
+/**
+ * Title-case a raw category string for display.
+ * @param {string} category - The raw category label.
+ * @returns {string} The display label.
+ */
+function categoryLabel(category: string): string {
+  return category
+    .split(/[\s-]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+function RouteComponent() {
+  const { id, lang, data } = Route.useLoaderData()
+  const [bookingOpen, setBookingOpen] = useState(false)
+
+  const [scheduleData, setScheduleData] = useState<
+    TransformedCalendarSchedule[] | null
+  >(null)
+  const [existingBookings, setExistingBookings] = useState<
+    BookingResponse[] | null
+  >(null)
+  const [scheduleError, setScheduleError] = useState<string | null>(null)
+  const [scheduleDataLoading, setScheduleDataLoading] = useState(true)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        setScheduleDataLoading(true)
+
+        const result = await fetchCalendarScheduleByExperiencesIds(id)
+
+        if (!result.success) {
+          throw new Error('failed to fetch schedule')
+        }
+
+        if (!result.value) {
+          throw new Error('No schedules found')
+        }
+
+        // @ts-ignore
+        const bookings: BookingResponse[] = (
+          await Promise.all(
+            result.value.map((schedule) =>
+              fetchBookingsByScheduleId(schedule.id),
+            ),
+          )
+        )
+          .filter((booking) => booking.success && booking.value != null)
+          .flatMap((booking) => booking.value)
+
+        setExistingBookings(bookings)
+
+        setScheduleData(result.value)
+      } catch (error) {
+        console.error(error)
+        setScheduleError('Failed to get schedule data')
+      } finally {
+        setScheduleDataLoading(false)
+      }
+    })()
+  }, [id])
+
+  const title = resolveTranslatable(data.title, lang)
+  const description = data.description
+    ? resolveTranslatable(data.description, lang)
+    : ''
+  const tags = parseCategories(data.category).filter(
+    (c) => c.toLowerCase() !== 'featured',
+  )
+
+  const text = translations[lang]
 
   return (
     <main className="bg-[#f4efe7]">
@@ -225,7 +298,7 @@ function RouteComponent() {
               </p>
             )}
 
-            {data.blocks?.length > 0 && (
+            {data.blocks.length > 0 && (
               <div className="border-t border-[var(--brand-navy)]/10 pt-8">
                 <FlatPageRenderer lang={lang} data={data} />
               </div>
@@ -250,21 +323,26 @@ function RouteComponent() {
                   {text.chooseDate}
                 </li>
                 <li className="flex flex-col items-start gap-3">
-                  <span className='flex items-center gap-3'>
+                  <span className="flex items-center gap-3">
                     <Users className="h-4 w-4 text-[var(--brand-orange)]" />
                     {text.unitLabel}
                   </span>
-                  <div className='pl-5 w-full'>
-                    <span className='flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50'>{text.options}</span>
-                    <ul className='pl-5 mt-1 list-disc flex flex-col gap-1'>
+                  <div className="pl-5 w-full">
+                    <span className="flex items-center gap-3 font-medium text-xs text-[var(--brand-navy)]/50">
+                      {text.options}
+                    </span>
+                    <ul className="pl-5 mt-1 list-disc flex flex-col gap-1">
                       {scheduleDataLoading ? (
-                        <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">{text.loading}</li>
-                      ) : scheduleData && scheduleData[0]?.units ? (
-                        scheduleData[0].units.map((unit) => (
-                          <li key={unit.id} className="text-xs">{unit.label}</li>
-                        ))
+                        <li className="text-xs text-[var(--brand-navy)]/40 animate-pulse list-none">
+                          {text.loading}
+                        </li>
                       ) : (
-                        <li className="text-xs text-[var(--brand-navy)]/40 list-none">{text.noOptions}</li>
+                        scheduleData &&
+                        scheduleData[0].units.map((unit) => (
+                          <li key={unit.id} className="text-xs">
+                            {unit.label}
+                          </li>
+                        ))
                       )}
                     </ul>
                   </div>
@@ -292,15 +370,17 @@ function RouteComponent() {
         </div>
       </section>
 
-      <BookingSlotModal
-        open={bookingOpen}
-        onClose={() => setBookingOpen(false)}
-        experienceTitle={title}
-        calendarSchedule={scheduleData}
-        existingBookings={existingBookings}
-        loading={scheduleDataLoading}
-        error={scheduleError}
-      />
+      <ClientOnly fallback={null}>
+        <BookingSlotModal
+          open={bookingOpen}
+          onClose={() => setBookingOpen(false)}
+          experienceTitle={title}
+          calendarSchedule={scheduleData}
+          existingBookings={existingBookings}
+          loading={scheduleDataLoading}
+          error={scheduleError}
+        />
+      </ClientOnly>
     </main>
   )
 }

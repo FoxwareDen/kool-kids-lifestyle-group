@@ -50,10 +50,14 @@ export function SectionCard({
         <header className="flex items-start justify-between gap-4 border-b border-[var(--line)] px-5 py-4">
           <div>
             {title && (
-              <h2 className="text-base font-bold text-[var(--sea-ink)]">{title}</h2>
+              <h2 className="text-base font-bold text-[var(--sea-ink)]">
+                {title}
+              </h2>
             )}
             {description && (
-              <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">{description}</p>
+              <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">
+                {description}
+              </p>
             )}
           </div>
           {actions}
@@ -83,7 +87,11 @@ export function TextField({
         {label}
       </span>
       <input className={cn(controlClass, className)} {...props} />
-      {hint && <span className="mt-1 block text-xs text-[var(--sea-ink-soft)]">{hint}</span>}
+      {hint && (
+        <span className="mt-1 block text-xs text-[var(--sea-ink-soft)]">
+          {hint}
+        </span>
+      )}
     </label>
   )
 }

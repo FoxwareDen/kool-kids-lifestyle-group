@@ -12,16 +12,14 @@ import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase'
 import { createServerFn } from '@tanstack/react-start'
 import type { Language } from '#/lib/experiences'
 
-
 export const getPageData = createServerFn()
   .inputValidator((input: { slug: string; lang?: Language }) => input)
   // @ts-ignore
   .handler(async ({ data: { slug, lang } }) => {
     const result = await fetchPageDataSSR(slug, lang)
 
-    return result;
+    return result
   })
-
 
 /**
  * The "About Prieska" page route. Composes the page-level sections in order:
@@ -42,9 +40,9 @@ export const Route = createFileRoute('/about-prieska')({
     ],
   }),
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as 'en' | 'af') ?? undefined,
+    lang: search.lang as Language,
   }),
-  loaderDeps: ({ search: {lang}  }) => ({lang}),
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
   loader: async ({ location, deps: { lang } }) => {
     const slug = location.pathname.replace(/^\/|\/$/g, '')
 
@@ -53,14 +51,16 @@ export const Route = createFileRoute('/about-prieska')({
       data: { slug, lang },
     })
 
-    if (!pageData) throw notFound()
+    // if (!pageData) throw notFound()
 
     return { pageData }
   },
 
   notFoundComponent: () => <div>Page not found</div>,
 
-  errorComponent: ({ error }) => <div>Something went wrong: {error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div>Something went wrong: {error.message}</div>
+  ),
 
   component: AboutPrieskaPage,
 })
@@ -76,13 +76,19 @@ function AboutPrieskaPage() {
 
   return (
     <main>
-      <AboutHero data={pageData.components["about_hero"]} lang={lang ?? 'en'} />
-      <AboutIntro data={pageData.components["about_intro"]} lang={lang ?? 'en'} />
+      <AboutHero data={pageData.components['about_hero']} lang={lang} />
+      <AboutIntro data={pageData.components['about_intro']} lang={lang} />
       <StatsBand />
-      <MissionVisionValues data={pageData.components["mission_vision_values"]} lang={lang ?? 'en'} />
-      <OurStory data={pageData.components["our_story"]} lang={lang ?? 'en'} />
-      <WhyVisitPrieska data={pageData.components["why_visit_prieska"]} lang={lang ?? 'en'} />
-      <AboutCta data={pageData.components["about_cta"]} lang={lang ?? 'en'} />
+      <MissionVisionValues
+        data={pageData.components['mission_vision_values']}
+        lang={lang}
+      />
+      <OurStory data={pageData.components['our_story']} lang={lang} />
+      <WhyVisitPrieska
+        data={pageData.components['why_visit_prieska']}
+        lang={lang}
+      />
+      <AboutCta data={pageData.components['about_cta']} lang={lang} />
     </main>
   )
 }

@@ -1,13 +1,3 @@
-import { useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
-import {
-  generateSlots,
-  type Booking,
-  type BookingResponse,
-  type PaymentContinueFunc,
-  type TransformedCalendarSchedule,
-} from '#/lib/booking'
-import { type AvailableRange } from '#/lib/system'
 import {
   Booker,
   BookerStep,
@@ -17,7 +7,17 @@ import {
   BookingView,
   BookingPagingButtonGroup,
 } from '@/components/booking/calendar'
+import { generateSlots } from '#/lib/booking'
+import { useMemo, useRef, useState } from 'react'
+import type {
+  Booking,
+  BookingResponse,
+  PaymentContinueFunc,
+  TransformedCalendarSchedule,
+} from '#/lib/booking'
+import type { AvailableRange } from '#/lib/system'
 import { PaymentForm } from '../payment'
+import { X } from 'lucide-react'
 
 interface BookingSlotModalProps {
   open: boolean

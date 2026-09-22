@@ -16,26 +16,26 @@ import { buildImageUrl, type Asset } from '#/lib/pocketbase'
  * @type {Array<{ src: string, alt: string }>}
  */
 const SLIDES = [
-  { name: 'hero-karoo-river', },
-  { name: 'hero-karoo-landscape', },
-  { name: 'hero-karoo-heritage',},
+  { name: 'hero-karoo-river' },
+  { name: 'hero-karoo-landscape' },
+  { name: 'hero-karoo-heritage' },
 ]
 
 /** Milliseconds between automatic slide transitions. */
 const AUTOPLAY_MS = 6000
 
-interface HeroSectionProps{
+interface HeroSectionProps {
   collectionId: string
-  eyebrow: string | null,
-  headline: string| null,
-  tagline: string | null,
-  description: string | null,
+  eyebrow: string | null
+  headline: string | null
+  tagline: string | null
+  description: string | null
   buttons: {
-    label: string,
-    src: string,
+    label: string
+    src: string
     icon: string
-  }[],
-  media?: Record<string,Asset>
+  }[]
+  media?: Record<string, Asset>
 }
 
 /**
@@ -45,9 +45,16 @@ interface HeroSectionProps{
  *
  * @returns {JSX.Element} The rendered hero section.
  */
-export function HeroSection({data}:{data: any|null}) {
-  const {content, media}:{content: HeroSectionProps, components: string,media:Record<string,Asset>}= data;
-  
+export function HeroSection({ data }: { data: any | null }) {
+  const {
+    content,
+    media,
+  }: {
+    content: HeroSectionProps
+    components: string
+    media: Record<string, Asset>
+  } = data
+
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -62,12 +69,23 @@ export function HeroSection({data}:{data: any|null}) {
       {/* Background carousel */}
       {SLIDES.map((slide, i) => (
         <img
-          key={media[slide.name].name+i}
-          src={media[slide.name] ? (buildImageUrl(media[slide.name].collectionId, media[slide.name].id, media[slide.name].file)): ('/placeholder.svg')}
-          alt={media[slide.name]? media[slide.name].alt : ""}
+          key={media[slide.name].name + i}
+          src={
+            media[slide.name]
+              ? buildImageUrl(
+                  media[slide.name].collectionId,
+                  media[slide.name].id,
+                  media[slide.name].file,
+                )
+              : '/placeholder.svg'
+          }
+          alt={media[slide.name] ? media[slide.name].alt : ''}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
             i === activeIndex ? 'opacity-100' : 'opacity-0'
           }`}
+          loading={i === 0 ? 'eager' : 'lazy'}
+          fetchpriority={i === 0 ? 'high' : 'low'}
+          decoding="async"
         />
       ))}
 
@@ -82,27 +100,35 @@ export function HeroSection({data}:{data: any|null}) {
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <p className="mt-12 text-xs font-bold tracking-[0.25em] text-[var(--brand-orange)]">
-              {content? content.eyebrow :"WELCOME TO 360 EXPERIENCES"}
+              {content ? content.eyebrow : 'WELCOME TO 360 EXPERIENCES'}
             </p>
 
             <h1 className="display-title text-balance text-5xl font-medium leading-[1.08] text-white sm:text-6xl lg:text-[4.25rem]">
-              {content? content.headline:"Experience the Heart of the Northern Cape"}
+              {content
+                ? content.headline
+                : 'Experience the Heart of the Northern Cape'}
             </h1>
 
             <p className="script-title mt-3 text-3xl font-semibold text-[var(--brand-orange)] sm:text-4xl lg:text-5xl">
-              {content? content.tagline:"Where the Karoo Breathes."}
+              {content ? content.tagline : 'Where the Karoo Breathes.'}
             </p>
 
             <p className="mt-6 max-w-md text-pretty leading-relaxed text-white/80">
-              {content? content.description: "Discover Prieska&apos;s heritage, landscapes, culture and unforgettable experiences through tourism, adventure and recreation."}
+              {content
+                ? content.description
+                : 'Discover Prieska&apos;s heritage, landscapes, culture and unforgettable experiences through tourism, adventure and recreation.'}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              {
-                content.buttons.map((button, index)=>
-                  <HeroButton key={`${content.collectionId}${index}`} href={button.src} variant={index %2 == 0? "primary": "outline"}>{button.label}</HeroButton>
-                )
-              }
+              {content.buttons.map((button, index) => (
+                <HeroButton
+                  key={`${content.collectionId}${index}`}
+                  href={button.src}
+                  variant={index % 2 == 0 ? 'primary' : 'outline'}
+                >
+                  {button.label}
+                </HeroButton>
+              ))}
             </div>
           </div>
         </div>
