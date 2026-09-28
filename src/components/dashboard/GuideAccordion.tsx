@@ -31,7 +31,8 @@ export type Guide = {
 export function GuideAccordion({ guides }: { guides: Guide[] }) {
   const [openId, setOpenId] = useState<string | null>(guides[0]?.id ?? null)
 
-  const toggle = (id: string) => setOpenId((current) => (current === id ? null : id))
+  const toggle = (id: string) =>
+    setOpenId((current) => (current === id ? null : id))
 
   return (
     <div className="divide-y divide-[var(--line)] overflow-hidden rounded-sm border border-[var(--line)] bg-[var(--surface-strong)]">
@@ -73,7 +74,10 @@ export function GuideAccordion({ guides }: { guides: Guide[] }) {
               <div id={panelId} className="px-5 pb-5 pl-[4.5rem]">
                 <ol className="flex flex-col gap-2">
                   {guide.steps.map((step, index) => (
-                    <li key={index} className="flex gap-3 text-sm text-[var(--sea-ink)]">
+                    <li
+                      key={index}
+                      className="flex gap-3 text-sm text-[var(--sea-ink)]"
+                    >
                       <span className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-[var(--sand)] text-xs font-bold text-[var(--brand-orange)]">
                         {index + 1}
                       </span>

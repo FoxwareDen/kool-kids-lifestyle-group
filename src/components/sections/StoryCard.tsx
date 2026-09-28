@@ -28,7 +28,7 @@ export function StoryCard({
   title,
   description,
   href = '#',
-  ctaLabel = 'Learn more',
+  ctaLabel = 'LEARN MORE ABOUT OUR HERITAGE',
 }: {
   image: string
   imageAlt: string
@@ -37,10 +37,10 @@ export function StoryCard({
   href?: string
   ctaLabel?: string
 }) {
-   const clipId = `wave-clip-${title.replace(/\s+/g, '-').toLowerCase()}`
+  const clipId = `wave-clip-${title.replace(/\s+/g, '-').toLowerCase()}`
   return (
     <article className="group flex flex-col bg-white shadow-sm shadow-black/5 transition-transform duration-300 hover:-translate-y-1">
-            {/* SVG wave clipPath definition */}
+      {/* SVG wave clipPath definition */}
       <svg width="0" height="0" className="absolute">
         <defs>
           <clipPath id={clipId} clipPathUnits="objectBoundingBox">
@@ -51,6 +51,8 @@ export function StoryCard({
       {/* Banner image with overlapping badge */}
       <div className="relative" style={{ clipPath: `url(#${clipId})` }}>
         <img
+          decoding="async"
+          loading="lazy"
           src={image || '/placeholder.svg'}
           alt={imageAlt}
           className="h-50 w-full object-cover"
@@ -67,7 +69,7 @@ export function StoryCard({
         </p>
 
         <a
-          href={"/heritage"}
+          href={'/heritage'}
           className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest !text-[var(--brand-orange)] no-underline hover:!text-[var(--brand-orange-deep)]"
         >
           {ctaLabel}

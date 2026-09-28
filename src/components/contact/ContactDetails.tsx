@@ -1,4 +1,12 @@
-import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from 'lucide-react'
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Facebook,
+  Instagram,
+  Twitter,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { ContactInfoItem } from './ContactInfoItem'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
@@ -16,7 +24,11 @@ const CONTACT_DETAILS: {
   {
     icon: MapPin,
     label: 'Visit Us',
-    lines: ['18 Steward Street', 'Prieska, 8940', 'Northern Cape, South Africa'],
+    lines: [
+      '18 Steward Street',
+      'Prieska, 8940',
+      'Northern Cape, South Africa',
+    ],
   },
   {
     icon: Phone,
@@ -33,7 +45,11 @@ const CONTACT_DETAILS: {
   {
     icon: Clock,
     label: 'Office Hours',
-    lines: ['Mon – Fri: 08:00 – 17:00', 'Sat: 09:00 – 13:00', 'Sun & Public Holidays: Closed'],
+    lines: [
+      'Mon – Fri: 08:00 – 17:00',
+      'Sat: 09:00 – 13:00',
+      'Sun & Public Holidays: Closed',
+    ],
   },
 ]
 
@@ -42,9 +58,21 @@ const CONTACT_DETAILS: {
  * @type {Array<{ icon: LucideIcon, label: string, href: string }>}
  */
 const SOCIAL_LINKS: { icon: LucideIcon; label: string; href: string }[] = [
-  { label: 'Facebook', href: 'https://www.facebook.com/share/1BfUUKJvqY/?mibextid=wwXIfr', icon: Facebook },
-  { label: 'Instagram', href: 'https://www.instagram.com/360experiences_sa?stkn=MTlwMWhrYTRmeXVkZQ%3D%3D&utm_source=qr', icon: Instagram },
-  { label: 'TikTok', href: 'https://www.tiktok.com/@360experiences86?_r=1&_t=ZS-99kNxhS7uS2', icon: TikTokIcon },
+  {
+    label: 'Facebook',
+    href: 'https://www.facebook.com/share/1BfUUKJvqY/?mibextid=wwXIfr',
+    icon: Facebook,
+  },
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/360experiences_sa?stkn=MTlwMWhrYTRmeXVkZQ%3D%3D&utm_source=qr',
+    icon: Instagram,
+  },
+  {
+    label: 'TikTok',
+    href: 'https://www.tiktok.com/@360experiences86?_r=1&_t=ZS-99kNxhS7uS2',
+    icon: TikTokIcon,
+  },
 ]
 
 function TikTokIcon({ className }: { className?: string }) {
@@ -69,15 +97,51 @@ function TikTokIcon({ className }: { className?: string }) {
  */
 export function ContactDetails({ lang = 'en' }: { lang?: Language }) {
   const labels = {
-    title: resolveTranslatable({ default: 'Contact Information', translations: { af: 'Kontak Inligting' } }, lang),
-    subtitle: resolveTranslatable({ default: 'Reach Out Directly', translations: { af: 'Kom Direk In Kontak' } }, lang),
-    intro: resolveTranslatable({ default: 'Whether you\'re planning a visit, booking a tour or just have a question, our friendly team is here to help you make the most of Prieska.', translations: { af: 'Of jy ’n besoek beplan, ’n toer bespreek of bloot ’n vraag het, ons vriendelike span is hier om jou te help om die beste van Prieska te kry.' } }, lang),
-    follow: resolveTranslatable({ default: 'Follow Us', translations: { af: 'Volg Ons' } }, lang),
+    title: resolveTranslatable(
+      {
+        default: 'Contact Information',
+        translations: { af: 'Kontak Inligting' },
+      },
+      lang,
+    ),
+    subtitle: resolveTranslatable(
+      {
+        default: 'Reach Out Directly',
+        translations: { af: 'Kom Direk In Kontak' },
+      },
+      lang,
+    ),
+    intro: resolveTranslatable(
+      {
+        default:
+          "Whether you're planning a visit, booking a tour or just have a question, our friendly team is here to help you make the most of Prieska.",
+        translations: {
+          af: 'Of jy ’n besoek beplan, ’n toer bespreek of bloot ’n vraag het, ons vriendelike span is hier om jou te help om die beste van Prieska te kry.',
+        },
+      },
+      lang,
+    ),
+    follow: resolveTranslatable(
+      { default: 'Follow Us', translations: { af: 'Volg Ons' } },
+      lang,
+    ),
     details: [
-      resolveTranslatable({ default: 'Visit Us', translations: { af: 'Besoek Ons' } }, lang),
-      resolveTranslatable({ default: 'Call Us', translations: { af: 'Bel Ons' } }, lang),
-      resolveTranslatable({ default: 'Email Us', translations: { af: 'E-pos Ons' } }, lang),
-      resolveTranslatable({ default: 'Office Hours', translations: { af: 'Kantoorure' } }, lang),
+      resolveTranslatable(
+        { default: 'Visit Us', translations: { af: 'Besoek Ons' } },
+        lang,
+      ),
+      resolveTranslatable(
+        { default: 'Call Us', translations: { af: 'Bel Ons' } },
+        lang,
+      ),
+      resolveTranslatable(
+        { default: 'Email Us', translations: { af: 'E-pos Ons' } },
+        lang,
+      ),
+      resolveTranslatable(
+        { default: 'Office Hours', translations: { af: 'Kantoorure' } },
+        lang,
+      ),
     ],
   }
   return (

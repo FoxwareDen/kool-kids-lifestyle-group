@@ -49,6 +49,8 @@ export function ExperienceListCard({
     >
       <div className="relative h-52 w-full overflow-hidden">
         <img
+          decoding="async"
+          loading="lazy"
           src={experience.coverImage || '/placeholder.svg'}
           alt={title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -73,7 +75,9 @@ export function ExperienceListCard({
         </h3>
         {description && (
           <p className="text-sm leading-relaxed text-[var(--brand-navy)]/65">
-            {description.length > 120 ? `${description.slice(0, 120)}…` : description}
+            {description.length > 120
+              ? `${description.slice(0, 120)}…`
+              : description}
           </p>
         )}
         <span className="mt-auto inline-flex items-center gap-2 pt-2 text-xs font-bold uppercase tracking-[0.14em] text-[var(--brand-orange)]">

@@ -21,20 +21,77 @@ const FIELD_CLASSES =
 export function ContactForm({ lang = 'en' }: { lang?: Language }) {
   const [submitted, setSubmitted] = useState(false)
   const labels = {
-    heading: resolveTranslatable({ default: 'Send a Message', translations: { af: 'Stuur ’n Boodskap' } }, lang),
-    subheading: resolveTranslatable({ default: 'Drop Us a Line', translations: { af: 'Stuur Ons ’n Boodskap' } }, lang),
-    success: resolveTranslatable({ default: 'Thank you!', translations: { af: 'Baie dankie!' } }, lang),
-    successMessage: resolveTranslatable({ default: 'Your message has been received. Our team will get back to you within one business day.', translations: { af: 'Jou boodskap is ontvang. Ons span sal binne een besigheidsdag terugkom.' } }, lang),
-    name: resolveTranslatable({ default: 'Full Name', translations: { af: 'Volle Naam' } }, lang),
-    email: resolveTranslatable({ default: 'Email Address', translations: { af: 'E-posadres' } }, lang),
-    subject: resolveTranslatable({ default: 'Subject', translations: { af: 'Onderwerp' } }, lang),
-    message: resolveTranslatable({ default: 'Message', translations: { af: 'Boodskap' } }, lang),
-    button: resolveTranslatable({ default: 'Send Message', translations: { af: 'Stuur Boodskap' } }, lang),
+    heading: resolveTranslatable(
+      { default: 'Send a Message', translations: { af: 'Stuur ’n Boodskap' } },
+      lang,
+    ),
+    subheading: resolveTranslatable(
+      {
+        default: 'Drop Us a Line',
+        translations: { af: 'Stuur Ons ’n Boodskap' },
+      },
+      lang,
+    ),
+    success: resolveTranslatable(
+      { default: 'Thank you!', translations: { af: 'Baie dankie!' } },
+      lang,
+    ),
+    successMessage: resolveTranslatable(
+      {
+        default:
+          'Your message has been received. Our team will get back to you within one business day.',
+        translations: {
+          af: 'Jou boodskap is ontvang. Ons span sal binne een besigheidsdag terugkom.',
+        },
+      },
+      lang,
+    ),
+    name: resolveTranslatable(
+      { default: 'Full Name', translations: { af: 'Volle Naam' } },
+      lang,
+    ),
+    email: resolveTranslatable(
+      { default: 'Email Address', translations: { af: 'E-posadres' } },
+      lang,
+    ),
+    subject: resolveTranslatable(
+      { default: 'Subject', translations: { af: 'Onderwerp' } },
+      lang,
+    ),
+    message: resolveTranslatable(
+      { default: 'Message', translations: { af: 'Boodskap' } },
+      lang,
+    ),
+    button: resolveTranslatable(
+      { default: 'Send Message', translations: { af: 'Stuur Boodskap' } },
+      lang,
+    ),
     placeholder: {
-      name: resolveTranslatable({ default: 'Jane Doe', translations: { af: 'Jan van der Merwe' } }, lang),
-      email: resolveTranslatable({ default: 'jane@example.com', translations: { af: 'jan@example.com' } }, lang),
-      subject: resolveTranslatable({ default: 'Booking enquiry, tour information…', translations: { af: 'Besprekingsnavraag, toerinligting…' } }, lang),
-      message: resolveTranslatable({ default: 'Tell us how we can help…', translations: { af: 'Vertel ons hoe ons kan help…' } }, lang),
+      name: resolveTranslatable(
+        { default: 'Jane Doe', translations: { af: 'Jan van der Merwe' } },
+        lang,
+      ),
+      email: resolveTranslatable(
+        {
+          default: 'jane@example.com',
+          translations: { af: 'jan@example.com' },
+        },
+        lang,
+      ),
+      subject: resolveTranslatable(
+        {
+          default: 'Booking enquiry, tour information…',
+          translations: { af: 'Besprekingsnavraag, toerinligting…' },
+        },
+        lang,
+      ),
+      message: resolveTranslatable(
+        {
+          default: 'Tell us how we can help…',
+          translations: { af: 'Vertel ons hoe ons kan help…' },
+        },
+        lang,
+      ),
     },
   }
 
@@ -64,7 +121,10 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
           role="status"
           className="mt-8 flex flex-col items-center gap-3 rounded-md bg-[var(--brand-orange)]/10 px-6 py-12 text-center"
         >
-          <CheckCircle2 className="h-12 w-12 text-[var(--brand-orange)]" aria-hidden="true" />
+          <CheckCircle2
+            className="h-12 w-12 text-[var(--brand-orange)]"
+            aria-hidden="true"
+          />
           <h3 className="display-title text-xl font-medium text-[var(--brand-navy)]">
             {labels.success}
           </h3>
@@ -150,7 +210,10 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
             className="group inline-flex w-full items-center justify-center gap-3 bg-[var(--brand-orange)] px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white shadow-lg shadow-black/10 transition-colors hover:bg-[var(--brand-orange-deep)] sm:w-auto"
           >
             {labels.button}
-            <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+            <Send
+              className="h-4 w-4 transition-transform group-hover:translate-x-1"
+              aria-hidden="true"
+            />
           </button>
         </form>
       )}

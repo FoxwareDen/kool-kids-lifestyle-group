@@ -49,6 +49,8 @@ export function EventsCard({
   return (
     <article className="relative flex min-h-[20rem] flex-col justify-between overflow-hidden p-7">
       <img
+        decoding="async"
+        loading="lazy"
         src={image || '/placeholder.svg'}
         alt={imageAlt}
         className="absolute inset-0 h-full w-full object-cover"
@@ -71,7 +73,9 @@ export function EventsCard({
             className="flex items-center gap-4 bg-white/95 p-3"
           >
             <div className="flex flex-col items-center justify-center bg-[var(--brand-navy)] px-3 py-2 text-center leading-none text-white">
-              <span className="display-title text-2xl font-semibold">{event.day}</span>
+              <span className="display-title text-2xl font-semibold">
+                {event.day}
+              </span>
               <span className="mt-1 text-[0.6rem] font-bold uppercase tracking-widest">
                 {event.month}
               </span>
@@ -80,7 +84,9 @@ export function EventsCard({
               <p className="text-sm font-bold leading-tight text-[var(--brand-navy)]">
                 {event.title}
               </p>
-              <p className="mt-1 text-xs text-[var(--brand-navy)]/65">{event.meta}</p>
+              <p className="mt-1 text-xs text-[var(--brand-navy)]/65">
+                {event.meta}
+              </p>
             </div>
           </div>
         ))}

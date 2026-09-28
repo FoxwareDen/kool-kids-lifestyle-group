@@ -1,16 +1,13 @@
-import { listBlogPages, listEvents } from "./blog";
-import type {
-  HydratedBlogPage,
-  HydratedEvent,
-} from "./blog";
-import { resolveTranslatable, type Language } from "./experiences";
+import { listBlogPages, listEvents } from './blog'
+import type { HydratedBlogPage, HydratedEvent } from './blog'
+import { resolveTranslatable, type Language } from './experiences'
 
 /**
  * Discriminator describing whether a {@link TimelineEntry} originated from a
  * blog post or an event in the CMS.
  * @typedef {"blog" | "event"} TimelineEntryKind
  */
-export type TimelineEntryKind = "blog" | "event";
+export type TimelineEntryKind = 'blog' | 'event'
 
 /**
  * A single, normalised item rendered on a timeline. Blog posts and events are
@@ -28,13 +25,13 @@ export type TimelineEntryKind = "blog" | "event";
  * @property {string} [endDate] - Event end date (ISO), events only.
  */
 export interface TimelineEntry {
-  id: string;
-  kind: TimelineEntryKind;
-  title: string;
-  excerpt: string;
-  date: string;
-  startDate?: string;
-  endDate?: string;
+  id: string
+  kind: TimelineEntryKind
+  title: string
+  excerpt: string
+  date: string
+  startDate?: string
+  endDate?: string
 }
 
 /**
@@ -44,9 +41,9 @@ export interface TimelineEntry {
  * @typedef {Object} TextualBlock
  */
 type TextualBlock = {
-  type: string;
-  text?: { default?: string };
-};
+  type: string
+  text?: { default?: string }
+}
 
 /**
  * Maps a route slug (or pathname) to the {@link TimelineEntryKind} whose data
@@ -57,7 +54,7 @@ type TextualBlock = {
  * @returns {TimelineEntryKind} The content kind to fetch for that route.
  */
 export function kindFromSlug(slug: string): TimelineEntryKind {
-  return slug.toLowerCase().includes("event") ? "event" : "blog";
+  return slug.toLowerCase().includes('event') ? 'event' : 'blog'
 }
 
 /**
@@ -68,15 +65,18 @@ export function kindFromSlug(slug: string): TimelineEntryKind {
  * @param {number} [max=180] - Maximum length of the excerpt.
  * @returns {string} A trimmed excerpt, ellipsised if it exceeds {@link max}.
  */
-function extractExcerpt(content: TextualBlock[] | undefined, max = 180): string {
-  if (!Array.isArray(content)) return "";
+function extractExcerpt(
+  content: TextualBlock[] | undefined,
+  max = 180,
+): string {
+  if (!Array.isArray(content)) return ''
 
-  const paragraph = content.find((block) => block.type === "paragraph");
-  const header = content.find((block) => block.type === "header");
-  const source = (paragraph ?? header)?.text?.default ?? "";
+  const paragraph = content.find((block) => block.type === 'paragraph')
+  const header = content.find((block) => block.type === 'header')
+  const source = (paragraph ?? header)?.text?.default ?? ''
 
-  const plain = source.replace(/\s+/g, " ").trim();
-  return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain;
+  const plain = source.replace(/\s+/g, ' ').trim()
+  return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain
 }
 
 /**
@@ -89,11 +89,11 @@ function extractExcerpt(content: TextualBlock[] | undefined, max = 180): string 
 function blogToEntry(record: HydratedBlogPage, lang: Language): TimelineEntry {
   return {
     id: record.id,
-    kind: "blog",
-    title: resolveTranslatable(record.title, lang)?.trim() || "Untitled",
+    kind: 'blog',
+    title: resolveTranslatable(record.title, lang)?.trim() || 'Untitled',
     excerpt: extractExcerpt(record.content as TextualBlock[]),
     date: record.createdAt.toISOString(),
-  };
+  }
 }
 
 /**
@@ -106,13 +106,13 @@ function blogToEntry(record: HydratedBlogPage, lang: Language): TimelineEntry {
 function eventToEntry(record: HydratedEvent, lang: Language): TimelineEntry {
   return {
     id: record.id,
-    kind: "event",
-    title: resolveTranslatable(record.title, lang)?.trim() || "Untitled",
+    kind: 'event',
+    title: resolveTranslatable(record.title, lang)?.trim() || 'Untitled',
     excerpt: extractExcerpt(record.content as TextualBlock[]),
     date: record.startDate.toISOString(),
     startDate: record.startDate.toISOString(),
     endDate: record.endDate.toISOString(),
-  };
+  }
 }
 
 /**
@@ -124,7 +124,7 @@ function eventToEntry(record: HydratedEvent, lang: Language): TimelineEntry {
 function sortNewestFirst(entries: TimelineEntry[]): TimelineEntry[] {
   return entries.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
+  )
 }
 
 /**
@@ -140,15 +140,19 @@ function sortNewestFirst(entries: TimelineEntry[]): TimelineEntry[] {
  */
 export async function fetchTimelineEntries(
   kind: TimelineEntryKind,
-  lang: Language = "en",
+  lang: Language = 'en',
 ): Promise<TimelineEntry[]> {
-  if (kind === "event") {
-    const result = await listEvents();
-    if (!result.success || !result.value) return [];
-    return sortNewestFirst(result.value.map((record) => eventToEntry(record, lang)));
+  if (kind === 'event') {
+    const result = await listEvents()
+    if (!result.success || !result.value) return []
+    return sortNewestFirst(
+      result.value.map((record) => eventToEntry(record, lang)),
+    )
   }
 
-  const result = await listBlogPages();
-  if (!result.success || !result.value) return [];
-  return sortNewestFirst(result.value.map((record) => blogToEntry(record, lang)));
+  const result = await listBlogPages()
+  if (!result.success || !result.value) return []
+  return sortNewestFirst(
+    result.value.map((record) => blogToEntry(record, lang)),
+  )
 }

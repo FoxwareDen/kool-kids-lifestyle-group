@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { deriveCategories, fetchExperiences, type HydratedBookingPage } from '#/lib/experiences'
+import {
+  deriveCategories,
+  fetchExperiences,
+  type HydratedBookingPage,
+} from '#/lib/experiences'
 
 /**
  * React Query hook that loads all published experiences from the client-side

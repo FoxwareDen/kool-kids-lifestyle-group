@@ -13,11 +13,16 @@ export function useBlocks() {
   const [entries, setEntries] = useState<{ id: string; block: PageBlock }[]>([])
 
   const addBlock = useCallback((type: PageBlock['type']) => {
-    setEntries((prev) => [...prev, { id: crypto.randomUUID(), block: createEmptyBlock(type, prev.length) }])
+    setEntries((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), block: createEmptyBlock(type, prev.length) },
+    ])
   }, [])
 
   const updateBlock = useCallback((id: string, updated: PageBlock) => {
-    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, block: updated } : e)))
+    setEntries((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, block: updated } : e)),
+    )
   }, [])
 
   const deleteBlock = useCallback((id: string) => {
@@ -27,7 +32,10 @@ export function useBlocks() {
   const blocks = useMemo(() => entries.map((e) => e.block), [entries])
 
   /** Blocks re-indexed by current position, ready to submit. */
-  const serialize = useCallback((): PageBlock[] => entries.map((e, i) => ({ ...e.block, index: i })), [entries])
+  const serialize = useCallback(
+    (): PageBlock[] => entries.map((e, i) => ({ ...e.block, index: i })),
+    [entries],
+  )
 
   return { entries, blocks, addBlock, updateBlock, deleteBlock, serialize }
 }

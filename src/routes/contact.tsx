@@ -6,6 +6,7 @@ import { ContactSection } from '#/components/contact/ContactSection'
 import { LocationMap } from '#/components/contact/LocationMap'
 import { ContactCta } from '#/components/contact/ContactCta'
 import { SiteFooter } from '#/components/footer/SiteFooter'
+import type { Language } from '#/lib/experiences'
 
 /**
  * The "Contact" page route. Composes the page-level sections in order: hero,
@@ -13,6 +14,10 @@ import { SiteFooter } from '#/components/footer/SiteFooter'
  * call-to-action and the shared footer.
  */
 export const Route = createFileRoute('/contact')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    lang: (search.lang as Language) ?? undefined,
+  }),
+  loaderDeps: ({ search: { lang } }) => ({ lang: lang || 'en' }),
   head: () => ({
     meta: [
       {
@@ -23,12 +28,34 @@ export const Route = createFileRoute('/contact')({
         content:
           'Get in touch with the Prieska tourism team — find our address, phone, email and opening hours, send us a message or locate us on the map.',
       },
+      {
+        property: 'og:title',
+        content: 'Contact | 360 Experiences',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Get in touch with the Prieska tourism team — find our address, phone, email and opening hours, send us a message or locate us on the map.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary',
+      },
+      {
+        name: 'twitter:title',
+        content: 'Contact | 360 Experiences',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Get in touch with the Prieska tourism team — find our address, phone, email and opening hours, send us a message or locate us on the map.',
+      },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as 'en' | 'af') ?? undefined,
-  }),
-  loaderDeps: ({ search: { lang } }) => ({ lang }),
   component: ContactPage,
 })
 
@@ -42,10 +69,10 @@ function ContactPage() {
 
   return (
     <main>
-      <ContactHero lang={lang ?? 'en'} />
-      <ContactSection lang={lang ?? 'en'} />
-      <LocationMap lang={lang ?? 'en'} />
-      <ContactCta lang={lang ?? 'en'} />
+      <ContactHero lang={lang} />
+      <ContactSection lang={lang} />
+      <LocationMap lang={lang} />
+      <ContactCta lang={lang} />
     </main>
   )
 }

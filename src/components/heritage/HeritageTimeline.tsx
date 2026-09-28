@@ -49,10 +49,31 @@ const MILESTONES: { year: string; title: string; description: string }[] = [
  * @returns {JSX.Element} The rendered timeline section.
  */
 export function HeritageTimeline({ lang = 'en' }: { lang?: Language }) {
-  const eyebrow = resolveTranslatable({ default: 'Through the Years', translations: { af: 'Deur die Jare' } }, lang)
-  const title = resolveTranslatable({ default: 'Milestones in Our History', translations: { af: 'Mylpale in Ons Geskiedenis' } }, lang)
-  const caption = resolveTranslatable({ default: 'Carved by time', translations: { af: 'Uitgesny deur die tyd' } }, lang)
-  const subcaption = resolveTranslatable({ default: 'Hills of the Northern Cape', translations: { af: 'Heuwels van die Noord-Kaap' } }, lang)
+  const eyebrow = resolveTranslatable(
+    { default: 'Through the Years', translations: { af: 'Deur die Jare' } },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'Milestones in Our History',
+      translations: { af: 'Mylpale in Ons Geskiedenis' },
+    },
+    lang,
+  )
+  const caption = resolveTranslatable(
+    {
+      default: 'Carved by time',
+      translations: { af: 'Uitgesny deur die tyd' },
+    },
+    lang,
+  )
+  const subcaption = resolveTranslatable(
+    {
+      default: 'Hills of the Northern Cape',
+      translations: { af: 'Heuwels van die Noord-Kaap' },
+    },
+    lang,
+  )
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto grid w-full max-w-[1180px] items-start gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
@@ -78,13 +99,19 @@ export function HeritageTimeline({ lang = 'en' }: { lang?: Language }) {
         {/* Image */}
         <div className="relative lg:sticky lg:top-28">
           <img
+            decoding="async"
+            loading="lazy"
             src={koppieImg}
             alt="Rocky koppie overlooking Prieska, source of the region's tiger's-eye stone"
             className="h-full max-h-[34rem] w-full object-cover shadow-lg"
           />
           <span className="absolute bottom-0 right-0 bg-[var(--brand-navy)] px-6 py-4 text-right text-white">
-            <span className="script-title block text-2xl text-[var(--brand-orange)]">{caption}</span>
-            <span className="text-xs uppercase tracking-[0.2em] text-white/70">{subcaption}</span>
+            <span className="script-title block text-2xl text-[var(--brand-orange)]">
+              {caption}
+            </span>
+            <span className="text-xs uppercase tracking-[0.2em] text-white/70">
+              {subcaption}
+            </span>
           </span>
         </div>
       </div>

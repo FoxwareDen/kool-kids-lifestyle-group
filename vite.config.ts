@@ -8,9 +8,37 @@ import { nitro } from 'nitro/vite'
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
+
+  // 1. Force Vite to tree-shake lucide-react during SSR instead of loading the entire index module
+  ssr: {
+    noExternal: ['lucide-react'],
+  },
+
+  // 2. Break down monolithic client bundles into isolated chunks
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons'
+          }
+          if (id.includes('node_modules/@tanstack')) {
+            return 'vendor-tanstack'
+          }
+        },
+      },
+    },
+  },
+
   plugins: [
     devtools(),
-    nitro({ rollupConfig: { external: [/^@sentry\//] } }),
+    nitro({
+      rollupConfig: {
+        external: [/^@sentry\//],
+      },
+    }),
     tailwindcss(),
     tanstackStart({
       prerender: {
@@ -18,7 +46,7 @@ export default defineConfig({
         crawlLinks: true,
         filter: (page) => {
           // 1. Strip query parameters (e.g. ?lang=en)
-          if (page.path.includes('?')) return false;
+          if (page.path.includes('?')) return false
 
           // 2. Exclude private routes and test pages
           if (
@@ -26,19 +54,19 @@ export default defineConfig({
             page.path.startsWith('/login') ||
             page.path.includes('test-page')
           ) {
-            return false;
+            return false
           }
 
           // 3. Prevent duplicate trailing slashes
-          if (page.path.length > 1 && page.path.endsWith('/')) return false;
+          if (page.path.length > 1 && page.path.endsWith('/')) return false
 
-          return true;
+          return true
         },
       },
       sitemap: {
         enabled: true,
-        host: "https://360experiences.co.za"
-      }
+        host: 'https://360experiences.co.za',
+      },
     }),
     viteReact(),
   ],

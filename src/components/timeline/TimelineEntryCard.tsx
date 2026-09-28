@@ -68,7 +68,10 @@ export function TimelineEntryCard({
     entry.kind === 'event'
       ? { to: '/events/$eventId', params: { eventId: entry.id } }
       : { to: '/blogs/$blogId', params: { blogId: entry.id } }
-  const readMore = resolveTranslatable({ default: 'Read more', translations: { af: 'Lees meer' } }, lang)
+  const readMore = resolveTranslatable(
+    { default: 'Read more', translations: { af: 'Lees meer' } },
+    lang,
+  )
 
   return (
     <li className="relative flex gap-6 pb-12 last:pb-0">

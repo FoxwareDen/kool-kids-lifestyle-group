@@ -10,34 +10,70 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
 const SECTION_CONFIG: Record<
   TimelineEntryKind,
   {
-    crumbLabel: { default: string; translations?: Partial<Record<Language, string>> }
+    crumbLabel: {
+      default: string
+      translations?: Partial<Record<Language, string>>
+    }
     crumbHref: string
-    eyebrow: { default: string; translations?: Partial<Record<Language, string>> }
+    eyebrow: {
+      default: string
+      translations?: Partial<Record<Language, string>>
+    }
     title: { default: string; translations?: Partial<Record<Language, string>> }
-    subtitle: { default: string; translations?: Partial<Record<Language, string>> }
-    emptyMessage: { default: string; translations?: Partial<Record<Language, string>> }
+    subtitle: {
+      default: string
+      translations?: Partial<Record<Language, string>>
+    }
+    emptyMessage: {
+      default: string
+      translations?: Partial<Record<Language, string>>
+    }
   }
 > = {
   blog: {
     crumbLabel: { default: 'Blog', translations: { af: 'Blog' } },
     crumbHref: '/blogs',
-    eyebrow: { default: 'Stories & Reflections', translations: { af: 'Stories & Refleksies' } },
-    title: { default: 'The Blog Timeline', translations: { af: 'Die Blog-tydlyn' } },
-    subtitle: { default: 'Every story, newest first.', translations: { af: 'Elke verhaal, nuutste eerste.' } },
+    eyebrow: {
+      default: 'Stories & Reflections',
+      translations: { af: 'Stories & Refleksies' },
+    },
+    title: {
+      default: 'The Blog Timeline',
+      translations: { af: 'Die Blog-tydlyn' },
+    },
+    subtitle: {
+      default: 'Every story, newest first.',
+      translations: { af: 'Elke verhaal, nuutste eerste.' },
+    },
     emptyMessage: {
-      default: 'There’s nothing here just yet. Check back soon for new stories from Prieska.',
-      translations: { af: 'Daar is nog niks hier nie. Kom gou weer terug vir nuwe stories van Prieska.' },
+      default:
+        'There’s nothing here just yet. Check back soon for new stories from Prieska.',
+      translations: {
+        af: 'Daar is nog niks hier nie. Kom gou weer terug vir nuwe stories van Prieska.',
+      },
     },
   },
   event: {
     crumbLabel: { default: 'Events', translations: { af: 'Gebeure' } },
     crumbHref: '/events',
-    eyebrow: { default: 'Gatherings & Happenings', translations: { af: 'Byeenkomste & Gebeure' } },
-    title: { default: 'The Events Timeline', translations: { af: 'Die Gebeurtenis-tydlyn' } },
-    subtitle: { default: 'Every event, newest first.', translations: { af: 'Elke gebeurtenis, nuutste eerste.' } },
+    eyebrow: {
+      default: 'Gatherings & Happenings',
+      translations: { af: 'Byeenkomste & Gebeure' },
+    },
+    title: {
+      default: 'The Events Timeline',
+      translations: { af: 'Die Gebeurtenis-tydlyn' },
+    },
+    subtitle: {
+      default: 'Every event, newest first.',
+      translations: { af: 'Elke gebeurtenis, nuutste eerste.' },
+    },
     emptyMessage: {
-      default: 'No events have been scheduled yet. Check back soon for upcoming happenings.',
-      translations: { af: 'Daar is nog geen gebeurtenisse beplan nie. Kom gou weer terug vir komende gebeure.' },
+      default:
+        'No events have been scheduled yet. Check back soon for upcoming happenings.',
+      translations: {
+        af: 'Daar is nog geen gebeurtenisse beplan nie. Kom gou weer terug vir komende gebeure.',
+      },
     },
   },
 }

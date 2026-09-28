@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionMiddleware } from '#/routes/__root'
-import { fetchBookingsDetailed, updateBooking, type DetailedBooking } from '#/lib/booking'
+import {
+  fetchBookingsDetailed,
+  updateBooking,
+  type DetailedBooking,
+} from '#/lib/booking'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 import { ActiveBookingsPanel } from '#/components/dashboard/ActiveBookingsPanel'
 
@@ -45,10 +49,25 @@ function RouteComponent() {
   const router = useRouter()
   const [pendingId, setPendingId] = useState<string | null>(null)
 
-  const pageTitle = resolveTranslatable({ default: 'Active Bookings', translations: { af: 'Aktiewe Besprekings' } }, lang)
-  const pageDescription = resolveTranslatable({ default: 'Monitor upcoming and in-progress reservations, review customer details, and update booking status across all schedules.', translations: { af: 'Monitor opkomende en voortgaande besprekings, hersien kliëntbesonderhede en werk besprekingstatus oor alle skedules op.' } }, lang)
+  const pageTitle = resolveTranslatable(
+    { default: 'Active Bookings', translations: { af: 'Aktiewe Besprekings' } },
+    lang,
+  )
+  const pageDescription = resolveTranslatable(
+    {
+      default:
+        'Monitor upcoming and in-progress reservations, review customer details, and update booking status across all schedules.',
+      translations: {
+        af: 'Monitor opkomende en voortgaande besprekings, hersien kliëntbesonderhede en werk besprekingstatus oor alle skedules op.',
+      },
+    },
+    lang,
+  )
 
-  const handleStatusChange = async (id: string, status: DetailedBooking['status']) => {
+  const handleStatusChange = async (
+    id: string,
+    status: DetailedBooking['status'],
+  ) => {
     setPendingId(id)
     try {
       await updateBooking(id, { status })
@@ -63,8 +82,12 @@ function RouteComponent() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--sea-ink)]">{pageTitle}</h1>
-        <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">{pageDescription}</p>
+        <h1 className="text-2xl font-bold text-[var(--sea-ink)]">
+          {pageTitle}
+        </h1>
+        <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">
+          {pageDescription}
+        </p>
       </div>
 
       <ActiveBookingsPanel

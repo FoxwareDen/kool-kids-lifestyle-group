@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { fetchTimelineEntries, kindFromSlug } from '#/lib/timeline'
 import { TimelineRenderer } from '#/components/timeline/TimelineRenderer'
+import type { TimelineEntry } from '#/lib/timeline'
+import { kindFromSlug } from '#/lib/timeline'
 
 /**
  * Props for the {@link BlogRenderer} component.
@@ -23,15 +23,25 @@ import { TimelineRenderer } from '#/components/timeline/TimelineRenderer'
  * @param {BlogRendererProps} props - Component props.
  * @returns {JSX.Element} The rendered timeline page for the active section.
  */
-function BlogRenderer({ slug, lang = 'en' }: { slug: string; lang?: 'en' | 'af' }) {
+function BlogRenderer({
+  lang = 'en',
+  entries,
+  slug,
+}: {
+  entries: TimelineEntry[]
+  lang?: 'en' | 'af'
+  slug: string
+}) {
   const kind = kindFromSlug(slug)
 
-  const { data: entries = [], isLoading } = useQuery({
-    queryKey: ['timeline', kind, lang],
-    queryFn: () => fetchTimelineEntries(kind, lang),
-  })
-
-  return <TimelineRenderer section={kind} entries={entries} isLoading={isLoading} lang={lang} />
+  return (
+    <TimelineRenderer
+      section={kind}
+      entries={entries}
+      isLoading={false}
+      lang={lang}
+    />
+  )
 }
 
 export default BlogRenderer

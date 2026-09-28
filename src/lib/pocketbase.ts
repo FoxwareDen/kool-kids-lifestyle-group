@@ -1,64 +1,90 @@
-import PocketBase, { type RecordFullListOptions, type RecordOptions } from 'pocketbase';
-import { environmentManager } from '@tanstack/react-query';
+import PocketBase, {
+  type RecordFullListOptions,
+  type RecordOptions,
+} from 'pocketbase'
+import { environmentManager } from '@tanstack/react-query'
 
 // ============= Client (singleton) =============
-export const pb = new PocketBase(import.meta.env.VITE_CMS_URI);
-pb.autoCancellation(false);
+export const pb = new PocketBase(import.meta.env.VITE_CMS_URI)
+pb.autoCancellation(false)
 
 // ==================== CRUD HELPERS ====================
 
 // TODO: add SQL sanitizing
 // TODO: refactor code to use theres helpers
 
-export async function create<T, R>(collectionName: string, data: T, cookieHeader?: string): Promise<Result<R, string>> {
-  const client = getPBSession(cookieHeader);
+export async function create<T, R>(
+  collectionName: string,
+  data: T,
+  cookieHeader?: string,
+): Promise<Result<R, string>> {
+  const client = getPBSession(cookieHeader)
 
   try {
     //@ts-ignore
-    const record = await client.collection(collectionName).create(data);
+    const record = await client.collection(collectionName).create(data)
 
-    return createResult(record as R, null);
+    return createResult(record as R, null)
   } catch (error) {
     return createResult(null, `Failed to create in ${collectionName}`)
   }
 }
 
-export async function fetchCollection<R>(collectionName: string, options?: RecordFullListOptions, cookieHeader?: string): Promise<Result<R[], string>> {
-  const client = getPBSession(cookieHeader);
+export async function fetchCollection<R>(
+  collectionName: string,
+  options?: RecordFullListOptions,
+  cookieHeader?: string,
+): Promise<Result<R[], string>> {
+  const client = getPBSession(cookieHeader)
 
   try {
-    const records = await client.collection(collectionName).getFullList<R>(options);
+    const records = await client
+      .collection(collectionName)
+      .getFullList<R>(options)
 
-    return createResult(records, null);
+    return createResult(records, null)
   } catch (error) {
-    console.error(error);
+    console.error(error)
     return createResult(null, `Failed to fetch ${collectionName}`)
   }
 }
 
-export async function updateItemInCollection<T, R>(collectionName: string, id: string, data: Partial<T>, options?: RecordOptions, cookieHeader?: string): Promise<Result<R, string>> {
-  const client = getPBSession(cookieHeader);
+export async function updateItemInCollection<T, R>(
+  collectionName: string,
+  id: string,
+  data: Partial<T>,
+  options?: RecordOptions,
+  cookieHeader?: string,
+): Promise<Result<R, string>> {
+  const client = getPBSession(cookieHeader)
 
   try {
-    const record = await client.collection(collectionName).update<R>(id, data, options);
+    const record = await client
+      .collection(collectionName)
+      .update<R>(id, data, options)
 
-    return createResult(record, null);
+    return createResult(record, null)
   } catch (error) {
-    console.error(error);
-    return createResult(null, `Failed to update item in ${collectionName}`);
+    console.error(error)
+    return createResult(null, `Failed to update item in ${collectionName}`)
   }
 }
 
-export async function deleteItemInCollection(collectionName: string, id: string, options?: RecordOptions, cookieHeader?: string): Promise<Result<boolean, string>> {
-  const client = getPBSession(cookieHeader);
+export async function deleteItemInCollection(
+  collectionName: string,
+  id: string,
+  options?: RecordOptions,
+  cookieHeader?: string,
+): Promise<Result<boolean, string>> {
+  const client = getPBSession(cookieHeader)
 
   try {
-    const record = await client.collection(collectionName).delete(id, options);
+    const record = await client.collection(collectionName).delete(id, options)
 
-    return createResult(record, null);
+    return createResult(record, null)
   } catch (error) {
-    console.error(error);
-    return createResult(null, `Failed to delete item in ${collectionName}`);
+    console.error(error)
+    return createResult(null, `Failed to delete item in ${collectionName}`)
   }
 }
 
@@ -66,7 +92,7 @@ export async function deleteItemInCollection(collectionName: string, id: string,
 
 export const getPBSession = (cookieHeader?: string) => {
   if (environmentManager.isServer()) {
-    return createPB_SSR(cookieHeader);
+    return createPB_SSR(cookieHeader)
   } else {
     // Dynamic import on the client side
     return pb
@@ -78,7 +104,7 @@ export const getPBSession = (cookieHeader?: string) => {
  */
 export function isAuthenticated(cookieHeader?: string): boolean {
   const client = getPBSession(cookieHeader)
-  return client.authStore.isValid;
+  return client.authStore.isValid
 }
 
 /**
@@ -87,7 +113,7 @@ export function isAuthenticated(cookieHeader?: string): boolean {
  */
 export function getCurrentUser() {
   const client = getPBSession()
-  return client.authStore.record;
+  return client.authStore.record
 }
 
 /**
@@ -95,12 +121,17 @@ export function getCurrentUser() {
  */
 export function handleLogout() {
   const client = getPBSession()
-  client.authStore.clear();
+  client.authStore.clear()
   // Clear the cookie by setting an expired date
-  document.cookie = "pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+  document.cookie =
+    'pb_auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict'
 }
 
-export function buildImageUrl(assetCollId: string, assetId: string, filename: string) {
+export function buildImageUrl(
+  assetCollId: string,
+  assetId: string,
+  filename: string,
+) {
   return `${import.meta.env.VITE_CMS_URI}/api/files/${assetCollId}/${assetId}/${filename}`
 }
 
@@ -111,16 +142,16 @@ export function buildImageUrl(assetCollId: string, assetId: string, filename: st
  */
 export async function uploadAsset(
   file: File,
-  meta?: { name: string; alt?: string; type: "image" | "video" | "svg" }
+  meta?: { name: string; alt?: string; type: 'image' | 'video' | 'svg' },
 ): Promise<Result<Asset, string>> {
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", meta?.type ?? "image");
-    if (meta?.name) formData.append("name", meta.name);
-    if (meta?.alt) formData.append("alt", meta.alt);
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', meta?.type ?? 'image')
+    if (meta?.name) formData.append('name', meta.name)
+    if (meta?.alt) formData.append('alt', meta.alt)
 
-    const record = await pb.collection("assets").create(formData);
+    const record = await pb.collection('assets').create(formData)
 
     return createResult<Asset, string>(
       {
@@ -132,64 +163,77 @@ export async function uploadAsset(
         name: record.name,
         alt: record.alt,
       },
-      null
-    );
+      null,
+    )
   } catch (error: any) {
     // 🚨 THIS extracts the nested JSON that says exactly what field was rejected
-    console.error("EXACT VALIDATION ERROR:", JSON.stringify(error.response, null, 2));
+    console.error(
+      'EXACT VALIDATION ERROR:',
+      JSON.stringify(error.response, null, 2),
+    )
 
-    return createResult<Asset, string>(null, error.message ?? "Upload failed.");
+    return createResult<Asset, string>(null, error.message ?? 'Upload failed.')
   }
 }
 
-export async function getAssets(): Promise<Result<Asset[],string>> {
+export async function getAssets(): Promise<Result<Asset[], string>> {
   try {
-    const records = await fetchCollection("assets");
+    const records = await fetchCollection('assets')
 
     if (!records.success || !records.value) {
-      return createResult(null, "Failed to get assets");
+      return createResult(null, 'Failed to get assets')
     }
-    
-    return createResult(records.value, null);
+
+    return createResult(records.value, null)
   } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to get assets");
+    console.error(error)
+    return createResult(null, 'Failed to get assets')
   }
 }
 
-export async function deleteAsset(id: string): Promise<Result<boolean, string>> {
+export async function deleteAsset(
+  id: string,
+): Promise<Result<boolean, string>> {
   try {
-    const record = await deleteItemInCollection("assets", id);
+    const record = await deleteItemInCollection('assets', id)
 
     if (!record.success || !record.value) {
-      return createResult(null, "Failed to delete image");
+      return createResult(null, 'Failed to delete image')
     }
 
     return createResult(record.value, null)
   } catch (error) {
-    console.error(error);
-    return createResult(null, "Failed to delete image");
+    console.error(error)
+    return createResult(null, 'Failed to delete image')
   }
 }
 
 /** Infer asset type from the browser File MIME type */
-function inferType(file: File): "image" | "video" | "svg" {
-  if (file.type === "image/svg+xml") return "svg";
-  if (file.type.startsWith("video/")) return "video";
-  return "image";
+function inferType(file: File): 'image' | 'video' | 'svg' {
+  if (file.type === 'image/svg+xml') return 'svg'
+  if (file.type.startsWith('video/')) return 'video'
+  return 'image'
 }
 
-export async function fetchPageData(slug: string, language: "en" | "af" = "en"): Promise<PageData | null> {
+export async function fetchPageData(
+  slug: string,
+  language: 'en' | 'af' = 'en',
+): Promise<PageData | null> {
   try {
-    const record = await pb.collection('pages').getFirstListItem(
-      `slug = "${slug}" && language = "${language}"`,
-      { expand: 'components_via_pages' }
-    );
+    const record = await pb
+      .collection('pages')
+      .getFirstListItem(`slug = "${slug}" && language = "${language}"`, {
+        expand: 'components_via_pages',
+      })
 
-    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current: Component) => {
-      prev[current.components] = current
-      return prev
-    }, {})
+    const components: Record<string, Component> =
+      record.expand?.components_via_pages.reduce(
+        (prev: Record<string, Component>, current: Component) => {
+          prev[current.components] = current
+          return prev
+        },
+        {},
+      )
 
     return {
       id: record.id,
@@ -201,132 +245,137 @@ export async function fetchPageData(slug: string, language: "en" | "af" = "en"):
       project: record.project,
       created: record.created,
       updated: record.updated,
-      components
-    } as PageData;
+      components,
+    } as PageData
   } catch (error: any) {
-    if (error?.status === 404) return null;
-    throw error;
+    if (error?.status === 404) return null
+    throw error
   }
 }
 
 // ============= Google OAuth Integration =============
 export async function handleGoogleLogin() {
   try {
-    const authData = await pb.collection('users').authWithOAuth2({ provider: 'google' });
+    const authData = await pb
+      .collection('users')
+      .authWithOAuth2({ provider: 'google' })
 
     // EXPORT TO COOKIE: Sync auth data to a cookie so the SSR side can read it on subsequent page requests.
     // Secure flag should be appended in production environments (https)
-    document.cookie = `pb_auth=${encodeURIComponent(pb.authStore.exportToCookie())}; path=/; SameSite=Strict`;
+    document.cookie = `pb_auth=${encodeURIComponent(pb.authStore.exportToCookie())}; path=/; SameSite=Strict`
 
     return {
       success: true,
       token: authData.token,
       record: authData.record,
-      error: null
-    };
+      error: null,
+    }
   } catch (error: any) {
     return {
       success: false,
       token: null,
       record: null,
-      error: error.message || "Google authentication failed."
-    };
+      error: error.message || 'Google authentication failed.',
+    }
   }
 }
 
 // ============= Types =============
 export type MetaData = {
-  id: string;
-  collectionId: string;
-  collectionName: string;
-  created: string;
-  updated: string;
+  id: string
+  collectionId: string
+  collectionName: string
+  created: string
+  updated: string
 }
 export interface Asset {
-  alt: string,
-  collectionId: string,
-  collectionName: string,
-  file: string,
+  alt: string
+  collectionId: string
+  collectionName: string
+  file: string
   id: string
-  name: string,
-  type: string,
+  name: string
+  type: string
 }
 
 export interface Component<T = unknown> {
-  id: string;
-  collectionId: string;
-  collectionName: string;
-  components: string;
-  content: Record<string, Content<T>>;
-  media: Record<string, Asset>;
-  pages: string;
-  created?: string;
-  updated?: string;
+  id: string
+  collectionId: string
+  collectionName: string
+  components: string
+  content: Record<string, Content<T>>
+  media: Record<string, Asset>
+  pages: string
+  created?: string
+  updated?: string
   expand?: {
     media: Asset[]
   }
 }
 
 export interface Content<T = unknown> {
-  collectionId: string;
-  collectionName: string;
-  component: string,
+  collectionId: string
+  collectionName: string
+  component: string
   content: T
-  created: string,
-  updated: string,
-  lang: "en" | "af",
+  created: string
+  updated: string
+  lang: 'en' | 'af'
   media: Record<string, Asset>
   pages?: string
   id?: string
 }
 
 export interface Page<T = unknown> {
-  id: string;
-  collectionId: string;
-  collectionName: string;
-  title: string;
-  slug: string;
-  language: 'en' | 'af';
-  project: string;
-  created: string;
-  updated: string;
+  id: string
+  collectionId: string
+  collectionName: string
+  title: string
+  slug: string
+  language: 'en' | 'af'
+  project: string
+  created: string
+  updated: string
   expand?: {
-    components_via_pages: Component<T>[];
-  };
+    components_via_pages: Component<T>[]
+  }
 }
 
 export interface PageData<T = unknown> {
-  id: string;
-  collectionId: string;
-  collectionName: string;
-  title: string;
-  slug: string;
-  language: 'en' | 'af';
-  project: string;
-  created: string;
-  updated: string;
+  id: string
+  collectionId: string
+  collectionName: string
+  title: string
+  slug: string
+  language: 'en' | 'af'
+  project: string
+  created: string
+  updated: string
   components: Record<string, Component<T>>
 }
 
 export class Result<T, E> {
-  public value: T | null;
-  public error: E | null;
-  public success: boolean = false;
+  public value: T | null
+  public error: E | null
+  public success: boolean = false
   constructor(value: T | null, error: E | null) {
-    this.value = value;
-    this.error = error;
-    this.success = this.error === null;
+    this.value = value
+    this.error = error
+    this.success = this.error === null
   }
 
   isSuccess() {
     // @ts-ignore
-    return this.error === null;
+    return this.error === null
   }
 }
 
 // Simplify the return type to just Result<T, E>
-export function createResult<T, E>(value: T | null, error: E | null): Result<T, E> {
-  return new Result<T, E>(value, error); // Use 'as' here so TS knows the prototype injection is safe
+export function createResult<T, E>(
+  value: T | null,
+  error: E | null,
+): Result<T, E> {
+  return new Result<T, E>(value, error) // Use 'as' here so TS knows the prototype injection is safe
 }
 
 // ============= SSR Auth Sharing =============
@@ -336,21 +385,21 @@ export function createResult<T, E>(value: T | null, error: E | null): Result<T, 
  * Pass the raw request cookie string fetched from your framework's server context.
  */
 export function createPB_SSR(cookieString?: string): PocketBase {
-  const client = new PocketBase(process.env.CMS_URI);
+  const client = new PocketBase(process.env.CMS_URI)
   // 💡 KILL AUTO-CANCELLATION FOR SSR / SERVER FUNCTION INSTANCES
-  client.autoCancellation(false);
+  client.autoCancellation(false)
 
   if (cookieString) {
     // Parse our specific pb_auth cookie key out of the headers
-    const match = cookieString.match(/pb_auth=([^;]+)/);
+    const match = cookieString.match(/pb_auth=([^;]+)/)
     if (match && match[1]) {
-      const rawCookie = decodeURIComponent(match[1]);
+      const rawCookie = decodeURIComponent(match[1])
       // Instantly populates client.authStore.model and client.authStore.isValid on the server side
-      client.authStore.loadFromCookie(rawCookie);
+      client.authStore.loadFromCookie(rawCookie)
     }
   }
 
-  return client;
+  return client
 }
 
 /**
@@ -358,50 +407,59 @@ export function createPB_SSR(cookieString?: string): PocketBase {
  * Returns true if the session cookie contains a valid, unexpired authentication state.
  */
 export function isAuthenticatedSSR(cookieString?: string): boolean {
-  const client = createPB_SSR(cookieString);
-  return client.authStore.isValid;
+  const client = createPB_SSR(cookieString)
+  return client.authStore.isValid
 }
 
 /**
  * Server-side helper to fetch the authenticated user record during SSR.
  */
 export function getCurrentUserSSR(cookieString?: string) {
-  const client = createPB_SSR(cookieString);
-  return client.authStore.record;
+  const client = createPB_SSR(cookieString)
+  return client.authStore.record
 }
 
 export async function fetchPageDataSSR(
   slug: string,
-  language: "en" | "af" = "en",
-  cookieHeader?: string // <-- Accept cookies from incoming server request headers
+  language: 'en' | 'af' = 'en',
+  cookieHeader?: string, // <-- Accept cookies from incoming server request headers
 ): Promise<PageData | null> {
   // Hydrate an authenticated instance on the server side
-  const client = createPB_SSR(cookieHeader);
+  const client = createPB_SSR(cookieHeader)
 
   try {
     // If you ever need to restrict pages based on role/auth on the SSR side, you can now run:
     // if (!client.authStore.isValid) { ... handle server side redirect/401 ... }
 
-    const record = await client.collection('pages').getFirstListItem(
-      `slug = "${slug}" && language = "${language}"`,
-      { expand: 'components_via_pages.media, components_via_pages' }
-    );
+    const record = await client
+      .collection('pages')
+      .getFirstListItem(`slug = "${slug}" && language = "${language}"`, {
+        expand: 'components_via_pages.media, components_via_pages',
+      })
 
-    const components: Record<string, Component> = record.expand?.components_via_pages.reduce((prev: Record<string, Component>, current: Component) => {
-      const media: Record<string, Asset> = current?.expand?.media && current.expand.media.length > 0 ?
-        current.expand.media.reduce((prev, c) => {
-          prev[c.name] = c;
-          return prev;
-        }, {} as Record<string, Asset>)
-        : {};
+    const components: Record<string, Component> =
+      record.expand?.components_via_pages.reduce(
+        (prev: Record<string, Component>, current: Component) => {
+          const media: Record<string, Asset> =
+            current?.expand?.media && current.expand.media.length > 0
+              ? current.expand.media.reduce(
+                  (prev, c) => {
+                    prev[c.name] = c
+                    return prev
+                  },
+                  {} as Record<string, Asset>,
+                )
+              : {}
 
-      prev[current.components] = {
-        ...current,
-        media,
-        expand: undefined
-      }
-      return prev
-    }, {})
+          prev[current.components] = {
+            ...current,
+            media,
+            expand: undefined,
+          }
+          return prev
+        },
+        {},
+      )
 
     return {
       id: record.id,
@@ -413,11 +471,10 @@ export async function fetchPageDataSSR(
       project: record.project,
       created: record.created,
       updated: record.updated,
-      components
-    } as PageData;
-
+      components,
+    } as PageData
   } catch (error: any) {
-    if (error?.status === 404) return null;
-    throw error;
+    if (error?.status === 404) return null
+    throw error
   }
 }

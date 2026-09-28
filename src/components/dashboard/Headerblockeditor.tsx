@@ -1,20 +1,29 @@
 import type { HeaderBlock, Language } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
-import { setTranslated } from '#/lib/utils';
-import { Field } from './Field';
-import { inputCls } from './Styles';
+import { setTranslated } from '#/lib/utils'
+import { Field } from './Field'
+import { inputCls } from './Styles'
 
 export const HeaderBlockEditor = ({
-  block, lang, onChange,
+  block,
+  lang,
+  onChange,
 }: {
-  block: HeaderBlock; lang: Language; onChange: (b: HeaderBlock) => void
+  block: HeaderBlock
+  lang: Language
+  onChange: (b: HeaderBlock) => void
 }) => (
   <div className="flex flex-col gap-3">
     <Field label="Level">
       <select
         className={inputCls}
         value={block.level}
-        onChange={(e) => onChange({ ...block, level: parseInt(e.target.value, 10) as 1 | 2 | 3 })}
+        onChange={(e) =>
+          onChange({
+            ...block,
+            level: parseInt(e.target.value, 10) as 1 | 2 | 3,
+          })
+        }
       >
         <option value="1">H1</option>
         <option value="2">H2</option>
@@ -26,7 +35,12 @@ export const HeaderBlockEditor = ({
         className={inputCls}
         value={resolveTranslatable(block.text, lang)}
         placeholder="Heading text…"
-        onChange={(e) => onChange({ ...block, text: setTranslated(block.text, lang, e.target.value) })}
+        onChange={(e) =>
+          onChange({
+            ...block,
+            text: setTranslated(block.text, lang, e.target.value),
+          })
+        }
       />
     </Field>
   </div>

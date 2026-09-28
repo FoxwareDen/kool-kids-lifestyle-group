@@ -92,6 +92,8 @@ export function GalleryLightbox({
         onClick={(event) => event.stopPropagation()}
       >
         <img
+          decoding="async"
+          loading="lazy"
           src={photo.image || '/placeholder.svg'}
           alt={photo.alt}
           className="max-h-[78svh] w-auto max-w-full object-contain shadow-2xl shadow-black/40"

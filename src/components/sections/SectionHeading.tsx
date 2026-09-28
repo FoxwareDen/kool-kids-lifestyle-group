@@ -36,7 +36,9 @@ export function SectionHeading({
   return (
     <div
       className={
-        align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-xl text-left'
+        align === 'center'
+          ? 'mx-auto max-w-2xl text-center'
+          : 'max-w-xl text-left'
       }
     >
       <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--brand-orange)]">

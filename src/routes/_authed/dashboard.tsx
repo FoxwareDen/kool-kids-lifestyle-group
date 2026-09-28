@@ -19,7 +19,7 @@ function DashboardComponent() {
   const sectionTitle = getActiveNavLabel(pathname, lang ?? 'en')
 
   return (
-    <div className='flex h-dvh w-full bg-[#F5F5F7]'>
+    <div className="flex h-dvh w-full bg-[#F5F5F7]">
       <DashboardSidebar lang={lang ?? 'en'} />
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardTopbar sectionTitle={sectionTitle} lang={lang ?? 'en'} />
@@ -27,6 +27,6 @@ function DashboardComponent() {
           <Outlet />
         </main>
       </div>
-      </div>
+    </div>
   )
 }

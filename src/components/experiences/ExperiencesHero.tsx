@@ -34,6 +34,8 @@ export function ExperiencesHero({
   return (
     <section className="relative flex min-h-[58svh] w-full items-end overflow-hidden bg-[var(--brand-navy)] pb-14">
       <img
+        decoding="async"
+        loading="lazy"
         src={image || '/placeholder.svg'}
         alt=""
         aria-hidden="true"
@@ -60,9 +62,15 @@ export function ExperiencesHero({
               const isLast = i === crumbs.length - 1
               return (
                 <li key={crumb.label} className="flex items-center gap-2">
-                  <ChevronRight className="h-3.5 w-3.5 text-white/40" aria-hidden="true" />
+                  <ChevronRight
+                    className="h-3.5 w-3.5 text-white/40"
+                    aria-hidden="true"
+                  />
                   {isLast || !crumb.href ? (
-                    <span className="text-[var(--brand-orange)]" aria-current="page">
+                    <span
+                      className="text-[var(--brand-orange)]"
+                      aria-current="page"
+                    >
                       {crumb.label}
                     </span>
                   ) : (
@@ -85,7 +93,7 @@ export function ExperiencesHero({
         <h1 className="display-title mt-3 max-w-3xl text-balance text-4xl font-medium leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem]">
           {title}
         </h1>
-        <p className="script-title mt-2 text-2xl font-semibold text-[var(--brand-orange)] sm:text-3xl">
+        <p className="script-title mt-2 text-2xl font-normal text-[var(--brand-orange)] sm:text-3xl">
           {subtitle}
         </p>
       </div>

@@ -30,62 +30,140 @@ export type DashboardNavItem = {
 export function getDashboardNav(lang: Language = 'en'): DashboardNavItem[] {
   return [
     {
-      label: resolveTranslatable({ default: 'Home', translations: { af: 'Tuis' } }, lang),
-      description: resolveTranslatable({ default: 'Back to user side', translations: { af: 'Terug na die gebruikerskant' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Home', translations: { af: 'Tuis' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Back to user side',
+          translations: { af: 'Terug na die gebruikerskant' },
+        },
+        lang,
+      ),
       to: '/',
       icon: HomeIcon,
       exact: true,
     },
     {
-      label: resolveTranslatable({ default: 'Dashboard', translations: { af: 'Paneel' } }, lang),
-      description: resolveTranslatable({ default: 'Overview and how-to guides', translations: { af: 'Oorsig en gidses' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Dashboard', translations: { af: 'Paneel' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Overview and how-to guides',
+          translations: { af: 'Oorsig en gidses' },
+        },
+        lang,
+      ),
       to: '/dashboard/',
       icon: LayoutDashboard,
       exact: true,
     },
     {
-      label: resolveTranslatable({ default: 'Active Bookings', translations: { af: 'Aktiewe Besprekings' } }, lang),
-      description: resolveTranslatable({ default: 'Monitor all current active bookings', translations: { af: 'Monitor alle huidige aktiewe besprekinge' } }, lang),
+      label: resolveTranslatable(
+        {
+          default: 'Active Bookings',
+          translations: { af: 'Aktiewe Besprekings' },
+        },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Monitor all current active bookings',
+          translations: { af: 'Monitor alle huidige aktiewe besprekinge' },
+        },
+        lang,
+      ),
       to: '/dashboard/bookings',
       icon: CalendarCheck2,
       exact: true,
     },
     {
-      label: resolveTranslatable({ default: 'Schedules', translations: { af: 'Skedules' } }, lang),
-      description: resolveTranslatable({ default: 'Overview of the existing schedules', translations: { af: 'Oorsig van die bestaande skedules' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Schedules', translations: { af: 'Skedules' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Overview of the existing schedules',
+          translations: { af: 'Oorsig van die bestaande skedules' },
+        },
+        lang,
+      ),
       to: '/dashboard/calendars',
       icon: CalendarDays,
       exact: true,
     },
     {
-      label: resolveTranslatable({ default: 'Create Schedule', translations: { af: 'Skep Skedule' } }, lang),
-      description: resolveTranslatable({ default: 'Create Schedule for experiences', translations: { af: 'Skep ’n skedule vir ervarings' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Create Schedule', translations: { af: 'Skep Skedule' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Create Schedule for experiences',
+          translations: { af: 'Skep ’n skedule vir ervarings' },
+        },
+        lang,
+      ),
       to: '/dashboard/create-calendar',
       icon: CalendarPlus,
       exact: true,
     },
     {
-      label: resolveTranslatable({ default: 'Create Posts', translations: { af: 'Skep Plasings' } }, lang),
-      description: resolveTranslatable({ default: 'Publish a new Blog or Event page', translations: { af: 'Publiseer ’n nuwe Blog- of Gebeurtenisbladsy' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Create Posts', translations: { af: 'Skep Plasings' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Publish a new Blog or Event page',
+          translations: { af: 'Publiseer ’n nuwe Blog- of Gebeurtenisbladsy' },
+        },
+        lang,
+      ),
       to: '/dashboard/create-post',
       icon: Newspaper,
     },
     {
-      label: resolveTranslatable({ default: 'Create Experience', translations: { af: 'Skep Ervaring' } }, lang),
-      description: resolveTranslatable({ default: 'Publish a new experience page', translations: { af: 'Publiseer ’n nuwe ervaringsbladsy' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Create Experience', translations: { af: 'Skep Ervaring' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Publish a new experience page',
+          translations: { af: 'Publiseer ’n nuwe ervaringsbladsy' },
+        },
+        lang,
+      ),
       to: '/dashboard/create-experience',
       icon: FilePlus2,
     },
     {
-      label: resolveTranslatable({ default: 'Experiences', translations: { af: 'Ervarings' } }, lang),
-      description: resolveTranslatable({ default: 'Review and manage experience pages', translations: { af: 'Bestudeer en bestuur ervaringsbladse' } }, lang),
+      label: resolveTranslatable(
+        { default: 'Experiences', translations: { af: 'Ervarings' } },
+        lang,
+      ),
+      description: resolveTranslatable(
+        {
+          default: 'Review and manage experience pages',
+          translations: { af: 'Bestudeer en bestuur ervaringsbladse' },
+        },
+        lang,
+      ),
       to: '/dashboard/experiences',
       icon: ViewIcon,
     },
   ]
 }
 
-export function getActiveNavLabel(pathname: string, lang: Language = 'en'): string {
+export function getActiveNavLabel(
+  pathname: string,
+  lang: Language = 'en',
+): string {
   const nav = getDashboardNav(lang)
   const match = [...nav]
     .filter((item) => {

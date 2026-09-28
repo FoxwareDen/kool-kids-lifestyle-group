@@ -11,14 +11,46 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered call-to-action section.
  */
 export function HeritageCta({ lang = 'en' }: { lang?: Language }) {
-  const kicker = resolveTranslatable({ default: 'Walk Through History', translations: { af: 'Loop deur Geskiedenis' } }, lang)
-  const title = resolveTranslatable({ default: 'Experience the Heritage of Prieska First-Hand', translations: { af: 'Ervaar die Erfenis van Prieska Selfs' } }, lang)
-  const description = resolveTranslatable({ default: 'Join a guided heritage tour and discover the landmarks, stories and traditions that have shaped our town for over a century.', translations: { af: 'Sluit aan by ’n begeleide erfenistoer en ontdek die landmerke, stories en tradisies wat ons dorp meer as ’n eeu gevorm het.' } }, lang)
-  const primaryLabel = resolveTranslatable({ default: 'Book an experience', translations: { af: 'Bespreek ’n ervaring' } }, lang)
-  const secondaryLabel = resolveTranslatable({ default: 'Contact Us', translations: { af: 'Kontak Ons' } }, lang)
+  const kicker = resolveTranslatable(
+    {
+      default: 'Walk Through History',
+      translations: { af: 'Loop deur Geskiedenis' },
+    },
+    lang,
+  )
+  const title = resolveTranslatable(
+    {
+      default: 'Experience the Heritage of Prieska First-Hand',
+      translations: { af: 'Ervaar die Erfenis van Prieska Selfs' },
+    },
+    lang,
+  )
+  const description = resolveTranslatable(
+    {
+      default:
+        'Join a guided heritage tour and discover the landmarks, stories and traditions that have shaped our town for over a century.',
+      translations: {
+        af: 'Sluit aan by ’n begeleide erfenistoer en ontdek die landmerke, stories en tradisies wat ons dorp meer as ’n eeu gevorm het.',
+      },
+    },
+    lang,
+  )
+  const primaryLabel = resolveTranslatable(
+    {
+      default: 'Book an experience',
+      translations: { af: 'Bespreek ’n ervaring' },
+    },
+    lang,
+  )
+  const secondaryLabel = resolveTranslatable(
+    { default: 'Contact Us', translations: { af: 'Kontak Ons' } },
+    lang,
+  )
   return (
     <section className="relative overflow-hidden">
       <img
+        decoding="async"
+        loading="lazy"
         src={riverImg}
         alt="The Orange River winding past Prieska"
         className="absolute inset-0 h-full w-full object-cover"

@@ -28,7 +28,9 @@ export function UnitTypeTile({
       }`}
     >
       <div>
-        <h4 className="text-sm font-semibold text-[var(--sea-ink)]">{unit.label}</h4>
+        <h4 className="text-sm font-semibold text-[var(--sea-ink)]">
+          {unit.label}
+        </h4>
         <div className="mt-1 flex gap-3 text-xs text-[var(--sea-ink-soft)]">
           <span>Capacity: {unit.capacity}</span>
           <span>${unit.value}</span>

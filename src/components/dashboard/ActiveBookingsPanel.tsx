@@ -4,8 +4,16 @@ import type { DetailedBooking } from '#/lib/booking'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 import { cn } from '#/lib/utils'
 import { Pill, controlClass } from './form-controls'
-import { ActiveBookingRow, ROW_GRID, type StatusChangeHandler } from './ActiveBookingRow'
-import { isActiveBooking, matchesQuery, selectActiveBookings } from './booking-utils'
+import {
+  ActiveBookingRow,
+  ROW_GRID,
+  type StatusChangeHandler,
+} from './ActiveBookingRow'
+import {
+  isActiveBooking,
+  matchesQuery,
+  selectActiveBookings,
+} from './booking-utils'
 
 /** The selectable views for the bookings list. */
 type FilterKey = 'active' | 'pending' | 'completed' | 'cancelled' | 'all'
@@ -17,7 +25,10 @@ type FilterKey = 'active' | 'pending' | 'completed' | 'cancelled' | 'all'
  * status-named filters match on status; `all` returns everything sorted by most
  * recent date.
  */
-function applyFilter(bookings: DetailedBooking[], filter: FilterKey): DetailedBooking[] {
+function applyFilter(
+  bookings: DetailedBooking[],
+  filter: FilterKey,
+): DetailedBooking[] {
   if (filter === 'active') return selectActiveBookings(bookings)
   if (filter === 'all') {
     return [...bookings].sort((a, b) => b.date.localeCompare(a.date))
@@ -33,12 +44,27 @@ function applyFilter(bookings: DetailedBooking[], filter: FilterKey): DetailedBo
  */
 function TableHeader({ lang = 'en' }: { lang?: Language }) {
   const labels = [
-    resolveTranslatable({ default: 'Unit', translations: { af: 'Eenheid' } }, lang),
-    resolveTranslatable({ default: 'Customer', translations: { af: 'Kliënt' } }, lang),
-    resolveTranslatable({ default: 'Date', translations: { af: 'Datum' } }, lang),
+    resolveTranslatable(
+      { default: 'Unit', translations: { af: 'Eenheid' } },
+      lang,
+    ),
+    resolveTranslatable(
+      { default: 'Customer', translations: { af: 'Kliënt' } },
+      lang,
+    ),
+    resolveTranslatable(
+      { default: 'Date', translations: { af: 'Datum' } },
+      lang,
+    ),
     resolveTranslatable({ default: 'Time', translations: { af: 'Tyd' } }, lang),
-    resolveTranslatable({ default: 'Duration', translations: { af: 'Duur' } }, lang),
-    resolveTranslatable({ default: 'Status', translations: { af: 'Status' } }, lang),
+    resolveTranslatable(
+      { default: 'Duration', translations: { af: 'Duur' } },
+      lang,
+    ),
+    resolveTranslatable(
+      { default: 'Status', translations: { af: 'Status' } },
+      lang,
+    ),
   ]
 
   return (
@@ -87,11 +113,41 @@ export function ActiveBookingsPanel({
   const [query, setQuery] = useState('')
 
   const FILTERS: ReadonlyArray<{ key: FilterKey; label: string }> = [
-    { key: 'active', label: resolveTranslatable({ default: 'Active', translations: { af: 'Aktief' } }, lang) },
-    { key: 'pending', label: resolveTranslatable({ default: 'Pending', translations: { af: 'Hangende' } }, lang) },
-    { key: 'completed', label: resolveTranslatable({ default: 'Completed', translations: { af: 'Voltooid' } }, lang) },
-    { key: 'cancelled', label: resolveTranslatable({ default: 'Cancelled', translations: { af: 'Gekanselleer' } }, lang) },
-    { key: 'all', label: resolveTranslatable({ default: 'All', translations: { af: 'Alles' } }, lang) },
+    {
+      key: 'active',
+      label: resolveTranslatable(
+        { default: 'Active', translations: { af: 'Aktief' } },
+        lang,
+      ),
+    },
+    {
+      key: 'pending',
+      label: resolveTranslatable(
+        { default: 'Pending', translations: { af: 'Hangende' } },
+        lang,
+      ),
+    },
+    {
+      key: 'completed',
+      label: resolveTranslatable(
+        { default: 'Completed', translations: { af: 'Voltooid' } },
+        lang,
+      ),
+    },
+    {
+      key: 'cancelled',
+      label: resolveTranslatable(
+        { default: 'Cancelled', translations: { af: 'Gekanselleer' } },
+        lang,
+      ),
+    },
+    {
+      key: 'all',
+      label: resolveTranslatable(
+        { default: 'All', translations: { af: 'Alles' } },
+        lang,
+      ),
+    },
   ]
 
   const activeCount = useMemo(
@@ -104,14 +160,66 @@ export function ActiveBookingsPanel({
   }, [bookings, filter, query])
 
   const titles = {
-    heading: resolveTranslatable({ default: 'Bookings monitor', translations: { af: 'Besprekingsmonitor' } }, lang),
-    subheading: resolveTranslatable({ default: 'Search, filter, and manage reservations across all schedules.', translations: { af: 'Deursoek, filter en bestuur besprekings oor alle skedules.' } }, lang),
-    label: resolveTranslatable({ default: 'active', translations: { af: 'aktief' } }, lang),
-    filterLabel: resolveTranslatable({ default: 'Filter bookings', translations: { af: 'Filtreer besprekinge' } }, lang),
-    placeholder: resolveTranslatable({ default: 'Search name, unit, reference…', translations: { af: 'Soek naam, eenheid, verwysing…' } }, lang),
-    emptyTitle: resolveTranslatable({ default: 'No bookings found', translations: { af: 'Geen besprekings gevind' } }, lang),
-    emptyQuery: resolveTranslatable({ default: 'Try a different search term or switch filters.', translations: { af: 'Probeer ’n ander soekterm of verander die filters.' } }, lang),
-    emptyDefault: resolveTranslatable({ default: 'Bookings matching this filter will appear here.', translations: { af: 'Besprekings wat by hierdie filter pas, sal hier verskyn.' } }, lang),
+    heading: resolveTranslatable(
+      {
+        default: 'Bookings monitor',
+        translations: { af: 'Besprekingsmonitor' },
+      },
+      lang,
+    ),
+    subheading: resolveTranslatable(
+      {
+        default:
+          'Search, filter, and manage reservations across all schedules.',
+        translations: {
+          af: 'Deursoek, filter en bestuur besprekings oor alle skedules.',
+        },
+      },
+      lang,
+    ),
+    label: resolveTranslatable(
+      { default: 'active', translations: { af: 'aktief' } },
+      lang,
+    ),
+    filterLabel: resolveTranslatable(
+      {
+        default: 'Filter bookings',
+        translations: { af: 'Filtreer besprekinge' },
+      },
+      lang,
+    ),
+    placeholder: resolveTranslatable(
+      {
+        default: 'Search name, unit, reference…',
+        translations: { af: 'Soek naam, eenheid, verwysing…' },
+      },
+      lang,
+    ),
+    emptyTitle: resolveTranslatable(
+      {
+        default: 'No bookings found',
+        translations: { af: 'Geen besprekings gevind' },
+      },
+      lang,
+    ),
+    emptyQuery: resolveTranslatable(
+      {
+        default: 'Try a different search term or switch filters.',
+        translations: {
+          af: 'Probeer ’n ander soekterm of verander die filters.',
+        },
+      },
+      lang,
+    ),
+    emptyDefault: resolveTranslatable(
+      {
+        default: 'Bookings matching this filter will appear here.',
+        translations: {
+          af: 'Besprekings wat by hierdie filter pas, sal hier verskyn.',
+        },
+      },
+      lang,
+    ),
   }
 
   return (
@@ -126,15 +234,25 @@ export function ActiveBookingsPanel({
               <CalendarCheck2 className="size-5" aria-hidden="true" />
             </span>
             <div>
-              <h2 className="text-base font-bold text-[var(--sea-ink)]">{titles.heading}</h2>
-              <p className="text-sm text-[var(--sea-ink-soft)]">{titles.subheading}</p>
+              <h2 className="text-base font-bold text-[var(--sea-ink)]">
+                {titles.heading}
+              </h2>
+              <p className="text-sm text-[var(--sea-ink-soft)]">
+                {titles.subheading}
+              </p>
             </div>
           </div>
-          <Pill tone="accent">{activeCount} {titles.label}</Pill>
+          <Pill tone="accent">
+            {activeCount} {titles.label}
+          </Pill>
         </div>
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={titles.filterLabel}>
+          <div
+            className="flex flex-wrap gap-1.5"
+            role="tablist"
+            aria-label={titles.filterLabel}
+          >
             {FILTERS.map(({ key, label }) => (
               <button
                 key={key}
@@ -174,9 +292,14 @@ export function ActiveBookingsPanel({
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-5 py-10 text-center">
           <span className="flex size-12 items-center justify-center rounded-sm bg-[var(--dash-panel-muted)]">
-            <CalendarX className="size-6 text-[var(--sea-ink-soft)]" aria-hidden="true" />
+            <CalendarX
+              className="size-6 text-[var(--sea-ink-soft)]"
+              aria-hidden="true"
+            />
           </span>
-          <p className="text-sm font-semibold text-[var(--sea-ink)]">{titles.emptyTitle}</p>
+          <p className="text-sm font-semibold text-[var(--sea-ink)]">
+            {titles.emptyTitle}
+          </p>
           <p className="max-w-sm text-sm text-[var(--sea-ink-soft)]">
             {query ? titles.emptyQuery : titles.emptyDefault}
           </p>

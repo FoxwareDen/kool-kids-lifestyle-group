@@ -1,82 +1,100 @@
-import { fetchCalendarSchedules, deleteCalendarSchedule, fetchUnitTypes, deleteUnitType } from '#/lib/booking'
-import { getSessionMiddleware } from '#/routes/__root';
+import {
+  fetchCalendarSchedules,
+  deleteCalendarSchedule,
+  fetchUnitTypes,
+  deleteUnitType,
+} from '#/lib/booking'
+import { getSessionMiddleware } from '#/routes/__root'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start';
-import { CalendarPlus, CalendarX } from 'lucide-react';
-import { useState } from 'react';
-import { Button, SectionCard } from '#/components/dashboard/form-controls';
-import { ScheduleCard } from '#/components/dashboard/ScheduleCard';
-import { UnitTypeTile } from '#/components/dashboard/UnitTypeTile';
+import { createServerFn } from '@tanstack/react-start'
+import { CalendarPlus, CalendarX } from 'lucide-react'
+import { useState } from 'react'
+import { Button, SectionCard } from '#/components/dashboard/form-controls'
+import { ScheduleCard } from '#/components/dashboard/ScheduleCard'
+import { UnitTypeTile } from '#/components/dashboard/UnitTypeTile'
 
-const getAuth = createServerFn().middleware([getSessionMiddleware]).handler(async ({context})=>{
-  if(!context.isAuthed) throw new Error("Not authenticated")
-  return { isAuthed: context.isAuthed, language: context.language, cookieString: context.cookieString }
-})
+const getAuth = createServerFn()
+  .middleware([getSessionMiddleware])
+  .handler(async ({ context }) => {
+    if (!context.isAuthed) throw new Error('Not authenticated')
+    return {
+      isAuthed: context.isAuthed,
+      language: context.language,
+      cookieString: context.cookieString,
+    }
+  })
 
 export const Route = createFileRoute('/_authed/dashboard/calendars')({
   validateSearch: (search: Record<string, unknown>) => ({
     lang: (search.lang as 'en' | 'af') ?? undefined,
   }),
-  loaderDeps: ({ search: {lang} }) => ({lang}),
-  loader: async ({deps: { lang }}) => {
+  loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({ deps: { lang } }) => {
     const auth = await getAuth()
 
-    const schedules = await fetchCalendarSchedules(auth.cookieString);
-    const units = await fetchUnitTypes(auth.cookieString);
+    const schedules = await fetchCalendarSchedules(auth.cookieString)
+    const units = await fetchUnitTypes(auth.cookieString)
 
-    if (!schedules.success) throw new Error("Failed to fetch schedules")
+    if (!schedules.success) throw new Error('Failed to fetch schedules')
 
-    if (!units.success) throw new Error("Failed to fetch unit types")
+    if (!units.success) throw new Error('Failed to fetch unit types')
 
-    return { lang, schedules: schedules.value, units: units.value}
+    return { lang, schedules: schedules.value, units: units.value }
   },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const { lang, schedules, units } = Route.useLoaderData();
-  const router = useRouter();
+  const { lang, schedules, units } = Route.useLoaderData()
+  const router = useRouter()
 
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
-  const [deletingUnitId, setDeletingUnitId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null,
+  )
+  const [deletingUnitId, setDeletingUnitId] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
-    setDeletingId(id);
+    setDeletingId(id)
     try {
-      await deleteCalendarSchedule(id);
-      await router.invalidate();
+      await deleteCalendarSchedule(id)
+      await router.invalidate()
     } catch (error) {
-      console.error('Failed to delete:', error);
+      console.error('Failed to delete:', error)
     } finally {
-      setDeletingId(null);
-      setShowDeleteConfirm(null);
+      setDeletingId(null)
+      setShowDeleteConfirm(null)
     }
-  };
+  }
 
   const handleDeleteUnit = async (id: string) => {
-    setDeletingUnitId(id);
+    setDeletingUnitId(id)
     try {
-      await deleteUnitType(id);
-      await router.invalidate();
+      await deleteUnitType(id)
+      await router.invalidate()
     } catch (error) {
-      console.error('Failed to delete:', error);
+      console.error('Failed to delete:', error)
     } finally {
-      setDeletingUnitId(null);
+      setDeletingUnitId(null)
     }
-  };
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
       {/* Page header */}
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--sea-ink)]">Schedules</h1>
+          <h1 className="text-2xl font-bold text-[var(--sea-ink)]">
+            Schedules
+          </h1>
           <p className="mt-1 text-sm text-[var(--sea-ink-soft)]">
             Booking calendars that define when an experience can be reserved.
           </p>
         </div>
-        <Link to="/dashboard/create-calendar" search={{ lang: 'en', calId: undefined }}>
+        <Link
+          to="/dashboard/create-calendar"
+          search={{ lang: 'en', calId: undefined }}
+        >
           <Button variant="primary">
             <CalendarPlus className="size-4" />
             New schedule
@@ -91,11 +109,17 @@ function RouteComponent() {
             <span className="flex size-12 items-center justify-center rounded-sm bg-[var(--dash-panel-muted)]">
               <CalendarX className="size-6 text-[var(--sea-ink-soft)]" />
             </span>
-            <p className="text-sm font-semibold text-[var(--sea-ink)]">No schedules yet</p>
-            <p className="max-w-sm text-sm text-[var(--sea-ink-soft)]">
-              Create your first schedule to start accepting bookings for an experience.
+            <p className="text-sm font-semibold text-[var(--sea-ink)]">
+              No schedules yet
             </p>
-            <Link to="/dashboard/create-calendar" search={{ lang: 'en', calId: undefined }}>
+            <p className="max-w-sm text-sm text-[var(--sea-ink-soft)]">
+              Create your first schedule to start accepting bookings for an
+              experience.
+            </p>
+            <Link
+              to="/dashboard/create-calendar"
+              search={{ lang: 'en', calId: undefined }}
+            >
               <Button variant="primary">
                 <CalendarPlus className="size-4" />
                 Create schedule
@@ -145,5 +169,5 @@ function RouteComponent() {
         </SectionCard>
       </div>
     </div>
-  );
+  )
 }

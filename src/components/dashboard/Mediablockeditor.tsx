@@ -1,14 +1,18 @@
-import { useObjectUrl } from '#/hooks/Useobjecturl';
+import { useObjectUrl } from '#/hooks/Useobjecturl'
 import type { VideoBlock, ImageBlock, Language } from '#/lib/experiences'
 import { resolveTranslatable } from '#/lib/experiences'
-import { setTranslated } from '#/lib/utils';
-import { Field } from './Field';
-import { inputCls } from './Styles';
+import { setTranslated } from '#/lib/utils'
+import { Field } from './Field'
+import { inputCls } from './Styles'
 
 export const ImageBlockEditor = ({
-  block, lang, onChange,
+  block,
+  lang,
+  onChange,
 }: {
-  block: ImageBlock; lang: Language; onChange: (b: ImageBlock) => void
+  block: ImageBlock
+  lang: Language
+  onChange: (b: ImageBlock) => void
 }) => {
   const previewUrl = useObjectUrl(block.file)
 
@@ -26,7 +30,13 @@ export const ImageBlockEditor = ({
           }}
         />
         {previewUrl && (
-          <img src={previewUrl} alt="preview" className="mt-1 rounded-md max-h-36 object-cover w-full" />
+          <img
+            decoding="async"
+            loading="lazy"
+            src={previewUrl}
+            alt="preview"
+            className="mt-1 rounded-md max-h-36 object-cover w-full"
+          />
         )}
       </Field>
       <Field label="Alt text">
@@ -34,7 +44,12 @@ export const ImageBlockEditor = ({
           className={inputCls}
           value={resolveTranslatable(block.alt, lang)}
           placeholder="Alt text…"
-          onChange={(e) => onChange({ ...block, alt: setTranslated(block.alt, lang, e.target.value) })}
+          onChange={(e) =>
+            onChange({
+              ...block,
+              alt: setTranslated(block.alt, lang, e.target.value),
+            })
+          }
         />
       </Field>
       <Field label="Caption">
@@ -43,7 +58,14 @@ export const ImageBlockEditor = ({
           value={block.caption ? resolveTranslatable(block.caption, lang) : ''}
           placeholder="Caption (optional)…"
           onChange={(e) =>
-            onChange({ ...block, caption: setTranslated(block.caption ?? { default: '' }, lang, e.target.value) })
+            onChange({
+              ...block,
+              caption: setTranslated(
+                block.caption ?? { default: '' },
+                lang,
+                e.target.value,
+              ),
+            })
           }
         />
       </Field>
@@ -52,12 +74,16 @@ export const ImageBlockEditor = ({
 }
 
 export const VideoBlockEditor = ({
-  block, lang, onChange,
+  block,
+  lang,
+  onChange,
 }: {
-  block: VideoBlock; lang: Language; onChange: (b: VideoBlock) => void
+  block: VideoBlock
+  lang: Language
+  onChange: (b: VideoBlock) => void
 }) => {
   const previewUrl = useObjectUrl(block.file)
- 
+
   return (
     <div className="flex flex-col gap-3">
       <Field label="Video">
@@ -72,7 +98,11 @@ export const VideoBlockEditor = ({
           }}
         />
         {previewUrl && (
-          <video src={previewUrl} controls className="mt-1 rounded-md max-h-36 w-full" />
+          <video
+            src={previewUrl}
+            controls
+            className="mt-1 rounded-md max-h-36 w-full"
+          />
         )}
       </Field>
       <Field label="Title">
@@ -81,7 +111,14 @@ export const VideoBlockEditor = ({
           value={block.title ? resolveTranslatable(block.title, lang) : ''}
           placeholder="Video title (optional)…"
           onChange={(e) =>
-            onChange({ ...block, title: setTranslated(block.title ?? { default: '' }, lang, e.target.value) })
+            onChange({
+              ...block,
+              title: setTranslated(
+                block.title ?? { default: '' },
+                lang,
+                e.target.value,
+              ),
+            })
           }
         />
       </Field>
