@@ -20,6 +20,7 @@ import type {
   BookingResponse,
   TransformedCalendarSchedule,
 } from '#/lib/booking'
+import { checkForValidKeys } from '#/server/utils'
 
 const translations: Record<
   Language,
@@ -92,9 +93,11 @@ export const Route = createFileRoute('/experiences/$id')({
     deps: { lang = 'en' },
   }): Promise<{
     data: HydratedBookingPage
+    validKeys: boolean
     lang: Language
     id: string
   }> => {
+    const validKeys = await checkForValidKeys();
     const result = await fetchExperienceById(id)
 
     if (!result.success || !result.value)
@@ -102,6 +105,7 @@ export const Route = createFileRoute('/experiences/$id')({
 
     return {
       data: result.value,
+      validKeys,
       lang,
       id,
     }
@@ -201,7 +205,7 @@ function categoryLabel(category: string): string {
 }
 
 function RouteComponent() {
-  const { id, lang, data } = Route.useLoaderData()
+  const { id, lang, data, validKeys } = Route.useLoaderData()
   const [bookingOpen, setBookingOpen] = useState(false)
 
   const [scheduleData, setScheduleData] = useState<
@@ -354,9 +358,14 @@ function RouteComponent() {
               </ul>
 
               <button
+                disabled={!validKeys}
                 type="button"
                 onClick={() => setBookingOpen(true)}
-                className="inline-flex w-full items-center justify-center gap-2 bg-[var(--brand-orange)] px-5 py-3.5 text-sm font-bold uppercase tracking-wide !text-white shadow-lg shadow-[var(--brand-orange)]/20 transition-colors hover:bg-[var(--brand-orange-deep)]"
+                className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3.5 text-sm font-bold uppercase tracking-wide !text-white transition-colors ${
+                  validKeys
+                    ? "bg-[var(--brand-orange)] shadow-lg shadow-[var(--brand-orange)]/20 hover:bg-[var(--brand-orange-deep)]"
+                    : "bg-stone-400 cursor-not-allowed"
+                }`}
               >
                 <CalendarDays className="h-4 w-4" />
                 Book Now

@@ -1,13 +1,3 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
-import {
-  generateSlots,
-  type Booking,
-  type BookingResponse,
-  type PaymentContinueFunc,
-  type TransformedCalendarSchedule,
-} from '#/lib/booking'
-import { type AvailableRange } from '#/lib/system'
 import {
   Booker,
   BookerStep,
@@ -20,7 +10,7 @@ import {
   useBookerStore,
 } from '@/components/booking/calendar'
 import { generateSlots } from '#/lib/booking'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Booking,
   BookingResponse,
