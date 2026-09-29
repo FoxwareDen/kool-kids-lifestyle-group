@@ -123,3 +123,11 @@ export const initializePayment = createServerFn()
       }
     },
   )
+
+export const checkForValidKeys = createServerFn()
+  .handler(async (): Promise<boolean> => {
+    const isDebugMode = process.env.DEBUG === "true";
+    const hasPaymentKey = Boolean(process.env.PAYMENT_SERVER_KEY);
+
+    return isDebugMode || hasPaymentKey;
+  });
