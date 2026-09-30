@@ -86,7 +86,7 @@ export function ContactHero({ lang = 'en' }: { lang?: Language }) {
         <h1 className="display-title mt-3 max-w-3xl text-balance text-4xl font-medium leading-[1.1] text-white sm:text-5xl lg:text-[3.5rem]">
           {titleText}
         </h1>
-        <p className="script-title mt-2 text-2xl font-semibold text-[var(--brand-orange)] sm:text-3xl">
+        <p className="script-title mt-2 text-2xl font-normal text-[var(--brand-orange)] sm:text-3xl">
           {subText}
         </p>
       </div>

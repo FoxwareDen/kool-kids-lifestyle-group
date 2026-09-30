@@ -30,7 +30,7 @@ export type GalleryPhoto = {
   image: string
   alt: string
   title: string
-  category: Exclude<GalleryCategory, 'all'>
+  category?: Exclude<GalleryCategory, 'all'>
 }
 
 /**

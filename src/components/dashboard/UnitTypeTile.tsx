@@ -33,7 +33,7 @@ export function UnitTypeTile({
         </h4>
         <div className="mt-1 flex gap-3 text-xs text-[var(--sea-ink-soft)]">
           <span>Capacity: {unit.capacity}</span>
-          <span>${unit.value}</span>
+          <span>R{unit.value}</span>
         </div>
       </div>
       {onDelete && (

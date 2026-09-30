@@ -72,13 +72,13 @@ export function GalleryCta({ lang = 'en' }: { lang?: Language }) {
           </a>
 
           {/* should go to whatsapp */}
-          <a
+          {/* <a
             href="#"
             className="group inline-flex items-center gap-3 border border-white/60 px-7 py-3.5 text-xs font-bold uppercase tracking-widest !text-white no-underline transition-colors hover:bg-white/10"
           >
             <Camera className="h-4 w-4" aria-hidden="true" />
             {secondaryLabel}
-          </a>
+          </a> */}
         </div>
       </div>
     </section>

@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react'
-import { Send, CheckCircle2 } from 'lucide-react'
+import { type FormEvent } from 'react'
+import { Send } from 'lucide-react'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
+
+const MAILTO_EMAIL = '360experiences1@gmail.com'
 
 /**
  * Shared Tailwind classes for the form text inputs and textarea so every field
@@ -12,14 +14,13 @@ const FIELD_CLASSES =
 
 /**
  * The contact form card. Renders accessible, labelled fields for name, email,
- * subject and message with a primary submit button. Submission is handled
- * client-side (no backend) and shows a success confirmation message; wire the
- * `handleSubmit` body to a real endpoint or server action when available.
+ * subject and message with a primary submit button. Submitting opens the
+ * visitor's default email client with a pre-filled message addressed to the
+ * configured inbox.
  *
  * @returns {JSX.Element} The rendered contact form.
  */
 export function ContactForm({ lang = 'en' }: { lang?: Language }) {
-  const [submitted, setSubmitted] = useState(false)
   const labels = {
     heading: resolveTranslatable(
       { default: 'Send a Message', translations: { af: 'Stuur ’n Boodskap' } },
@@ -29,20 +30,6 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
       {
         default: 'Drop Us a Line',
         translations: { af: 'Stuur Ons ’n Boodskap' },
-      },
-      lang,
-    ),
-    success: resolveTranslatable(
-      { default: 'Thank you!', translations: { af: 'Baie dankie!' } },
-      lang,
-    ),
-    successMessage: resolveTranslatable(
-      {
-        default:
-          'Your message has been received. Our team will get back to you within one business day.',
-        translations: {
-          af: 'Jou boodskap is ontvang. Ons span sal binne een besigheidsdag terugkom.',
-        },
       },
       lang,
     ),
@@ -96,15 +83,37 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
   }
 
   /**
-   * Handles the form submission. Prevents the default page reload and toggles
-   * the local success state.
+   * Opens the visitor's default email client with a pre-filled message to the
+   * configured contact inbox.
    *
    * @param {FormEvent<HTMLFormElement>} event - The form submit event.
    * @returns {void}
    */
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSubmitted(true)
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const name = String(formData.get('name') ?? '').trim()
+    const email = String(formData.get('email') ?? '').trim()
+    const subject = String(formData.get('subject') ?? '').trim() || 'Website enquiry'
+    const message = String(formData.get('message') ?? '').trim()
+
+    const mailtoBody = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      '',
+      `Message:`,
+      message,
+    ].join('\n')
+
+    const mailtoLink = `mailto:${MAILTO_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailtoBody)}`
+
+    if (typeof window !== 'undefined') {
+      window.location.href = mailtoLink
+    }
+
+    form.reset()
   }
 
   return (
@@ -116,24 +125,7 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
         {labels.subheading}
       </h2>
 
-      {submitted ? (
-        <div
-          role="status"
-          className="mt-8 flex flex-col items-center gap-3 rounded-md bg-[var(--brand-orange)]/10 px-6 py-12 text-center"
-        >
-          <CheckCircle2
-            className="h-12 w-12 text-[var(--brand-orange)]"
-            aria-hidden="true"
-          />
-          <h3 className="display-title text-xl font-medium text-[var(--brand-navy)]">
-            {labels.success}
-          </h3>
-          <p className="max-w-sm text-sm leading-relaxed text-[var(--brand-navy)]/70">
-            {labels.successMessage}
-          </p>
-        </div>
-      ) : (
-        <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+      <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label
@@ -216,7 +208,6 @@ export function ContactForm({ lang = 'en' }: { lang?: Language }) {
             />
           </button>
         </form>
-      )}
     </div>
   )
 }

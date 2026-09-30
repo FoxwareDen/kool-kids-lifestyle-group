@@ -109,7 +109,7 @@ export function HeroSection({ data }: { data: any | null }) {
                 : 'Experience the Heart of the Northern Cape'}
             </h1>
 
-            <p className="script-title mt-3 text-3xl font-semibold text-[var(--brand-orange)] sm:text-4xl lg:text-5xl">
+            <p className="script-title mt-3 text-3xl font-normal text-[var(--brand-orange)] sm:text-4xl lg:text-5xl">
               {content ? content.tagline : 'Where the Karoo Breathes.'}
             </p>
 
