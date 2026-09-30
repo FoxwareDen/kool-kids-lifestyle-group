@@ -50,10 +50,12 @@ const QUICK_LINKS: Record<Language, { label: string; href: string }[][]> = {
       { label: 'Experiences', href: '/experiences' },
       { label: 'Heritage', href: '/heritage' },
       { label: 'Gallery', href: '/gallery' },
+      { label: "Terms of service", href: "/terms" }
     ],
     [
-      { label: 'Events', href: 'events' },
-      { label: 'Blog', href: 'blogs' },
+      { label: "Privacy", href: "/privacy"},
+      { label: 'Events', href: '/events' },
+      { label: 'Blog', href: '/blogs' },
       { label: 'Contact', href: '/contact' },
       { label: 'Admin Login', href: '/login' },
     ],
