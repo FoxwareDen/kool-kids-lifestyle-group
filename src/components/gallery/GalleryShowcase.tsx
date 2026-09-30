@@ -5,6 +5,46 @@ import { GalleryPhotoTile } from './GalleryPhotoTile'
 import { GalleryLightbox } from './GalleryLightbox'
 import { GALLERY_PHOTOS, type GalleryCategory } from './gallery-data'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
+import { useQuery } from '@tanstack/react-query'
+import { buildImageUrl, getAssets } from '#/lib/pocketbase'
+
+
+  // {
+  //   id: 'orange-river',
+  //   image: orangeRiverImg,
+  //   alt: 'Orange River lined with palm trees at golden hour',
+  //   title: 'Orange River at Golden Hour',
+  //   category: 'river',
+  // },
+
+interface ImageBlock {
+  id: string,
+  image: string,
+  alt: string,
+  title: string,
+  category: string
+}
+
+async function getImages(): Promise<ImageBlock[]> {
+  try {
+    const data = await getAssets();
+
+    if (!data.success || !data.value) return [];
+    
+    const dih: ImageBlock[] = data.value.map(image => ({
+      id: image.id,
+      image: buildImageUrl(image.collectionId, image.id, image.file),
+      title: image.name,
+      alt: image.alt,
+      category: "",
+    }));
+
+    return dih
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
 
 /**
  * The main gallery experience: a centered {@link SectionHeading}, a
@@ -19,8 +59,15 @@ import { resolveTranslatable, type Language } from '#/lib/experiences'
  * @returns {JSX.Element} The rendered gallery showcase section.
  */
 export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
-  const [activeCategory, setActiveCategory] = useState<GalleryCategory>('all')
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['gallery'],
+    queryFn: getImages,
+  })
+
+  const [activeCategory, setActiveCategory] =
+    useState<GalleryCategory>('all')
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
   const eyebrow = resolveTranslatable(
     {
       default: 'Explore the Collection',
@@ -28,6 +75,7 @@ export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
     },
     lang,
   )
+
   const title = resolveTranslatable(
     {
       default: 'A Town Captured in Light',
@@ -39,16 +87,13 @@ export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
   const visiblePhotos = useMemo(
     () =>
       activeCategory === 'all'
-        ? GALLERY_PHOTOS
-        : GALLERY_PHOTOS.filter((photo) => photo.category === activeCategory),
-    [activeCategory],
+        ? (data ?? [])
+        : (data ?? []).filter(
+            (photo) => photo.category === activeCategory,
+          ),
+    [activeCategory, data],
   )
 
-  /**
-   * Switches the active category and closes any open lightbox so the index
-   * never points at a photo outside the new filtered set.
-   * @param {GalleryCategory} category - The category to activate.
-   */
   function handleFilterChange(category: GalleryCategory) {
     setActiveCategory(category)
     setActiveIndex(null)
@@ -66,17 +111,18 @@ export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
         : (current - 1 + visiblePhotos.length) % visiblePhotos.length,
     )
 
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (error) {
+    return <div>Failed to load gallery.</div>
+  }
+
   return (
     <section className="bg-[#f1ede6] py-20">
       <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
         <SectionHeading eyebrow={eyebrow} title={title} theme="light" />
-
-        <div className="mt-10">
-          <GalleryFilter
-            active={activeCategory}
-            onChange={handleFilterChange}
-          />
-        </div>
 
         <div className="mt-12 grid grid-cols-3 gap-1 sm:block sm:columns-2 sm:gap-4 lg:columns-3">
           {visiblePhotos.map((photo, index) => (
@@ -89,7 +135,7 @@ export function GalleryShowcase({ lang = 'en' }: { lang?: Language }) {
         </div>
       </div>
 
-      {activeIndex !== null && (
+      {activeIndex !== null && visiblePhotos.length > 0 && (
         <GalleryLightbox
           photos={visiblePhotos}
           index={activeIndex}
