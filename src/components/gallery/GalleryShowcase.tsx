@@ -3,40 +3,23 @@ import { SectionHeading } from '#/components/sections/SectionHeading'
 import { GalleryFilter } from './GalleryFilter'
 import { GalleryPhotoTile } from './GalleryPhotoTile'
 import { GalleryLightbox } from './GalleryLightbox'
-import { GALLERY_PHOTOS, type GalleryCategory } from './gallery-data'
+import { GALLERY_PHOTOS, type GalleryCategory, type GalleryPhoto } from './gallery-data'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 import { useQuery } from '@tanstack/react-query'
 import { buildImageUrl, getAssets } from '#/lib/pocketbase'
 
 
-  // {
-  //   id: 'orange-river',
-  //   image: orangeRiverImg,
-  //   alt: 'Orange River lined with palm trees at golden hour',
-  //   title: 'Orange River at Golden Hour',
-  //   category: 'river',
-  // },
-
-interface ImageBlock {
-  id: string,
-  image: string,
-  alt: string,
-  title: string,
-  category: string
-}
-
-async function getImages(): Promise<ImageBlock[]> {
+async function getImages(): Promise<GalleryPhoto[]> {
   try {
     const data = await getAssets();
 
     if (!data.success || !data.value) return [];
     
-    const dih: ImageBlock[] = data.value.map(image => ({
+    const dih: GalleryPhoto[] = data.value.map(image => ({
       id: image.id,
       image: buildImageUrl(image.collectionId, image.id, image.file),
       title: image.name,
       alt: image.alt,
-      category: "",
     }));
 
     return dih
