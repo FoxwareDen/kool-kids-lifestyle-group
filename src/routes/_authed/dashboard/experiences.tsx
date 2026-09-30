@@ -40,8 +40,8 @@ function RouteComponent() {
     try {
       const res = await deleteExperienceById(id)
 
-      if (res) setFiltered((prev) => prev.filter((e) => e.id == id))
-    } catch (error) {
+      if (res) setFiltered((prev) => prev.filter((e) => e.id != id))
+} catch (error) {
       console.error(error)
 
       setError('Failed to delete experience')
