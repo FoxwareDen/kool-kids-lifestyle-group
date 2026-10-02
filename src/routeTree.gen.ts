@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+<<<<<<< HEAD
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as LoginRouteImport } from './routes/login'
@@ -18,6 +19,24 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+=======
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as HeritageRouteImport } from './routes/heritage'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
+import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
+import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
+>>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
 import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
@@ -38,6 +57,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -48,9 +72,25 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+<<<<<<< HEAD
 const HeritageRoute = HeritageRouteImport.update({
   id: '/heritage',
   path: '/heritage',
+=======
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const BlogsIndexRoute = BlogsIndexRouteImport.update({
+  id: '/blogs/',
+  path: '/blogs/',
+>>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -160,8 +200,10 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/dashboard': typeof AuthedDashboardRouteWithChildren
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -184,8 +226,10 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/experiences/$id': typeof ExperiencesIdRoute
@@ -209,8 +253,10 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/heritage': typeof HeritageRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/_authed/dashboard': typeof AuthedDashboardRouteWithChildren
   '/blogs/$blogId': typeof BlogsBlogIdRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -235,8 +281,10 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/dashboard'
     | '/blogs/$blogId'
     | '/events/$eventId'
@@ -259,8 +307,10 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/blogs/$blogId'
     | '/events/$eventId'
     | '/experiences/$id'
@@ -283,8 +333,10 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/heritage'
     | '/login'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/_authed/dashboard'
     | '/blogs/$blogId'
     | '/events/$eventId'
@@ -309,8 +361,10 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   HeritageRoute: typeof HeritageRoute
   LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   BlogsBlogIdRoute: typeof BlogsBlogIdRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   ExperiencesIdRoute: typeof ExperiencesIdRoute
@@ -328,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -342,11 +403,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+<<<<<<< HEAD
     '/heritage': {
       id: '/heritage'
       path: '/heritage'
       fullPath: '/heritage'
       preLoaderRoute: typeof HeritageRouteImport
+=======
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed/dashboard': {
+      id: '/_authed/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthedDashboardRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/blogs/': {
+      id: '/blogs/'
+      path: '/blogs'
+      fullPath: '/blogs/'
+      preLoaderRoute: typeof BlogsIndexRouteImport
+>>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -528,8 +611,10 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   HeritageRoute: HeritageRoute,
   LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   BlogsBlogIdRoute: BlogsBlogIdRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   ExperiencesIdRoute: ExperiencesIdRoute,

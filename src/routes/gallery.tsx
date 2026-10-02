@@ -1,5 +1,3 @@
-// TODO:NO CMS MANAGING
-
 import { createFileRoute } from '@tanstack/react-router'
 import { GalleryHero } from '#/components/gallery/GalleryHero'
 import { GalleryShowcase } from '#/components/gallery/GalleryShowcase'
@@ -25,9 +23,14 @@ export const Route = createFileRoute('/gallery')({
     ],
   }),
   validateSearch: (search: Record<string, unknown>) => ({
-    lang: (search.lang as Language) ?? undefined,
+    lang: (search.lang as Language) ?? "en",
   }),
   loaderDeps: ({ search: { lang } }) => ({ lang }),
+  loader: async ({ deps: { lang } }) => {
+    return {
+      lang
+    }
+  },
   component: GalleryPage,
 })
 
@@ -37,13 +40,13 @@ export const Route = createFileRoute('/gallery')({
  * @returns {JSX.Element} The rendered page.
  */
 function GalleryPage() {
-  const { lang } = Route.useLoaderDeps()
+  const { lang } = Route.useLoaderData();
 
   return (
     <main>
-      <GalleryHero lang={lang ?? 'en'} />
-      <GalleryShowcase lang={lang ?? 'en'} />
-      <GalleryCta lang={lang ?? 'en'} />
+      <GalleryHero lang={lang} />
+      <GalleryShowcase lang={lang} />
+      <GalleryCta lang={lang} />
     </main>
   )
 }

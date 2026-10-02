@@ -469,7 +469,10 @@ export async function fetchExperiences(
     const records: FlatBookingPage[] = await client
       .collection('Experiences')
       .getFullList({
-        filter: `status = "Published"`,
+        filter: client.filter(
+          'status = "Published" && category !~ {:excluded}',
+          { excluded: 'tos' },
+        ),
         expand: 'coverImage',
       })
 
@@ -509,6 +512,60 @@ export async function fetchExperiences(
   } catch (error) {
     console.error(error)
     return createResult(null, 'failed to get experiences')
+  }
+}
+
+export async function fetchTos(
+  cookieHeader?: string,
+): Promise<Result<HydratedBookingPage[], string>> {
+  const client = getPBSession(cookieHeader)
+
+  try {
+    const records: FlatBookingPage[] = await client
+      .collection('Experiences')
+      .getFullList({
+        filter: client.filter(
+          'status = "Published" && category ~ {:included}',
+          { included: 'tos' },
+        ),
+        sort: '-created',
+        expand: 'coverImage',
+      })
+
+    const hydratedRecords = await Promise.all(
+      records.map(async (obj) => {
+        // @ts-ignore
+        const image = obj.expand['coverImage']
+        const rawBlocks =
+          typeof obj.blocks === 'string' ? JSON.parse(obj.blocks) : obj.blocks
+
+        const assetCollectionId = image?.collectionId || 'assets'
+
+        return {
+          ...obj,
+          title:
+            typeof obj.title === 'string' ? JSON.parse(obj.title) : obj.title,
+          description: obj.description
+            ? typeof obj.description === 'string'
+              ? JSON.parse(obj.description)
+              : obj.description
+            : undefined,
+          coverImage: image
+            ? buildImageUrl(image.collectionId, image.id, image.file)
+            : '',
+          blocks: await hydrateBlocksAsync(
+            client,
+            rawBlocks,
+            assetCollectionId,
+          ),
+        }
+      }),
+    )
+
+    return createResult(hydratedRecords, null)
+  } catch (error) {
+    console.error(error)
+    return createResult(null, 'failed to get tos experiences')
   }
 }
 
