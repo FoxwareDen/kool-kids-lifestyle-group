@@ -1,12 +1,22 @@
 import * as z from 'zod'
 import type { Booking } from '#/lib/system'
 import { useEffect, useState } from 'react'
+import { format, parseISO } from 'date-fns'
 import { Input } from '@/components/ui/input'
 import PaystackPop from '@paystack/inline-js'
 import { Label } from '@/components/ui/label'
 import { useForm } from '@tanstack/react-form'
 import { Button } from '@/components/ui/button'
-import { Lock, CheckCircle2, Download, Phone, Mail } from 'lucide-react'
+import {
+  Lock,
+  CheckCircle2,
+  Download,
+  Mail,
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Copy,
+} from 'lucide-react'
 import { createPackage, deleteBooking, fetchUnitTypes } from '#/lib/booking'
 import {
   generatePaymentReference,
@@ -33,6 +43,8 @@ type PaymentStatus = {
   type: 'success' | 'error' | 'cancelled' | 'conflict'
   message: string
   reference?: string
+  code?: string
+  amount?: number
 }
 
 const fieldLabelClass =
@@ -43,85 +55,161 @@ const inputClass =
 
 function BookingConfirmation({
   reference,
+  code,
+  amount,
+  booking,
   onClose,
 }: {
   reference: string
+  code?: string
+  amount?: number
+  booking: Booking | null
   onClose: () => void
 }) {
+  const bookingDate = booking?.date
+    ? format(parseISO(booking.date), 'EEEE, d MMMM yyyy')
+    : 'Date to be confirmed'
+  const bookingTime = booking
+    ? `${booking.start_time} – ${booking.end_time}`
+    : 'Time to be confirmed'
   const handleDownload = () => {
     const content = [
+      'KOOL KIDS LIFESTYLE GROUP',
       'BOOKING CONFIRMATION',
-      '====================',
+      '========================',
       '',
-      `Payment Reference: ${reference}`,
+      `Booking reference: ${reference}`,
+      ...(code ? [`Confirmation code: ${code}`] : []),
+      `Date: ${bookingDate}`,
+      `Time: ${bookingTime}`,
+      `Experience / unit: ${booking?.unit_label ?? 'To be confirmed'}`,
+      ...(amount ? [`Amount paid: R${amount.toFixed(2)}`] : []),
       '',
-      'Your payment has been received and is being verified.',
-      'A confirmation email will be sent to you shortly.',
+      'WHAT TO DO NEXT',
+      'Keep this reference and confirmation code handy when you arrive.',
+      'A confirmation email will be sent once your payment has been verified.',
+      'If you need help, reply to your confirmation email with this reference.',
       '',
-      '====================',
-    ].join('\n')
-
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `booking-${reference}.txt`
-    a.click()
+      'Thank you for booking with us.',
+    ].join('\\n')
+    const url = URL.createObjectURL(
+      new Blob([content], { type: 'text/plain;charset=utf-8' }),
+    )
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `kool-kids-booking-${reference}.txt`
+    link.click()
     URL.revokeObjectURL(url)
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-5 py-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
-        <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-      </div>
+  const copyReference = async () => {
+    await navigator.clipboard.writeText(reference)
+  }
 
+  return (
+    <div className="flex flex-col gap-5 py-2 text-center">
+      <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-[var(--brand-orange)]/12">
+        <CheckCircle2 className="size-8 text-[var(--brand-orange)]" />
+      </div>
       <div>
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand-orange)]">
           Confirmed
         </p>
-        <h3 className="mt-0.5 text-xl font-medium text-[var(--brand-navy)]">
-          Booking confirmed!
+        <h3 className="display-title mt-1 text-2xl font-medium text-[var(--brand-navy)]">
+          You&apos;re all booked
         </h3>
         <p className="mt-1 text-sm text-[var(--brand-navy)]/60">
-          Your payment was successful.
+          Save these details for your visit.
         </p>
       </div>
 
-      <div className="w-full rounded-lg border border-[var(--brand-navy)]/10 bg-[var(--brand-navy)]/[0.02] px-4 py-3 text-left">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--brand-navy)]/50">
-          Payment Reference
+      <div className="grid gap-2 rounded-xl border border-[var(--brand-navy)]/10 bg-[var(--foam)] p-4 text-left sm:grid-cols-2">
+        <div className="flex gap-3">
+          <CalendarDays className="size-4 shrink-0 text-[var(--brand-orange)]" />
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-navy)]/45">
+              Date
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-[var(--brand-navy)]">
+              {bookingDate}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Clock3 className="size-4 shrink-0 text-[var(--brand-orange)]" />
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-navy)]/45">
+              Time
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-[var(--brand-navy)]">
+              {bookingTime}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-3 sm:col-span-2">
+          <MapPin className="size-4 shrink-0 text-[var(--brand-orange)]" />
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-navy)]/45">
+              Booking
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-[var(--brand-navy)]">
+              {booking?.unit_label ?? 'Your selected experience'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl bg-[var(--brand-navy)] px-4 py-3 text-left text-white">
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+          Reference number
         </p>
-        <p className="mt-1 font-mono text-sm font-semibold text-[var(--brand-navy)]">
-          {reference}
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <p className="font-mono text-sm font-semibold tracking-wide">
+            {reference}
+          </p>
+          <button
+            type="button"
+            onClick={copyReference}
+            aria-label="Copy booking reference"
+            className="rounded-md p-1.5 text-white/60 transition hover:bg-white/10 hover:text-white"
+          >
+            <Copy className="size-4" />
+          </button>
+        </div>
+        {code && (
+          <p className="mt-2 border-t border-white/15 pt-2 text-xs text-white/70">
+            Confirmation code:{' '}
+            <span className="font-semibold text-white">{code}</span>
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-start gap-2 rounded-lg border border-[var(--brand-orange)]/20 bg-[var(--brand-orange)]/8 px-4 py-3 text-left">
+        <Mail className="mt-0.5 size-4 shrink-0 text-[var(--brand-orange)]" />
+        <p className="text-xs leading-relaxed text-[var(--brand-navy)]/75">
+          Your payment is being verified. Keep this reference handy and check
+          your email for the final confirmation.
         </p>
       </div>
 
-      <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-left">
-        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-        <p className="text-xs text-amber-700">
-          Expect a confirmation email once your payment has been verified.
-          Please keep your reference number handy.
-        </p>
+      <div className="flex flex-col gap-2 sm:flex-row-reverse">
+        <Button
+          type="button"
+          className="w-full bg-[var(--brand-orange)] text-white hover:bg-[var(--brand-orange)]/90"
+          onClick={handleDownload}
+        >
+          <Download data-icon="inline-start" />
+          Download booking reference
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full border-[var(--brand-navy)]/20 text-[var(--brand-navy)]"
+          onClick={onClose}
+        >
+          Done
+        </Button>
       </div>
-
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full gap-2 border-[var(--brand-navy)]/20 text-[var(--brand-navy)]"
-        onClick={handleDownload}
-      >
-        <Download className="h-4 w-4" />
-        Download reference
-      </Button>
-
-      <Button
-        type="button"
-        className="w-full bg-[var(--brand-navy)] text-white hover:bg-[var(--brand-navy)]/90"
-        onClick={onClose}
-      >
-        Done
-      </Button>
     </div>
   )
 }
@@ -278,6 +366,8 @@ export function PaymentForm({
               type: 'success',
               message: 'Payment successful! Your booking is confirmed.',
               reference,
+              code,
+              amount: amountInSubunits,
             })
           },
           onCancel: async () => {
@@ -360,6 +450,9 @@ export function PaymentForm({
     return (
       <BookingConfirmation
         reference={paymentStatus.reference!}
+        code={paymentStatus.code}
+        amount={paymentStatus.amount}
+        booking={booking}
         onClose={toggleModel}
       />
     )

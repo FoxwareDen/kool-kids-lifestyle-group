@@ -9,17 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-<<<<<<< HEAD
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HeritageRouteImport } from './routes/heritage'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
-import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as IndexRouteImport } from './routes/index'
-=======
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
@@ -36,25 +25,48 @@ import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
 import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
 import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
-import { Route as EventsIndexRouteImport } from './routes/events/index'
-import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
 import { Route as ExperiencesIdRouteImport } from './routes/experiences/$id'
-import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
-import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
-import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
 import { Route as AuthedDashboardIndexRouteImport } from './routes/_authed/dashboard/index'
-import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
-import { Route as AuthedDashboardCreatePostRouteImport } from './routes/_authed/dashboard/create-post'
-import { Route as AuthedDashboardCreateExperienceRouteImport } from './routes/_authed/dashboard/create-experience'
-import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
-import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 import { Route as AuthedDashboardBookingsRouteImport } from './routes/_authed/dashboard/bookings'
+import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
+import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_authed/dashboard/create-calendar'
+import { Route as AuthedDashboardCreateExperienceRouteImport } from './routes/_authed/dashboard/create-experience'
+import { Route as AuthedDashboardCreatePostRouteImport } from './routes/_authed/dashboard/create-post'
+import { Route as AuthedDashboardExperiencesRouteImport } from './routes/_authed/dashboard/experiences'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutPrieskaRoute = AboutPrieskaRouteImport.update({
+  id: '/about-prieska',
+  path: '/about-prieska',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeritageRoute = HeritageRouteImport.update({
+  id: '/heritage',
+  path: '/heritage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -67,16 +79,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-const HeritageRoute = HeritageRouteImport.update({
-  id: '/heritage',
-  path: '/heritage',
-=======
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -90,56 +97,6 @@ const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
 const BlogsIndexRoute = BlogsIndexRouteImport.update({
   id: '/blogs/',
   path: '/blogs/',
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutPrieskaRoute = AboutPrieskaRouteImport.update({
-  id: '/about-prieska',
-  path: '/about-prieska',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedRoute = AuthedRouteImport.update({
-  id: '/_authed',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
-  id: '/experiences/',
-  path: '/experiences/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsIndexRoute = EventsIndexRouteImport.update({
-  id: '/events/',
-  path: '/events/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BlogsIndexRoute = BlogsIndexRouteImport.update({
-  id: '/blogs/',
-  path: '/blogs/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
-  id: '/experiences/$id',
-  path: '/experiences/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsEventIdRoute = EventsEventIdRouteImport.update({
-  id: '/events/$eventId',
-  path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogsBlogIdRoute = BlogsBlogIdRouteImport.update({
@@ -147,32 +104,40 @@ const BlogsBlogIdRoute = BlogsBlogIdRouteImport.update({
   path: '/blogs/$blogId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthedRoute,
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesIndexRoute = ExperiencesIndexRouteImport.update({
+  id: '/experiences/',
+  path: '/experiences/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesIdRoute = ExperiencesIdRouteImport.update({
+  id: '/experiences/$id',
+  path: '/experiences/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedDashboardIndexRoute = AuthedDashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthedDashboardRoute,
 } as any)
-const AuthedDashboardExperiencesRoute =
-  AuthedDashboardExperiencesRouteImport.update({
-    id: '/experiences',
-    path: '/experiences',
-    getParentRoute: () => AuthedDashboardRoute,
-  } as any)
-const AuthedDashboardCreatePostRoute =
-  AuthedDashboardCreatePostRouteImport.update({
-    id: '/create-post',
-    path: '/create-post',
-    getParentRoute: () => AuthedDashboardRoute,
-  } as any)
-const AuthedDashboardCreateExperienceRoute =
-  AuthedDashboardCreateExperienceRouteImport.update({
-    id: '/create-experience',
-    path: '/create-experience',
+const AuthedDashboardBookingsRoute = AuthedDashboardBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AuthedDashboardRoute,
+} as any)
+const AuthedDashboardCalendarsRoute =
+  AuthedDashboardCalendarsRouteImport.update({
+    id: '/calendars',
+    path: '/calendars',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
 const AuthedDashboardCreateCalendarRoute =
@@ -181,17 +146,24 @@ const AuthedDashboardCreateCalendarRoute =
     path: '/create-calendar',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
-const AuthedDashboardCalendarsRoute =
-  AuthedDashboardCalendarsRouteImport.update({
-    id: '/calendars',
-    path: '/calendars',
+const AuthedDashboardCreateExperienceRoute =
+  AuthedDashboardCreateExperienceRouteImport.update({
+    id: '/create-experience',
+    path: '/create-experience',
     getParentRoute: () => AuthedDashboardRoute,
   } as any)
-const AuthedDashboardBookingsRoute = AuthedDashboardBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => AuthedDashboardRoute,
-} as any)
+const AuthedDashboardCreatePostRoute =
+  AuthedDashboardCreatePostRouteImport.update({
+    id: '/create-post',
+    path: '/create-post',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
+const AuthedDashboardExperiencesRoute =
+  AuthedDashboardExperiencesRouteImport.update({
+    id: '/experiences',
+    path: '/experiences',
+    getParentRoute: () => AuthedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -375,11 +347,53 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about-prieska': {
+      id: '/about-prieska'
+      path: '/about-prieska'
+      fullPath: '/about-prieska'
+      preLoaderRoute: typeof AboutPrieskaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/heritage': {
+      id: '/heritage'
+      path: '/heritage'
+      fullPath: '/heritage'
+      preLoaderRoute: typeof HeritageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -396,20 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-    '/heritage': {
-      id: '/heritage'
-      path: '/heritage'
-      fullPath: '/heritage'
-      preLoaderRoute: typeof HeritageRouteImport
-=======
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -429,77 +436,6 @@ declare module '@tanstack/react-router' {
       path: '/blogs'
       fullPath: '/blogs/'
       preLoaderRoute: typeof BlogsIndexRouteImport
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
-      parentRoute: typeof rootRouteImport
-    }
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about-prieska': {
-      id: '/about-prieska'
-      path: '/about-prieska'
-      fullPath: '/about-prieska'
-      preLoaderRoute: typeof AboutPrieskaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed': {
-      id: '/_authed'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiences/': {
-      id: '/experiences/'
-      path: '/experiences'
-      fullPath: '/experiences/'
-      preLoaderRoute: typeof ExperiencesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/': {
-      id: '/events/'
-      path: '/events'
-      fullPath: '/events/'
-      preLoaderRoute: typeof EventsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/blogs/': {
-      id: '/blogs/'
-      path: '/blogs'
-      fullPath: '/blogs/'
-      preLoaderRoute: typeof BlogsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiences/$id': {
-      id: '/experiences/$id'
-      path: '/experiences/$id'
-      fullPath: '/experiences/$id'
-      preLoaderRoute: typeof ExperiencesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/$eventId': {
-      id: '/events/$eventId'
-      path: '/events/$eventId'
-      fullPath: '/events/$eventId'
-      preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blogs/$blogId': {
@@ -509,12 +445,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogsBlogIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/dashboard': {
-      id: '/_authed/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthedDashboardRouteImport
-      parentRoute: typeof AuthedRoute
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences/': {
+      id: '/experiences/'
+      path: '/experiences'
+      fullPath: '/experiences/'
+      preLoaderRoute: typeof ExperiencesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences/$id': {
+      id: '/experiences/$id'
+      path: '/experiences/$id'
+      fullPath: '/experiences/$id'
+      preLoaderRoute: typeof ExperiencesIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/dashboard/': {
       id: '/_authed/dashboard/'
@@ -523,32 +480,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardIndexRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
-    '/_authed/dashboard/experiences': {
-      id: '/_authed/dashboard/experiences'
-      path: '/experiences'
-      fullPath: '/dashboard/experiences'
-      preLoaderRoute: typeof AuthedDashboardExperiencesRouteImport
-      parentRoute: typeof AuthedDashboardRoute
-    }
-    '/_authed/dashboard/create-post': {
-      id: '/_authed/dashboard/create-post'
-      path: '/create-post'
-      fullPath: '/dashboard/create-post'
-      preLoaderRoute: typeof AuthedDashboardCreatePostRouteImport
-      parentRoute: typeof AuthedDashboardRoute
-    }
-    '/_authed/dashboard/create-experience': {
-      id: '/_authed/dashboard/create-experience'
-      path: '/create-experience'
-      fullPath: '/dashboard/create-experience'
-      preLoaderRoute: typeof AuthedDashboardCreateExperienceRouteImport
-      parentRoute: typeof AuthedDashboardRoute
-    }
-    '/_authed/dashboard/create-calendar': {
-      id: '/_authed/dashboard/create-calendar'
-      path: '/create-calendar'
-      fullPath: '/dashboard/create-calendar'
-      preLoaderRoute: typeof AuthedDashboardCreateCalendarRouteImport
+    '/_authed/dashboard/bookings': {
+      id: '/_authed/dashboard/bookings'
+      path: '/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof AuthedDashboardBookingsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
     '/_authed/dashboard/calendars': {
@@ -558,11 +494,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDashboardCalendarsRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
-    '/_authed/dashboard/bookings': {
-      id: '/_authed/dashboard/bookings'
-      path: '/bookings'
-      fullPath: '/dashboard/bookings'
-      preLoaderRoute: typeof AuthedDashboardBookingsRouteImport
+    '/_authed/dashboard/create-calendar': {
+      id: '/_authed/dashboard/create-calendar'
+      path: '/create-calendar'
+      fullPath: '/dashboard/create-calendar'
+      preLoaderRoute: typeof AuthedDashboardCreateCalendarRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-experience': {
+      id: '/_authed/dashboard/create-experience'
+      path: '/create-experience'
+      fullPath: '/dashboard/create-experience'
+      preLoaderRoute: typeof AuthedDashboardCreateExperienceRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/create-post': {
+      id: '/_authed/dashboard/create-post'
+      path: '/create-post'
+      fullPath: '/dashboard/create-post'
+      preLoaderRoute: typeof AuthedDashboardCreatePostRouteImport
+      parentRoute: typeof AuthedDashboardRoute
+    }
+    '/_authed/dashboard/experiences': {
+      id: '/_authed/dashboard/experiences'
+      path: '/experiences'
+      fullPath: '/dashboard/experiences'
+      preLoaderRoute: typeof AuthedDashboardExperiencesRouteImport
       parentRoute: typeof AuthedDashboardRoute
     }
   }
