@@ -66,31 +66,15 @@ export function EventsCard({
         </h3>
       </header>
 
-      <div className="relative mt-6 space-y-3">
+      {/* <div className="relative mt-6 space-y-3">
         {events.map((event) => (
           <div
             key={event.title}
             className="flex items-center gap-4 bg-white/95 p-3"
           >
-            <div className="flex flex-col items-center justify-center bg-[var(--brand-navy)] px-3 py-2 text-center leading-none text-white">
-              <span className="display-title text-2xl font-semibold">
-                {event.day}
-              </span>
-              <span className="mt-1 text-[0.6rem] font-bold uppercase tracking-widest">
-                {event.month}
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold leading-tight text-[var(--brand-navy)]">
-                {event.title}
-              </p>
-              <p className="mt-1 text-xs text-[var(--brand-navy)]/65">
-                {event.meta}
-              </p>
-            </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       <a
         href="/events"

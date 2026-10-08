@@ -9,34 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-<<<<<<< HEAD
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HeritageRouteImport } from './routes/heritage'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
-import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as IndexRouteImport } from './routes/index'
-=======
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedRouteImport } from './routes/_authed'
-import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as HeritageRouteImport } from './routes/heritage'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as AuthedDashboardRouteImport } from './routes/_authed/dashboard'
-import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
-import { Route as BlogsBlogIdRouteImport } from './routes/blogs/$blogId'
-import { Route as EventsIndexRouteImport } from './routes/events/index'
-import { Route as EventsEventIdRouteImport } from './routes/events/$eventId'
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as HeritageRouteImport } from './routes/heritage'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AboutPrieskaRouteImport } from './routes/about-prieska'
+import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExperiencesIndexRouteImport } from './routes/experiences/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as BlogsIndexRouteImport } from './routes/blogs/index'
@@ -52,14 +35,14 @@ import { Route as AuthedDashboardCreateCalendarRouteImport } from './routes/_aut
 import { Route as AuthedDashboardCalendarsRouteImport } from './routes/_authed/dashboard/calendars'
 import { Route as AuthedDashboardBookingsRouteImport } from './routes/_authed/dashboard/bookings'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -67,30 +50,19 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
 const HeritageRoute = HeritageRouteImport.update({
   id: '/heritage',
   path: '/heritage',
-=======
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedDashboardRoute = AuthedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthedRoute,
-} as any)
-const BlogsIndexRoute = BlogsIndexRouteImport.update({
-  id: '/blogs/',
-  path: '/blogs/',
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -375,18 +347,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -396,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -403,33 +382,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
     '/heritage': {
       id: '/heritage'
       path: '/heritage'
       fullPath: '/heritage'
       preLoaderRoute: typeof HeritageRouteImport
-=======
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authed/dashboard': {
-      id: '/_authed/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthedDashboardRouteImport
-      parentRoute: typeof AuthedRoute
-    }
-    '/blogs/': {
-      id: '/blogs/'
-      path: '/blogs'
-      fullPath: '/blogs/'
-      preLoaderRoute: typeof BlogsIndexRouteImport
->>>>>>> feaa3e751b8165637d1c91e652eef6880cc8d7b9
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
