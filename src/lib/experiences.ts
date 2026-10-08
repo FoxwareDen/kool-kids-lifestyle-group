@@ -309,7 +309,7 @@ export async function fetchFeaturedExperienceCard(
     const records: FlatBookingPage[] = await client
       .collection('Experiences')
       .getFullList({
-        filter: `(category = "featured" || category ~ "featured," || category ~ ",featured") && status = "Published"`,
+        filter: `(category = "featured" || category ~ "featured") && status = "Published"`,
         expand: 'coverImage',
       })
 
