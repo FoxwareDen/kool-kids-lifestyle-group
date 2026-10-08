@@ -101,11 +101,19 @@ export const Route = createFileRoute('/_authed/dashboard/create-calendar')({
       fetchUnits(),
     ])
 
+    console.log('[create-calendar] cardsResult:', cardsResult)
+    console.log('[create-calendar] unitsResult:', unitsResult)
+
     if (!cardsResult.success) {
-      throw new Error(cardsResult.error || 'Failed to fetch experience cards')
+      throw new Error(
+        `Failed to fetch experience cards: ${cardsResult.error || 'Unknown error'}`,
+      )
     }
+
     if (!unitsResult.success) {
-      throw new Error(unitsResult.error || 'Failed to fetch unit types')
+      throw new Error(
+        `Failed to fetch unit types: ${unitsResult.error || 'Unknown error'}`,
+      )
     }
 
     return {
