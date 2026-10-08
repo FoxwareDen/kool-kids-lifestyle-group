@@ -1,6 +1,7 @@
 import {
   type Asset,
   buildImageUrl,
+  deleteAsset,
   getAssets,
   uploadAsset,
 } from '@/lib/pocketbase'
@@ -56,15 +57,29 @@ export default function MediaModel({
     setPendingDelete(item.id)
   }
 
-  const handleConfirmDelete = (
+  const handleConfirmDelete = async (
     event: MouseEvent<HTMLButtonElement>,
     item: Asset,
   ) => {
     event.stopPropagation()
     event.preventDefault()
-    setPendingDelete(null)
 
-    // TODO: check related items tied to this image
+    setPendingDelete(null)
+    setError(null)
+
+    try {
+      const res = await deleteAsset(item.id)
+
+      if (!res.success || !res.value) {
+        setError(res.error ?? 'Failed to delete image')
+        return
+      }
+
+      setList((prev) => prev.filter((asset) => asset.id !== item.id))
+    } catch (error) {
+      console.error(error)
+      setError('Failed to delete image')
+    }
   }
 
   const handleCancelDelete = (event: MouseEvent<HTMLButtonElement>) => {

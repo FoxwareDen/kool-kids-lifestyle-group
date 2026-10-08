@@ -380,14 +380,22 @@ export async function fetchAllExperiencesCard(
           : undefined,
         createdAt: obj.createdAt,
         updatedAt: obj.updatedAt,
-        coverImage: buildImageUrl(image.collectionId, image.id, image.file),
+        coverImage: image
+          ? buildImageUrl(image.collectionId, image.id, image.file)
+          : undefined,
         lang,
       }
     })
 
     return createResult(t, null)
   } catch (error) {
-    console.error(error)
+    console.error('fetchAllExperiencesCard failed:', error)
+
+    if (error instanceof Error) {
+      console.error('message:', error.message)
+      console.error('stack:', error.stack)
+    }
+
     return createResult(null, 'failed to retrieve data')
   }
 }
