@@ -359,7 +359,7 @@ export async function fetchAllExperiencesCard(
     const records: FlatBookingPage[] = await client
       .collection('Experiences')
       .getFullList({
-        filter: `status = "Published"`,
+        filter: `status = "Published" && category != "tos"`,
         expand: 'coverImage',
       })
 
