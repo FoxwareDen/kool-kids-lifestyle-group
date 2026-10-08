@@ -25,6 +25,7 @@ import { Trash2 } from 'lucide-react'
 import { setTranslated } from '#/lib/utils'
 import type { Asset } from '#/lib/pocketbase'
 import { createBlogPage, createEvent, type BlogPageBlock } from '#/lib/blog'
+import MediaModel from '#/components/MediaModel'
 
 const MAX_SIZE = 5242880
 const MAX_VIDEO_SIZE = 52428800
