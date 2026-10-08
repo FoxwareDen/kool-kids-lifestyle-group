@@ -341,8 +341,7 @@ function RouteComponent() {
                           {text.loading}
                         </li>
                       ) : (
-                        scheduleData &&
-                        scheduleData[0].units.map((unit) => (
+                        scheduleData?.flatMap((schedule) => schedule.units).map((unit) => (
                           <li key={unit.id} className="text-xs">
                             {unit.label}
                           </li>
