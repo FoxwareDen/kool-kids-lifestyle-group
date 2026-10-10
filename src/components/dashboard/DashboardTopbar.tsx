@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronRight, Globe } from 'lucide-react'
+import { ChevronDown, ChevronRight, Globe, Menu } from 'lucide-react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { resolveTranslatable, type Language } from '#/lib/experiences'
 
@@ -15,10 +15,12 @@ export function DashboardTopbar({
   sectionTitle,
   userName,
   lang = 'en',
+  onOpenMenu,
 }: {
   sectionTitle: string
   userName?: string
   lang?: Language
+  onOpenMenu?: () => void
 }) {
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
@@ -59,19 +61,29 @@ export function DashboardTopbar({
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--line)] bg-[var(--surface-strong)] px-6">
-      <div className="flex items-center gap-2 text-sm">
-        <span className="font-semibold text-[var(--sea-ink-soft)]">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[var(--line)] bg-[var(--surface-strong)] px-3 sm:px-6">
+      <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
+        <button
+          type="button"
+          aria-label="Open dashboard navigation"
+          className="inline-flex size-9 shrink-0 items-center justify-center text-[var(--sea-ink)] hover:bg-[var(--link-bg-hover)] md:hidden"
+          onClick={onOpenMenu}
+        >
+          <Menu className="size-5" aria-hidden="true" />
+        </button>
+        <span className="hidden font-semibold text-[var(--sea-ink-soft)] sm:inline">
           {workspaceLabel}
         </span>
         <ChevronRight
-          className="size-4 text-[var(--sea-ink-soft)]"
+          className="hidden size-4 text-[var(--sea-ink-soft)] sm:block"
           aria-hidden="true"
         />
-        <span className="font-bold text-[var(--sea-ink)]">{sectionTitle}</span>
+        <span className="truncate font-bold text-[var(--sea-ink)]">
+          {sectionTitle}
+        </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <div className="relative" ref={langRef}>
           <button
             type="button"

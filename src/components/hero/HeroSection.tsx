@@ -123,9 +123,12 @@ export function HeroSection({ data }: { data: any | null }) {
               {
                 content.buttons.map((button, index)=> {
                   const label = button.label.toLowerCase()
-                  const href = label.includes('explore experiences')
+                  const href =
+                    label.includes('explore experiences') ||
+                    label.includes('ervarings')
                     ? '/experiences'
-                    : label.includes('plan your visit')
+                    : label.includes('plan your visit') ||
+                        label.includes('beplan jou besoek')
                       ? '#plan-your-visit'
                       : button.src
 

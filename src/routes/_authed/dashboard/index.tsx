@@ -118,6 +118,16 @@ function getGuides(lang: Language): Guide[] {
         ),
         resolveTranslatable(
           {
+            default:
+              'Use the Featured tag to display an experience in featured sections. Experiences tagged tos appear only on the Terms of Service page and are used to manage your company’s terms. Use other tags for your own organization and filtering, such as Hiking for finding trails.',
+            translations: {
+              af: 'Gebruik die Featured-etiket om ’n ervaring in uitgeligte afdelings te vertoon. Ervarings met die TOS-etiket verskyn slegs op die Diensvoorwaardes-bladsy en word gebruik om jou maatskappy se diensvoorwaardes te bestuur. Gebruik ander etikette vir jou eie organisering en filters, byvoorbeeld om staproetes te vind.',
+            },
+          },
+          lang,
+        ),
+        resolveTranslatable(
+          {
             default: 'Fill in the title and short description.',
             translations: { af: 'Vul die titel en kort beskrywing in.' },
           },
@@ -519,7 +529,7 @@ function RouteComponent() {
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <QuickAccessCard
-            to="/dashboard/experience"
+            to="/dashboard/create-experience"
             title={labels.createExperience}
             description={labels.createExperienceDescription}
             icon={FilePlus2}
