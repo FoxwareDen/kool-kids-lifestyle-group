@@ -44,7 +44,7 @@ import {
 // FIX 1: removed unused `import type { SlotPreset } from "booking-api-extended";` — was never referenced anywhere in the file
 
 const fetchCards = createServerFn()
-  .inputValidator((input: { lang: 'en' | 'af' }) => input)
+  .validator((input: { lang: 'en' | 'af' }) => input)
   .handler(async ({ data: { lang } }) => {
     const result = await fetchAllExperiencesCard(lang)
 

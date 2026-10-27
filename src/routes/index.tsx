@@ -12,7 +12,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { fetchFeaturedExperienceCard, type Language } from '#/lib/experiences'
 
 export const getPageData = createServerFn()
-  .inputValidator((input: { slug: string; language?: 'en' | 'af' }) => input)
+  .validator((input: { slug: string; language?: 'en' | 'af' }) => input)
   // @ts-ignore
   .handler(async ({ data: { slug, language }, context }) => {
     return fetchPageDataSSR(slug, language)
@@ -33,6 +33,9 @@ export const Route = createFileRoute('/')({
     if (!pageData) throw notFound()
 
     const experience = await fetchFeaturedExperienceCard(lang)
+
+    console.log("experiences..")
+    console.log(experience)
 
     return { pageData, featuredList: experience.value, lang }
   },

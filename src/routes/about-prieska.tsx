@@ -13,7 +13,7 @@ import { createServerFn } from '@tanstack/react-start'
 import type { Language } from '#/lib/experiences'
 
 export const getPageData = createServerFn()
-  .inputValidator((input: { slug: string; lang?: Language }) => input)
+  .validator((input: { slug: string; lang?: Language }) => input)
   // @ts-ignore
   .handler(async ({ data: { slug, lang } }) => {
     const result = await fetchPageDataSSR(slug, lang)
