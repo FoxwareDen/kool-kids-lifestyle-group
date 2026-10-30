@@ -9,7 +9,7 @@ export const generateUniqueCode = createServerFn().handler(() => {
 })
 
 export const initializePayment = createServerFn()
-  .inputValidator(
+  .validator(
     (input: {
       email: string
       amount: number
