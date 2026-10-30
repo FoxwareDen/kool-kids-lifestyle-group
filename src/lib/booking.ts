@@ -22,6 +22,7 @@ import {
 
 export type UnitType = U & {
   value: number
+  duration: number
 }
 
 export type UnitTypeResponse = UnitType & MetaData
@@ -98,6 +99,7 @@ export async function createUnit(
   label: string,
   capacity: number,
   value: number,
+  duration: number,
   cookieHeader?: string,
 ): Promise<Result<string, string>> {
   const client = getPBSession(cookieHeader)
@@ -108,11 +110,23 @@ export async function createUnit(
         label,
         capacity,
         value,
+        duration,
       })
     return createResult(result.id, null)
   } catch (error) {
-    console.error(error)
-    return createResult(null, 'Failed to create unit')
+    const response =
+      typeof error === 'object' && error !== null && 'response' in error
+        ? error.response
+        : null
+    const details =
+      typeof response === 'object' && response !== null
+        ? JSON.stringify(response)
+        : error instanceof Error
+          ? error.message
+          : String(error)
+
+    console.error('Failed to create unit:', response ?? error)
+    return createResult(null, `Failed to create unit: ${details}`)
   }
 }
 

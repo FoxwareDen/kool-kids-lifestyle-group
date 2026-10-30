@@ -19,6 +19,7 @@ import {
   type Calendar,
 } from '@/lib/booking'
 import { createServerFn } from '@tanstack/react-start'
+import { getSessionMiddleware } from '#/routes/__root'
 import { formatDateForInput } from '#/lib/utils'
 import { Check } from 'lucide-react'
 import {
@@ -44,7 +45,7 @@ import {
 // FIX 1: removed unused `import type { SlotPreset } from "booking-api-extended";` — was never referenced anywhere in the file
 
 const fetchCards = createServerFn()
-  .inputValidator((input: { lang: 'en' | 'af' }) => input)
+  .validator((input: { lang: 'en' | 'af' }) => input)
   .handler(async ({ data: { lang } }) => {
     const result = await fetchAllExperiencesCard(lang)
 
@@ -88,6 +89,40 @@ const fetchUnits = createServerFn().handler(async () => {
     }
   }
 })
+
+const createUnitServerFn = createServerFn()
+  .middleware([getSessionMiddleware])
+  .validator(
+    (input: {
+      label: string
+      capacity: number
+      value: number
+      duration: number
+    }) => input,
+  )
+  .handler(async ({ context, data }) => {
+    if (!context.isAuthed) {
+      return {
+        success: false,
+        value: null,
+        error: 'Not authenticated',
+      }
+    }
+
+    const result = await createUnit(
+      data.label,
+      data.capacity,
+      data.value,
+      data.duration,
+      context.cookieString,
+    )
+
+    return {
+      success: result.success,
+      value: result.value,
+      error: result.error,
+    }
+  })
 
 export const Route = createFileRoute('/_authed/dashboard/create-calendar')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -196,7 +231,7 @@ function RouteComponent() {
   const [newUnit, setNewUnit] = useState({
     label: '',
     capacity: 1,
-    value: 0.0,
+    value: '0',
     duration: 30,
   })
   const [creatingUnit, setCreatingUnit] = useState(false)
@@ -371,31 +406,48 @@ function RouteComponent() {
 
   async function handleCreateUnit() {
     if (!newUnit.label || !newUnit.capacity) return
+
     setCreatingUnit(true)
     setCreateUnitError(null)
 
-    const result = await createUnit(
-      newUnit.label,
-      newUnit.capacity,
-      newUnit.value,
-    )
-    if (result.error) {
-      setCreateUnitError(String(result.error))
-    } else {
+    const duration =
+      calendarForm.booking_type === 'slot' ? newUnit.duration : 0
+    const value = Number(newUnit.value)
+    try {
+      const result = await createUnitServerFn({
+        data: {
+          label: newUnit.label,
+          capacity: newUnit.capacity,
+          value,
+          duration,
+        },
+      })
+
+      if (!result.success || !result.value) {
+        setCreateUnitError(result.error || 'Failed to create unit')
+        return
+      }
+
       const created: UnitType = {
-        id: result.value!,
+        id: result.value,
         label: newUnit.label,
         capacity: newUnit.capacity,
-        value: newUnit.value,
-      } as UnitType
+        value,
+        duration,
+      }
       setAvailableUnits((prev) => [...prev, created])
       setCalendarForm((prev) => ({
         ...prev,
         units: [...prev.units, created.id],
       }))
-      setNewUnit({ label: '', capacity: 1, value: 0, duration: 30 })
+      setNewUnit({ label: '', capacity: 1, value: '0', duration: 30 })
+    } catch (error) {
+      setCreateUnitError(
+        error instanceof Error ? error.message : 'Failed to create unit',
+      )
+    } finally {
+      setCreatingUnit(false)
     }
-    setCreatingUnit(false)
   }
 
   async function handleSubmitCalendar() {
@@ -760,10 +812,9 @@ function RouteComponent() {
                           value={newUnit.value}
                           onChange={(e) => {
                             const raw = e.target.value
-                            const parsed = parseFloat(raw)
                             setNewUnit((p) => ({
                               ...p,
-                              value: isNaN(parsed) ? 0.0 : parsed,
+                              value: raw,
                             }))
                           }}
                         />
