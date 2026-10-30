@@ -757,7 +757,7 @@ function RouteComponent() {
                             : 'border border-[var(--line)] bg-[var(--surface-strong)] text-[var(--sea-ink)] hover:bg-[var(--link-bg-hover)]'
                         }`}
                       >
-                        {unit.label} (cap {unit.capacity})
+                        {unit.label} (cap {unit.capacity}) · {unit.duration} min
                         {selected && <Check className="size-3.5" />}
                       </button>
                     )

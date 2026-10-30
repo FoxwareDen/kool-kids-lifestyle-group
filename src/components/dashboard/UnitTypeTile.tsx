@@ -34,6 +34,7 @@ export function UnitTypeTile({
         <div className="mt-1 flex gap-3 text-xs text-[var(--sea-ink-soft)]">
           <span>Capacity: {unit.capacity}</span>
           <span>R{unit.value}</span>
+          <span>Duration: {unit.duration} min</span>
         </div>
       </div>
       {onDelete && (
