@@ -35,7 +35,7 @@ interface HeroSectionProps {
     src: string
     icon: string
   }[]
-  media?: Record<string, Asset>
+  media?: Partial<Record<string, Asset>>
 }
 
 /**
@@ -52,7 +52,7 @@ export function HeroSection({ data }: { data: any | null }) {
   }: {
     content: HeroSectionProps
     components: string
-    media: Record<string, Asset>
+    media: Partial<Record<string, Asset>>
   } = data
 
   const [activeIndex, setActiveIndex] = useState(0)
@@ -67,27 +67,27 @@ export function HeroSection({ data }: { data: any | null }) {
   return (
     <section className="relative h-[100svh] min-h-[600px] w-full overflow-hidden bg-[var(--brand-navy)]">
       {/* Background carousel */}
-      {SLIDES.map((slide, i) => (
-        <img
-          key={media[slide.name].name + i}
-          src={
-            media[slide.name]
-              ? buildImageUrl(
-                  media[slide.name].collectionId,
-                  media[slide.name].id,
-                  media[slide.name].file,
-                )
-              : '/placeholder.svg'
-          }
-          alt={media[slide.name] ? media[slide.name].alt : ''}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-            i === activeIndex ? 'opacity-100' : 'opacity-0'
-          }`}
-          loading={i === 0 ? 'eager' : 'lazy'}
-          fetchpriority={i === 0 ? 'high' : 'low'}
-          decoding="async"
-        />
-      ))}
+      {SLIDES.map((slide, i) => {
+        const image = media[slide.name]
+
+        return (
+          <img
+            key={slide.name}
+            src={
+              image
+                ? buildImageUrl(image.collectionId, image.id, image.file)
+                : '/placeholder.svg'
+            }
+            alt={image?.alt ?? ''}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+              i === activeIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 ? 'high' : 'low'}
+            decoding="async"
+          />
+        )
+      })}
 
       {/* Readability overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-[var(--brand-navy)]/100 via-[var(--brand-navy)]/40 to-transparent" />
