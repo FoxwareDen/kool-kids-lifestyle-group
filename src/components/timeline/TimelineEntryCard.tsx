@@ -1,8 +1,12 @@
-import { Link } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { Link, useRouter } from '@tanstack/react-router'
+import { ArrowRight, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { deleteTimelineEntry } from '#/lib/blog'
+import { Route as RootRoute } from '#/routes/__root'
 import type { TimelineEntry } from '#/lib/timeline'
 import { TimelineBadge } from './TimelineBadge'
-import { resolveTranslatable, type Language } from '#/lib/experiences'
+import { resolveTranslatable } from '#/lib/experiences'
+import type { Language } from '#/lib/experiences'
 
 /**
  * Formats an ISO date string as a readable long-form date (e.g. "5 March 2025").
@@ -63,6 +67,10 @@ export function TimelineEntryCard({
   isLast?: boolean
   lang?: Language
 }) {
+  const { isAuthed } = RootRoute.useLoaderData()
+  const router = useRouter()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const dateLabel = getDateLabel(entry)
   const detailLink =
     entry.kind === 'event'
@@ -70,6 +78,10 @@ export function TimelineEntryCard({
       : { to: '/blogs/$blogId', params: { blogId: entry.id } }
   const readMore = resolveTranslatable(
     { default: 'Read more', translations: { af: 'Lees meer' } },
+    lang,
+  )
+  const deleteLabel = resolveTranslatable(
+    { default: 'Delete', translations: { af: 'Verwyder' } },
     lang,
   )
 
@@ -117,6 +129,44 @@ export function TimelineEntryCard({
           {readMore}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>
+        {isAuthed && (
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={async () => {
+              const confirmed = window.confirm(
+                `Delete "${entry.title}"? This action cannot be undone.`,
+              )
+              if (!confirmed) return
+
+              setIsDeleting(true)
+              setDeleteError(null)
+              try {
+                await deleteTimelineEntry({
+                  data: { id: entry.id, kind: entry.kind },
+                })
+                await router.invalidate()
+              } catch (error) {
+                setDeleteError(
+                  error instanceof Error
+                    ? error.message
+                    : 'Failed to delete this item.',
+                )
+              } finally {
+                setIsDeleting(false)
+              }
+            }}
+            className="mt-5 ml-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-700 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {isDeleting ? `${deleteLabel}…` : deleteLabel}
+          </button>
+        )}
+        {deleteError && (
+          <p role="alert" className="mt-3 text-sm text-red-700">
+            {deleteError}
+          </p>
+        )}
       </article>
     </li>
   )

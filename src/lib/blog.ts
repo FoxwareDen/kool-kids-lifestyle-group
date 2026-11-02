@@ -6,7 +6,15 @@ import type {
   Translatable,
   PageBlock,
 } from './experiences'
-import { createResult, getPBSession, Result, uploadAsset } from './pocketbase'
+import { createServerFn } from '@tanstack/react-start'
+import { getRequestHeader } from '@tanstack/react-start/server'
+import {
+  createResult,
+  getPBSession,
+  isAuthenticated,
+  uploadAsset,
+} from './pocketbase'
+import type { Result } from './pocketbase'
 
 // ============================================================
 // STATUS
@@ -151,8 +159,9 @@ export async function updateBlogPage(
 
 export async function deleteBlogPage(
   id: string,
+  cookieHeader?: string,
 ): Promise<Result<true, string>> {
-  const client = getPBSession()
+  const client = getPBSession(cookieHeader)
 
   try {
     await client.collection('Posts').delete(id)
@@ -273,8 +282,11 @@ export async function updateEvent(
   }
 }
 
-export async function deleteEvent(id: string): Promise<Result<true, string>> {
-  const client = getPBSession()
+export async function deleteEvent(
+  id: string,
+  cookieHeader?: string,
+): Promise<Result<true, string>> {
+  const client = getPBSession(cookieHeader)
 
   try {
     await client.collection('Posts').delete(id)
@@ -283,6 +295,44 @@ export async function deleteEvent(id: string): Promise<Result<true, string>> {
     return createResult<true, string>(null, `${error}`)
   }
 }
+
+export const deleteTimelineEntry = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    if (
+      typeof data !== 'object' ||
+      data === null ||
+      !('id' in data) ||
+      !('kind' in data)
+    ) {
+      throw new Error('Invalid timeline entry.')
+    }
+
+    const { id, kind } = data
+    if (
+      typeof id !== 'string' ||
+      id.trim().length === 0 ||
+      (kind !== 'blog' && kind !== 'event')
+    ) {
+      throw new Error('Invalid timeline entry.')
+    }
+
+    return { id, kind }
+  })
+  .handler(async ({ data }) => {
+    const cookieHeader = getRequestHeader('Cookie')
+    if (!isAuthenticated(cookieHeader)) throw new Error('Not authenticated')
+
+    const result =
+      data.kind === 'event'
+        ? await deleteEvent(data.id, cookieHeader)
+        : await deleteBlogPage(data.id, cookieHeader)
+
+    if (!result.success) {
+      throw new Error(result.error ?? 'Failed to delete timeline entry')
+    }
+
+    return true
+  })
 
 export async function getEvent(
   id: string,
