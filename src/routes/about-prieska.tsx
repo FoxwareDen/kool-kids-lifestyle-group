@@ -8,6 +8,7 @@ import { MissionVisionValues } from '#/components/about/MissionVisionValues'
 import { OurStory } from '#/components/about/OurStory'
 import { WhyVisitPrieska } from '#/components/about/WhyVisitPrieska'
 import { AboutCta } from '#/components/about/AboutCta'
+import { MeetTheTeam } from '#/components/about/MeetTheTeam'
 import { fetchPageDataSSR, type PageData } from '#/lib/pocketbase'
 import { createServerFn } from '@tanstack/react-start'
 import type { Language } from '#/lib/experiences'
@@ -84,6 +85,7 @@ function AboutPrieskaPage() {
         lang={lang}
       />
       <OurStory data={pageData.components['our_story']} lang={lang} />
+      <MeetTheTeam />
       <WhyVisitPrieska
         data={pageData.components['why_visit_prieska']}
         lang={lang}
